@@ -1,0 +1,31 @@
+{
+  "name": "@cura/web",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@cura/shared": "workspace:*",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "i18next": "25.5.2",
+    "react-i18next": "16.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.14",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.0",
+    "@types/react": "19.1.16",
+    "@types/react-dom": "19.1.9",
+    "@vitejs/plugin-react": "5.0.4",
+    "jsdom": "27.0.0",
+    "tailwindcss": "4.1.14",
+    "vite": "7.1.9"
+  }
+}

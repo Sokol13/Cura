@@ -1,0 +1,7 @@
+packages:
+  - packages/*
+onlyBuiltDependencies:
+  - esbuild
+  - '@tailwindcss/oxide'
+ignoredBuiltDependencies:
+  - better-sqlite3
