@@ -15,12 +15,16 @@ This task is limited to AGENTS.md section 4, phase 0. No business functionality 
 - Confirmed [initial GitHub CI](https://github.com/Sokol13/Cura/actions/runs/37030932058) is green with gh run watch --exit-status, including Playwright-pinned Chromium installation.
 - Saved the tested cloud installation/startup instructions, Node 22 and browser settings, and required network domains to the environment draft.
 
+- Pushed annotated tag [v0.0.1](https://github.com/Sokol13/Cura/releases/tag/v0.0.1) at `cef0f4b26030d0cd6e10f8c278f0afa2ad5e0957`.
+- Confirmed [tag CI](https://github.com/Sokol13/Cura/actions/runs/37031628248) and [Release workflow](https://github.com/Sokol13/Cura/actions/runs/37031628150) both succeeded using `gh run watch --exit-status`.
+- Verified the automatically generated public Release exists, is neither draft nor prerelease, and includes generated changelog notes.
+
 ## In progress
 
-- Publish the verified v0.0.1 tag and confirm its CI and generated Release.
+None. Phase 0 is complete. Development processes started for verification have been stopped.
 
 ## Next
 
-After all phase-0 acceptance checks and v0.0.1 publication, stop and wait for the next user instruction. Subsequent authorized work begins at AGENTS.md section 4, phase 1: research, PRD, architecture and independently deliverable tasks. Do not start that phase in this task.
+Stop here and wait for the next user instruction. Subsequent authorized work begins at AGENTS.md section 4, phase 1: research, PRD, architecture and independently deliverable tasks. Do not start that phase in this task.
 
 See BLOCKERS.md for current-container limitations and TESTING.md for the exact browser used. Local success is not a claim of remote CI or publication.

@@ -15,7 +15,11 @@ Delivered the Node 22/pnpm workspace, shared contracts, loopback Fastify server,
 
 ## Publication
 
-The annotated v0.0.1 tag and automatic Release are the remaining publication gate. This report will be updated with the observed result after the tag workflow completes.
+- [Release v0.0.1](https://github.com/Sokol13/Cura/releases/tag/v0.0.1) was automatically published with generated notes; it is not a draft or prerelease.
+- Tagged source: `cef0f4b26030d0cd6e10f8c278f0afa2ad5e0957`.
+- [Tag CI](https://github.com/Sokol13/Cura/actions/runs/37031628248): success.
+- [Release validation and publication](https://github.com/Sokol13/Cura/actions/runs/37031628150): success.
+- Both workflows were monitored with `gh run watch --exit-status`, and the Release was checked with `gh release view`.
 
 ## Environment configuration
 
