@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — phase 0
+## 0.0.1 — 2026-10-02
 
 - Add a Node 22/pnpm workspace with shared Zod contracts, loopback Fastify and React/Vite/Tailwind scaffolding.
 - Add native prebuilt-only SQLite, a versioned Drizzle infrastructure migration and operating-system user directories.
