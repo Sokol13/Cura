@@ -66,7 +66,7 @@
 - [x] Write failing real-app tests for library/root creation, bounded raw uploads, directory picker, worker ingestion, restart/rescan, live additions, replacement, safe stream endpoints and diagnostics ZIP.
 - [x] Implement worker queue, chokidar watcher, atomic snapshots, error handling, API schema validation and graceful shutdown. Start script builds missing/stale production output for clean install/start.
 - [x] Run real server tests; assert watcher adds within 5 seconds, old bytes survive replacement, traversal/Origin blocked and originals unchanged. Add simulated Windows file-in-use / >260-character paths and macOS EPERM actionable guidance tests; distinguish simulation from real-machine smoke evidence.
-- [ ] Full gate; commit/push.
+- [x] Full gate; commit/push.
 
 ## Task 5: P0 browser asset library and organization (parallel B after contracts)
 
@@ -76,7 +76,7 @@
 - [x] Write failing browser tests for create/open, directory registration, file picker/drop upload, selection, folder tree, tag groups/colors, rating/notes/batch operations, trash/restore and smart collections.
 - [x] Implement three-column dark/orange shell, empty/loading/error states, complete bilingual strings and light theme.
 - [x] Implement combined search/filters, palette color and similar-image queries; inspector edits generation metadata. Keyboard Cmd/Ctrl+F, arrows, Delete and Space must ignore editable fields.
-- [ ] Real-server E2E and web unit tests; full gate; screenshots; commit/push.
+- [x] Real-server E2E and web unit tests; full gate; screenshots; commit/push.
 
 ## Task 6: P0 detail, versions, diagnostics and milestone acceptance
 
@@ -129,4 +129,4 @@
 
 ## Task ledger
 
-Tasks 1–3: delivered to main with their then-current full gate and observed green CI. Tasks 4–6: implementation and focused regressions integrated on feat-runtime; clean-clone install/start/browser creation passed; final combined gate, main push/CI and v0.1.0 publication are pending. Checked implementation steps do not mark these tasks released. The nine-item acceptance ledger is in REPORT-v0.1.0.md. Tasks 7–10 remain next, and v0.1.0 publication must be followed immediately by Task 7. Per-task test evidence, commit ranges and rulings remain in PROGRESS.md and DECISIONS.md.
+Tasks 1–5: delivered to main with full local gates and observed green CI. Task 6: all nine P0 definitions are verified; 168 unit tests and 9 real-server E2Es pass locally and in CI 37197744558 at c4f6597. Final documentation CI and tag/release publication are the remaining operational steps. The nine-item acceptance ledger is in REPORT-v0.1.0.md. Tasks 7–10 follow immediately; v0.1.0 is not a stopping condition. Per-task evidence and rulings remain in PROGRESS.md and DECISIONS.md.

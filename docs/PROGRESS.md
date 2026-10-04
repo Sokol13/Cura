@@ -16,15 +16,13 @@ The user accepted phase 0 on 2026-10-04 and authorized uninterrupted development
 
 ## In progress
 
-- Implementation pushed to main at 2828686. [CI 37197077888](https://github.com/Sokol13/Cura/actions/runs/37197077888) passed install/lint/types/unit checks but failed 2 of 9 browser tests (directory registration and later watcher addition). No v0.1.0 tag has been created.
-- Investigating a directory-picker race: a delayed initial home-directory response can replace a manually entered path, accidentally registering/scanning home. Two deferred-response regressions reproduced the overwrite and now pass with 8c5fa58. The complete local gate passes again (168 unit tests, 9 E2Es); the corrected CI run is next. Both affected real-server E2Es also passed unchanged during independent service diagnosis; no speculative watcher fallback was added.
-- Artifact downloads are unavailable through the inherited Azure transport; adding readable generated E2E context to CI logs for diagnosis. This does not stop local development.
-- Integration worktree: /tmp/cura-runtime, feat-runtime; primary checkout: /workspace/Cura, main. Main will fast-forward to the tested integration commit.
-- P1 read-only implementation planning is underway for boards/slots/matrices, brands/CMF, richer previews, process statistics and neutral export. No P1 code is included in v0.1.0.
+- P0 implementation `c4f6597` passed [CI 37197744558](https://github.com/Sokol13/Cura/actions/runs/37197744558); `gh run watch --exit-status` succeeded. All 9 E2Es passed without retries. The previous failed CI remains historical evidence, not the current state.
+- Final REPORT-v0.1.0, README, architecture, task ledger, changelog and ten-minute SMOKE_TEST are ready. Final documentation CI and tag/release publication are next; no tag has been created yet.
+- P1 read-only implementation planning is complete for boards/slots/matrices, brands/CMF, richer previews, process statistics and neutral export. Actual browser prototypes verified H.264 MP4/MOV frames and RGB8 raw/RLE PSD composites. No P1 code is included in v0.1.0.
 
 ## Next
 
-1. Finish the full P0 gate and record all nine completion criteria in REPORT-v0.1.0.md; push main and observe green CI.
+1. Verify the final documentation commit CI, then publish and verify v0.1.0 tag/Release.
 2. Publish v0.1.0 only after all criteria pass; verify Release, report in chat, immediately begin TASKS.md tasks 7–9.
 3. Complete v0.2.0, then P2/task 10 and v0.3.0. Do not stop at an intermediate milestone.
 

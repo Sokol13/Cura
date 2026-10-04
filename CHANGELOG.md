@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased — v0.1.0 candidate
+## 0.1.0 — 2026-10-04
 
 - Add local libraries, watched reference folders, managed Inbox uploads, SHA-256 deduplication and immutable version snapshots without changing registered originals.
 - Add PNG/JPEG/WebP/GIF/SVG/AVIF thumbnails, dimensions, EXIF, palettes and pHash; parse embedded SD WebUI, ComfyUI and explicitly named Midjourney fields, preserving exact seed strings.
@@ -8,7 +8,7 @@
 - Add virtualized grid/list views, preview zoom, editable version-specific annotations, adjacent navigation, live preview updates, replacement history and side-by-side comparison.
 - Add Chinese/English UI, dark/light/system themes, persistent layout, cache usage/clear/rebuild and sanitized diagnostic ZIPs.
 - Add real-server/offline browser workflows, 1,000-image stress acceptance, source-availability recovery, cross-platform path/permission regressions and desktop smoke instructions.
-- Keep canvas/slots/brands/CMF, richer media and neutral export for v0.2.0; Agent/cloud/FCPXML work follows in v0.3.0. Release validation is tracked in `docs/REPORT-v0.1.0.md`; this candidate entry is not a published tag.
+- Keep canvas/slots/brands/CMF, richer media and neutral export for v0.2.0; Agent/cloud/FCPXML work follows in v0.3.0. Release validation is tracked in `docs/REPORT-v0.1.0.md`; all nine completion definitions have evidence and the implementation CI is green.
 
 ## 0.0.1 — 2026-10-02
 
