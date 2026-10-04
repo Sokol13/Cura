@@ -1,5 +1,7 @@
 import { i18n } from '../i18n';
 const en = {
+  cancelHint:
+    'The mock includes a 1.5-second render stage so you can cancel. Cancellation stops remaining work; outputs already imported stay in your library.',
   title: 'Creative process',
   back: 'Back to library',
   refresh: 'Refresh',
@@ -58,6 +60,8 @@ const en = {
   error: 'The operation could not be completed.',
 };
 const zh: Record<keyof typeof en, string> = {
+  cancelHint:
+    '模拟器包含 1.5 秒渲染阶段，便于取消任务。取消会停止后续工作；已导入的产出仍保留在资产库。',
   title: '创作过程',
   back: '返回资产库',
   refresh: '刷新',

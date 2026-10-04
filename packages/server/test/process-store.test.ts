@@ -158,3 +158,47 @@ test('timeline metadata edits update canonical model/source grouping and empty l
     sources: [{ key: '', outputs: 1 }],
   });
 });
+
+test('manual selection atomically rejects a stale displayed version or changed manual owner', async () => {
+  const f = await fixture();
+  const original = f.ingest('scene.png', 'one');
+  const stale = {
+    versionId: original.currentVersionId,
+    expectedSelectionVersionId: null,
+    selected: true,
+  };
+  const replacement = f.catalog.replaceAsset(
+    original.id,
+    file('two'),
+    'replacement.png',
+  );
+  expect(() => f.process.setManualSelection(original.id, stale)).toThrow(
+    'changed',
+  );
+  expect(f.process.selections(f.library.id)).toEqual([]);
+  const current = { ...stale, versionId: replacement.currentVersionId };
+  f.process.setManualSelection(original.id, current);
+  expect(() =>
+    f.process.setManualSelection(original.id, { ...current, selected: false }),
+  ).toThrow('changed');
+  expect(f.catalog.getAsset(original.id).finalized).toBe(true);
+  f.process.setManualSelection(original.id, {
+    ...current,
+    expectedSelectionVersionId: replacement.currentVersionId,
+    selected: false,
+  });
+  expect(f.catalog.getAsset(original.id).finalized).toBe(false);
+  f.process.setManualSelection(original.id, current);
+  const next = f.catalog.replaceAsset(original.id, file('three'), 'third.png');
+  expect(() =>
+    f.process.setManualSelection(original.id, {
+      ...current,
+      expectedSelectionVersionId: replacement.currentVersionId,
+      selected: false,
+    }),
+  ).toThrow('changed');
+  expect(f.process.selections(f.library.id)[0]?.versionId).toBe(
+    replacement.currentVersionId,
+  );
+  expect(f.catalog.getAsset(next.id).finalized).toBe(false);
+});

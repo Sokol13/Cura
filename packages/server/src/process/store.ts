@@ -1,5 +1,6 @@
 import * as C from '@cura/shared';
 import { randomUUID } from 'node:crypto';
+import { setFinalSelection } from './final-selections.js';
 import type { AppDatabase } from '../database.js';
 
 type Row = Record<string, unknown>;
@@ -73,6 +74,61 @@ export class ProcessStore {
         ),
       })),
     });
+  }
+  setManualSelection(
+    assetId: string,
+    input: C.ManualSelectionRequest,
+  ): C.ProcessTimeline {
+    const data = C.ManualSelectionRequestSchema.parse(input);
+    return this.database.sqlite.transaction(() => {
+      const asset = this.database.sqlite
+        .prepare(
+          "SELECT library_id,json_extract(payload,'$.currentVersionId') AS version_id FROM assets WHERE id=?",
+        )
+        .get(assetId) as { library_id: string; version_id: string } | undefined;
+      if (!asset) throw new ProcessError('Asset not found');
+      const previous = this.database.sqlite
+        .prepare(
+          "SELECT version_id FROM final_selections WHERE library_id=? AND owner_kind='manual' AND owner_id=?",
+        )
+        .get(asset.library_id, assetId) as { version_id: string } | undefined;
+      if (
+        asset.version_id !== data.versionId ||
+        (previous?.version_id ?? null) !== data.expectedSelectionVersionId
+      )
+        throw new ProcessError(
+          'The asset or manual selection changed. Review the refreshed timeline before selecting a version.',
+          409,
+          'PROCESS_SELECTION_CONFLICT',
+        );
+      setFinalSelection(
+        this.database,
+        { libraryId: asset.library_id, ownerKind: 'manual', ownerId: assetId },
+        data.selected ? { assetId, versionId: data.versionId } : null,
+      );
+      if (
+        (previous?.version_id ?? null) !==
+        (data.selected ? data.versionId : null)
+      ) {
+        const date = new Date().toISOString();
+        this.database.sqlite
+          .prepare('INSERT INTO activity VALUES (?,?,?,?,?,?,?)')
+          .run(
+            randomUUID(),
+            asset.library_id,
+            assetId,
+            'process.manual-selection',
+            JSON.stringify({
+              versionId: data.versionId,
+              selected: data.selected,
+              previousVersionId: previous?.version_id ?? null,
+            }),
+            date,
+            date,
+          );
+      }
+      return this.timeline(assetId);
+    })();
   }
   statistics(libraryId: string): C.ProcessStatistics {
     const generations = this.generations(libraryId);

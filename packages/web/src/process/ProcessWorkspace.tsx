@@ -122,6 +122,7 @@ export function ProcessWorkspace({
       setRevision((value) => value + 1);
     } catch (reason) {
       report(reason);
+      setRevision((value) => value + 1);
     } finally {
       setBusy(false);
     }
@@ -138,6 +139,9 @@ export function ProcessWorkspace({
     });
   };
   const currentVersion = timeline?.entries.at(-1);
+  const manualSelection = timeline?.entries
+    .flatMap((entry) => entry.finalSelections)
+    .find((selection) => selection.ownerKind === 'manual');
   const manualCurrent = currentVersion?.finalSelections.some(
     (selection) => selection.ownerKind === 'manual',
   );
@@ -245,9 +249,14 @@ export function ProcessWorkspace({
                 disabled={busy}
                 onClick={() =>
                   void mutate(() =>
-                    request(`/api/assets/${assetId}`, {
-                      method: 'PATCH',
-                      body: { finalized: !manualCurrent },
+                    request(`/api/assets/${assetId}/process/selection`, {
+                      method: 'PUT',
+                      body: {
+                        versionId: currentVersion.version.id,
+                        expectedSelectionVersionId:
+                          manualSelection?.versionId ?? null,
+                        selected: !manualCurrent,
+                      },
                     }),
                   )
                 }
@@ -311,6 +320,7 @@ export function ProcessWorkspace({
           <form onSubmit={submit}>
             <h2>{t('generator')}</h2>
             <p>{t('mockHint')}</p>
+            <p className="process-muted">{t('cancelHint')}</p>
             <label>
               {t('prompt')}
               <textarea

@@ -44,7 +44,7 @@ export class MockGenerationProvider implements GenerationProvider {
     context.signal.throwIfAborted();
     context.progress(0.05);
     // Model a short asynchronous render stage so cancellation is a usable action.
-    await setTimeout(120, undefined, { signal: context.signal });
+    await setTimeout(1500, undefined, { signal: context.signal });
     if (input.mockOutcome === 'fail')
       throw new Error(
         'Simulated mock-provider failure. No external service was contacted.',

@@ -206,9 +206,141 @@ test('offline process timeline, final-output statistics and usable mock jobs sur
     await expect(
       cancelled.getByText('Cancelled', { exact: true }),
     ).toBeVisible();
+    const persistedJobs = (await (
+      await request.get(`/api/libraries/${library.id}/generations`)
+    ).json()) as Array<{
+      status: string;
+      request: { prompt: string };
+      assetIds: string[];
+    }>;
+    const cancelledJob = persistedJobs.find(
+      (job) => job.request.prompt === 'Cancellation demonstration',
+    )!;
+    expect(cancelledJob.status).toBe('cancelled');
+    expect(cancelledJob.assetIds.length).toBeLessThan(4);
     await expect(
-      page.getByText('3 recorded outputs', { exact: true }),
+      page.getByText(`${3 + cancelledJob.assetIds.length} recorded outputs`, {
+        exact: true,
+      }),
     ).toBeVisible();
+    expect(external).toEqual([]);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('a stale timeline cannot finalize or clear an unseen replacement version', async ({
+  page,
+  request,
+  context,
+}) => {
+  test.setTimeout(30_000);
+  const directory = await mkdtemp(join(tmpdir(), 'cura-process-race-'));
+  const external: string[] = [];
+  await context.route('**/*', async (route) => {
+    if (
+      ['127.0.0.1', 'localhost', '[::1]'].includes(
+        new URL(route.request().url()).hostname,
+      )
+    )
+      await route.continue();
+    else {
+      external.push(route.request().url());
+      await route.abort();
+    }
+  });
+  try {
+    await promisify(execFile)(process.execPath, [
+      fileURLToPath(
+        new URL('../scripts/generate-fixtures.mjs', import.meta.url),
+      ),
+      directory,
+      '2',
+    ]);
+    const library = LibrarySchema.parse(
+      await (
+        await request.post('/api/libraries', {
+          data: { name: 'Selection concurrency' },
+        })
+      ).json(),
+    );
+    const first = await readFile(join(directory, 'cura-00000-sd.png')),
+      second = await readFile(join(directory, 'cura-00001-comfy.png'));
+    const upload = await request.post(
+      `/api/libraries/${library.id}/upload?name=first.png`,
+      { headers: { 'content-type': 'application/octet-stream' }, data: first },
+    );
+    expect(upload.ok()).toBe(true);
+    const asset = (await upload.json()) as {
+      id: string;
+      currentVersionId: string;
+    };
+    await request.patch('/api/settings', {
+      data: { activeLibraryId: library.id, language: 'en' },
+    });
+    await page.goto('/?workspace=process');
+    await expect(
+      page.getByRole('button', {
+        name: 'Finalize current version',
+        exact: true,
+      }),
+    ).toBeVisible();
+    const replacement = await request.post(
+      `/api/assets/${asset.id}/replace?name=second.png`,
+      { headers: { 'content-type': 'application/octet-stream' }, data: second },
+    );
+    expect(replacement.ok()).toBe(true);
+    let response = page.waitForResponse(
+      (value) =>
+        value.url().endsWith(`/api/assets/${asset.id}/process/selection`) &&
+        value.request().method() === 'PUT',
+    );
+    await page
+      .getByRole('button', { name: 'Finalize current version', exact: true })
+      .click();
+    expect((await response).status()).toBe(409);
+    await expect(page.getByRole('alert')).toContainText('changed');
+    await expect(
+      page.getByRole('heading', { name: 'V2 · second.png', exact: true }),
+    ).toBeVisible();
+    expect(
+      (await (await request.get(`/api/assets/${asset.id}`)).json()).finalized,
+    ).toBe(false);
+    await page
+      .getByRole('button', { name: 'Finalize current version', exact: true })
+      .click();
+    await expect(
+      page.getByRole('button', {
+        name: 'Remove manual selection',
+        exact: true,
+      }),
+    ).toBeVisible();
+    expect(
+      (
+        await request.post(`/api/assets/${asset.id}/replace?name=third.png`, {
+          headers: { 'content-type': 'application/octet-stream' },
+          data: first,
+        })
+      ).ok(),
+    ).toBe(true);
+    response = page.waitForResponse(
+      (value) =>
+        value.url().endsWith(`/api/assets/${asset.id}/process/selection`) &&
+        value.request().method() === 'PUT',
+    );
+    await page
+      .getByRole('button', { name: 'Remove manual selection', exact: true })
+      .click();
+    expect((await response).status()).toBe(409);
+    await expect(
+      page.getByRole('heading', { name: 'V3 · third.png', exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByText('Manual selection', { exact: true }),
+    ).toHaveCount(1);
+    expect(
+      (await (await request.get(`/api/assets/${asset.id}`)).json()).finalized,
+    ).toBe(false);
     expect(external).toEqual([]);
   } finally {
     await rm(directory, { recursive: true, force: true });

@@ -22,6 +22,19 @@ export function registerProcessRoutes(
   app.get('/api/assets/:id/process', (request) =>
     store.timeline(id(request.params)),
   );
+  app.put('/api/assets/:id/process/selection', (request) => {
+    const assetId = id(request.params);
+    const result = store.setManualSelection(
+      assetId,
+      C.ManualSelectionRequestSchema.parse(request.body),
+    );
+    media.notify({
+      type: 'asset',
+      libraryId: catalog.getAsset(assetId).libraryId,
+      assetId,
+    });
+    return result;
+  });
   app.get('/api/libraries/:id/generations', (request) =>
     C.GenerationJobsSchema.parse(store.jobs(id(request.params))),
   );

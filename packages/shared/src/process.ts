@@ -27,6 +27,16 @@ export const RecordedGenerationSchema = z.object({
   createdAt: TimestampSchema,
   updatedAt: TimestampSchema,
 });
+export const ManualSelectionRequestSchema = z
+  .object({
+    versionId: IdSchema,
+    expectedSelectionVersionId: IdSchema.nullable(),
+    selected: z.boolean(),
+  })
+  .strict();
+export type ManualSelectionRequest = z.infer<
+  typeof ManualSelectionRequestSchema
+>;
 export const TimelineEntrySchema = z.object({
   version: AssetVersionSchema,
   generationId: IdSchema,

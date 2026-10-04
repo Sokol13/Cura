@@ -70,13 +70,16 @@ test('real generation routes ingest mock bytes through media and report failure/
         })
       ).json(),
     );
-    await vi.waitFor(async () => {
-      expect(
-        GenerationJobSchema.parse(
-          (await app.inject(`/api/generations/${failed.id}`)).json(),
-        ),
-      ).toMatchObject({ status: 'failed', assetIds: [] });
-    });
+    await vi.waitFor(
+      async () => {
+        expect(
+          GenerationJobSchema.parse(
+            (await app.inject(`/api/generations/${failed.id}`)).json(),
+          ),
+        ).toMatchObject({ status: 'failed', assetIds: [] });
+      },
+      { timeout: 5000 },
+    );
     const cancelled = GenerationJobSchema.parse(
       (
         await app.inject({
