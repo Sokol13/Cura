@@ -84,12 +84,14 @@ Open [http://127.0.0.1:5173](http://127.0.0.1:5173); Vite proxies the local API.
 | `docs`            | [Architecture](docs/ARCHITECTURE.md), setup, tests, requirements, decisions and progress    |
 
 ```bash
-pnpm exec playwright install chromium
+pnpm exec playwright install chromium chrome
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm e2e
 ```
+
+E2E uses the installed Chrome channel for native H.264 MP4/MOV decoding, or the explicitly configured `CURA_CHROMIUM_EXECUTABLE` build. The browser is a test/user prerequisite, not a Cura runtime dependency.
 
 [TESTING.md](docs/TESTING.md) separates measured evidence from pending checks. Use the [10-minute desktop smoke checklist](docs/SMOKE_TEST.md) on macOS/Windows. GitHub Actions runs quality gates for pushes/PRs and creates releases for validated `v*` tags.
 

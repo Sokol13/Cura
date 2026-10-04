@@ -1,20 +1,14 @@
 {
   "schemaVersion": 1,
-  "auditedAt": "2026-10-04T12:23:40.960885+00:00",
+  "auditedAt": "2026-10-04T13:04:12.937085+00:00",
   "scope": "Exact integrated Vite browser output, plus installed browser production dependency metadata. Not a server/native binary audit.",
-  "repositoryHeadAtAudit": "35265d8d39ccc61ab5325e1e196ad5e32ec67101",
+  "repositoryHeadAtAudit": "179ec28f810733245919e08e42568f62fb3f91c6",
   "buildEvidence": "Integrated build including reviewed CJK CMap support; inventory taken before subsequent rebuilds.",
   "artifactRoot": "packages/web/dist",
   "artifactCount": 190,
-  "artifactBytes": 4232422,
-  "artifactInventorySha256": "db5a26fc4639861a2e8bfcde33668913ef8e765afd7a1025418999cee7932341",
+  "artifactBytes": 4232493,
+  "artifactInventorySha256": "b5554cb427ec97492aabbb24169fb4fba925ed77ba76b0f58630eac509eb0197",
   "artifacts": [
-    {
-      "path": "assets/BoardsWorkspace-CMy6c-HT.js",
-      "bytes": 224048,
-      "sha256": "3cbddb8e2839928a1e45ea69aafc7651cb7e63892fa2989a4cd3b04479d134d1",
-      "role": "Cura UI/application code and permitted dependency code"
-    },
     {
       "path": "assets/BoardsWorkspace-CVPjVAv_.css",
       "bytes": 26027,
@@ -22,9 +16,15 @@
       "role": "Cura/Tailwind styles; React Flow styles in board CSS; no font files"
     },
     {
-      "path": "assets/BrandWorkspace-8JOuAuVu.js",
+      "path": "assets/BoardsWorkspace-D_K3Do4F.js",
+      "bytes": 224048,
+      "sha256": "a6f9507cfa54d4d9e5c1759ef9e61dd220e9046358f5dd6998dfc7743a2cdbd2",
+      "role": "Cura UI/application code and permitted dependency code"
+    },
+    {
+      "path": "assets/BrandWorkspace-BzN0vOj9.js",
       "bytes": 31789,
-      "sha256": "5c954a9e0a339e0a106f60909c72fc7595c1a6c19e5cca20430703cfa74c3357",
+      "sha256": "82949eb51e3c4881154d6beea468b01abff187fe36937844a4c2156fda9c4fb6",
       "role": "Cura UI/application code and permitted dependency code"
     },
     {
@@ -34,15 +34,15 @@
       "role": "Cura/Tailwind styles; React Flow styles in board CSS; no font files"
     },
     {
-      "path": "assets/ExportDialog-As9zpmMw.js",
+      "path": "assets/ExportDialog-C3ob3Seg.js",
       "bytes": 680,
-      "sha256": "cd82bf9e3cb7ce7c6968965a019bfafcc1e9a15d6458391203c3dfaf79f826e4",
+      "sha256": "aae247229d10aff8d1f4a9e1c0b287eaf520dc7455bf037dec5045f46e65c814",
       "role": "Cura UI/application code and permitted dependency code"
     },
     {
-      "path": "assets/ExportPanel-Dkg7Kcw-.js",
+      "path": "assets/ExportPanel-CX8_Lsgd.js",
       "bytes": 8052,
-      "sha256": "df6aa3b555ef0197937234fe845403d6b90a990f02165f8d2fb62dfe14915e35",
+      "sha256": "dde9d1bcbe619302026f09d3a12234606832f1ee7690c816e35c58f87ddbc912",
       "role": "Cura UI/application code and permitted dependency code"
     },
     {
@@ -64,15 +64,15 @@
       "role": "MIT Three.js model loader"
     },
     {
-      "path": "assets/ProcessWorkspace-CvF0_zay.js",
+      "path": "assets/ProcessWorkspace-BdSFQXUB.js",
       "bytes": 7429,
-      "sha256": "2a300c9abb19ecb15bd9c71899e97bd8cecad356d1b64a1b7b41be34e91e9794",
+      "sha256": "aa57bce343f4271c543f58da0da9aea45dabc938395ec27b3431af8762ea3fe0",
       "role": "Cura UI/application code and permitted dependency code"
     },
     {
-      "path": "assets/RichPreviewQueue-DGfq4ZvK.js",
+      "path": "assets/RichPreviewQueue-D2s1KCqq.js",
       "bytes": 1861,
-      "sha256": "21bbd896c931887799f4680f3f25d33eca43847c750d8b14074f61674cbec29f",
+      "sha256": "a0a2adb3888922b02a0506c5b07aa6d12d9c464d603e25a520826a7e044a9766",
       "role": "Cura lazy background queue"
     },
     {
@@ -82,16 +82,16 @@
       "role": "Cura/Tailwind styles; React Flow styles in board CSS; no font files"
     },
     {
+      "path": "assets/index-CgRd7t0t.js",
+      "bytes": 407525,
+      "sha256": "2bf55eb1f3d9e173e1748414a1aeb74a705be34808de0232f27cde7f944009ca",
+      "role": "Cura UI/application code and permitted dependency code"
+    },
+    {
       "path": "assets/index-DiV89SIb.js",
       "bytes": 102800,
       "sha256": "e8ef6969146cc5ce01bd846288e651f044a8b4ab2159b8aa47848a38915b0b0b",
       "role": "MIT ag-psd and base64-js reader chunk"
-    },
-    {
-      "path": "assets/index-DkSAlPbE.js",
-      "bytes": 407454,
-      "sha256": "c8a4ed8c338b5b46cb459778075c4991119b9741060d96ea6e988fa33c4364d4",
-      "role": "Cura UI/application code and permitted dependency code"
     },
     {
       "path": "assets/pdf-XPNgkKDZ.js",
@@ -1146,7 +1146,7 @@
     {
       "path": "index.html",
       "bytes": 473,
-      "sha256": "eda54edb6b251201fc9c30c37050cbfd8c4b62521c2beb525998784d55bbec03",
+      "sha256": "b1d77eb14c4ce9d79e128dc2f5f2dc0354180a368b4c3061f7d9314b81a6c322",
       "role": "Cura HTML entry"
     }
   ],

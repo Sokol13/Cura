@@ -19,18 +19,18 @@ The user accepted phase 0 on 2026-10-04 and authorized uninterrupted development
 
 ## In progress
 
-- P1 integration is at `/tmp/cura-p1` (`feat-p1`); the shared persistence/API foundation is already on main (`fd850d6`, green CI 37200089559). All boards, brand/CMF, rich-preview, process and neutral-export slices are integrated, including independent review corrections.
-- Corrected final full local gate passed with NODE_PATH empty: lint, typecheck, 261 units (167 server + 94 web) and all 21 real-server E2Es in one run (1.9 minutes, no retries), including native-browser PDF decoding. Strict performance/offline/format/virtualization gates pass unchanged. Evidence is under evidence/v0.2.0/.
-- Actual released v0.1 services populated a legacy database and P1 migrated it from three to six migrations. All original identities, timestamps, fields, uint64 seeds, annotations, final selections and retained/original hashes survived; generation/final-owner backfills, new historical pins and two idempotent reopens passed. See UPGRADES.md and evidence/v0.2.0/upgrade.json.
-- Implementation 6a6010c is pushed to main. CI 37202248867 exposed a PDF unit-test dependency on an optional/global Node canvas and a watched-preview unit timeout. Both fixes now pass: independent PDF decoding is in real Chromium and the watcher unit uses deterministic application timers. Product source is unchanged. CI 37202901740 then passed both corrected web checks but hit the default five-second timeout while building the 1,000-record store fixture. That single setup budget is now 15 seconds; every actual search assertion stays below 200 ms, and the focused 20-test store suite passes. Do not tag until replacement CI passes.
-- v0.2 release documentation and smoke checklist are drafted. The final 190-file browser bundle audit matches every output hash. Fresh clone/install/default-browser startup passed with NODE_PATH empty, no optional canvas installed, native prebuilts and Chinese library persistence. Corresponding main CI remains required before tagging.
-- P2 design is in P2-IMPLEMENTATION.md. A disposable real local Supabase stack has verified Auth/refresh/RLS/private Storage and needs no user credentials; containers remain paused during performance acceptance. P2 feature implementation starts after v0.2 publication/report.
+- P1 integration is at `/tmp/cura-p1` (`feat-p1`). All boards, brand/CMF, rich-preview, process and neutral-export slices are complete, including independent review corrections.
+- Final full local gate at production source `179ec28` passed with NODE_PATH empty: lint, typecheck, 262 units (167 server + 95 web), all 21 real-server E2Es in 2.0 minutes without retries. Actual 1,000-image ingestion took 10.07 seconds; all thumbnails decoded; 70 queries peaked at 56.4 ms, browser searches at 93.9–103.4 ms and watched-file display at 874 ms. Grid/list frame p95 was 16.8 ms; synthetic 10,000-record virtualization also passed.
+- Real v0.1-to-P1 migration preserved original identities, fields, timestamps, uint64 seeds, annotations, final selections and file hashes; three-to-six migrations, generation/final-owner backfills, historical pins and two idempotent reopens pass. See UPGRADES.md and evidence/v0.2.0/upgrade.json.
+- CI exposed three environment/timing gaps, now corrected: PDF decoding depended on a globally supplied optional canvas; a large store fixture exceeded Vitest's default setup budget; bundled Chromium lacked H.264. Independent PDF decoding runs in the real browser, the 1,000-record setup gets 15 seconds while every query still must stay below 200 ms, and CI explicitly installs Playwright's codec-capable Chrome channel with a startup capability probe and unchanged actual-video-pixel assertions. CI 37203147377 also exposed a native directory-input race: pending directory responses now disable editing, and controlled unit/browser regressions pass.
+- The final 190-file browser output audit was refreshed after the directory fix (4,232,493 bytes). A new exact-production clean clone/install/default-browser check is underway. v0.2 report and smoke checklist are prepared; replacement main CI must pass before tagging.
+- P2 design is in P2-IMPLEMENTATION.md. Disposable real local Supabase Auth/refresh/RLS/private Storage and a genuine Apache-2.0 vision model have been verified without user credentials. Small-model malformed structured output is recorded honestly; the planned explicit caption mode retains model text and labels deterministic derivations. Supabase is paused and the model endpoint stopped during release acceptance. P2 implementation starts immediately after v0.2 publication/report.
 
 ## Next
 
-1. Integrate and verify P1 persistence, APIs, lazy workspace navigation and browser preview workers; complete TASKS.md tasks 7–9.
-2. Push each completed integrated task to main with current progress and observe CI. Incoming Mac/Windows smoke bugs take priority.
-3. Complete and publish v0.2.0, then P2/task 10 and v0.3.0. Do not stop at an intermediate milestone.
+1. Push the completed P1 release corrections and evidence to main, observe green CI, and finish the renewed clean-start check.
+2. Check every inherited P0 and P1 acceptance row, publish v0.2.0 and report in chat.
+3. Immediately implement P2/task 10 through v0.3.0. Keep progress current and prioritize incoming Mac/Windows bugs; do not stop at an intermediate milestone.
 
 ## Resume
 

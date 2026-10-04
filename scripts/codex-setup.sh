@@ -15,10 +15,10 @@ if [[ "$(pnpm --version)" != "$expected_pnpm" ]]; then
 fi
 
 pnpm install --frozen-lockfile
-if ! pnpm exec playwright install --with-deps chromium </dev/null; then
+if ! pnpm exec playwright install --with-deps chromium chrome </dev/null; then
   echo 'Playwright system-package installation failed; checking whether the image already supplies the required libraries.' >&2
   if [[ -z "${CURA_CHROMIUM_EXECUTABLE:-}" ]]; then
-    pnpm exec playwright install chromium
+    pnpm exec playwright install chromium chrome
   else
     echo "Using explicitly configured Chromium: $CURA_CHROMIUM_EXECUTABLE"
   fi

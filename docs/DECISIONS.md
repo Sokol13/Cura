@@ -257,3 +257,11 @@ Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate cor
 **Decision:** Advance the watched-preview unit test's application invalidation/debounce timers deterministically, then assert the new version. Real-server E2Es still verify actual watcher timing and the five-second limit. This removes contention with the default one-second DOM query deadline without weakening user-facing performance limits.
 
 **CI fixture budget:** The 1,000-record store benchmark retains the per-query `<200ms` assertion. Its overall test budget is 15 seconds because creating all 1,000 records and relational metadata exceeded Vitest's default five seconds on a shared CI runner (run 37202901740). This budget covers setup, not measured query latency; the real 1,000-image ingestion/search/browser gate is unchanged. The focused 20-test store suite passes with the actual query assertions intact.
+
+## P1 browser codec acceptance
+
+**Decision:** Full E2E defaults to the installed official Chrome channel, unless `CURA_CHROMIUM_EXECUTABLE` explicitly selects a provisioned compatible Chromium build. Setup/CI install Chromium plus Chrome and verify declared H.264 capability before testing actual MP4/MOV pixels.
+
+**Reason:** Playwright's bundled Chromium omitted H.264 in CI 37203147377; Cura correctly reported VIDEO_CODEC for valid video while GLB/OBJ/PSD/PDF rendered. Official Chrome includes that codec, as documented by Playwright's browser guidance. The local provisioned Chromium already passed the actual pixel tests. The browser remains a user/test prerequisite and is not distributed as a Cura runtime dependency.
+
+**Alternatives rejected:** Skipping required video tests, counting unsupported placeholders as decoded frames, weakening assertions, or adding a GPL FFmpeg runtime solely to make the test browser behave like the supported desktop browser.

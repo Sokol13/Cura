@@ -9,7 +9,7 @@ The checkout is `/workspace/Cura`. Keep main here; the accepted autonomous deliv
 | `CODEX_ENV_NODE_VERSION`   | Required environment variable         | `22`; verify that the actual runtime reports Node `v22.x`                                                                                                                            |
 | `GH_TOKEN`                 | Existing secret for GitHub operations | Preserve the existing secure binding. It must support repository access, content/workflow writes, Actions reads, and release creation. Never put its value in the repository or chat |
 | `CURA_OPEN_BROWSER`        | Recommended environment variable      | `0` for headless Linux                                                                                                                                                               |
-| `CURA_CHROMIUM_EXECUTABLE` | Optional environment variable         | An explicit browser such as `/usr/bin/chromium` for constrained containers. Leave unset in the standard workflow and CI to use Playwright's pinned browser                           |
+| `CURA_CHROMIUM_EXECUTABLE` | Optional environment variable         | An explicit browser such as `/usr/bin/chromium` for constrained containers. Leave unset to use the installed Chrome test channel with native H.264                                   |
 
 The installation script below also defines writable tool/cache locations and `PLAYWRIGHT_BROWSERS_PATH`. The current container cannot write to its home or system directories, so these paths use `/workspace`. The application requires no database service or business-service credentials.
 
@@ -69,7 +69,7 @@ The `gh auth setup-git` step retains the requested environment bootstrap behavio
 The repository's `scripts/codex-setup.sh` locates the checkout from its own path, checks Node 22 and the exact pinned pnpm version, then:
 
 1. Runs `pnpm install --frozen-lockfile`, including SQLite prebuilt verification. No node-gyp fallback is allowed.
-2. Runs `pnpm exec playwright install --with-deps chromium`.
+2. Runs `pnpm exec playwright install --with-deps chromium chrome`.
 3. If system-package installation is unavailable but libraries are already present, installs the browser separately and performs a real headless launch. If `CURA_CHROMIUM_EXECUTABLE` is explicitly configured, it verifies that browser. This fallback does not claim successful system-package installation or CDN download.
 4. Runs `gh auth status`. A failure is reported as a warning so local development can continue under the task instructions. A successful local setup does not imply successful GitHub authentication or publishing.
 
@@ -97,7 +97,7 @@ Installation-script exports may not automatically reach later shells. Persist th
 
 - Initial Node was 24.19.0, and `CODEX_ENV_NODE_VERSION` was unset. Set `CODEX_ENV_NODE_VERSION=22` and verify the resulting runtime. For this task, official Node 22.23.3 was downloaded, checked against its official SHA-256, and installed under `/workspace/.cura-tools/node`. That local installation does not prove that the version setting has been applied.
 - GH_TOKEN was present. Initial `api.github.com` requests returned HTTP 403 during proxy CONNECT, but access subsequently recovered: `gh auth status`, account lookup, and repository permission checks succeeded. No replacement token is needed. Preserve access to the API for Actions monitoring and Release creation.
-- Browser downloads from `cdn.playwright.dev` and `playwright.download.prss.microsoft.com` initially returned HTTP 403. Keep those destinations permitted for Playwright's standard pinned Chromium download. This container also provides `/usr/bin/chromium`, usable through the explicit override. See TESTING.md for which browser actually passed; CI uses the standard download.
+- Browser downloads from `cdn.playwright.dev` and `playwright.download.prss.microsoft.com` initially returned HTTP 403. Keep those destinations permitted for Playwright's standard pinned Chromium download. This container also provides `/usr/bin/chromium`, usable through the explicit override. See TESTING.md for which browser actually passed; P0 CI used the pinned Chromium download; P1 CI installs the Chrome channel for H.264 acceptance.
 - The current container is not root and has no sudo. Its base image must already provide Chromium libraries, or permit system-package installation. The setup script verifies the actual browser launch rather than assuming those libraries exist.
 
 Required network destinations include `registry.npmjs.org`, `nodejs.org`, `github.com`, `api.github.com`, `release-assets.githubusercontent.com`, `cdn.playwright.dev`, `playwright.download.prss.microsoft.com`, and the base image's existing package repositories. If an allowlist is used, add required domains while preserving existing entries. Keep TLS, package-signature, and artifact checks enabled.

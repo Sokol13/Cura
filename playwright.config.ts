@@ -18,7 +18,7 @@ export default defineConfig({
             executablePath: process.env.CURA_CHROMIUM_EXECUTABLE,
           },
         }
-      : {}),
+      : { channel: 'chrome' }),
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: {
