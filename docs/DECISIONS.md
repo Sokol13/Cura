@@ -149,3 +149,19 @@
 **Reason:** Bounded work protects the local service from malformed files and memory exhaustion. Repeating invented palette entries would misrepresent single-color artwork.
 
 **Alternatives rejected:** Unbounded decoding and fabricated colors. Originals remain retained and manageable when preview extraction cannot proceed.
+
+## Native bundle notice correction
+
+**Decision:** Preserve the actual installed native bundle notices: Sharp's npm wrapper is Apache-2.0; upstream libvips is LGPL-2.1-or-later, while the selected @img/sharp-libvips bundle declares LGPL-3.0-or-later and includes other native-component terms (including Cairo MPL-2.0). DEPENDENCIES.md inventories these distinctions.
+
+**Reason:** Wrapper and upstream-library labels alone do not describe the shipped prebuilt bundle. The explicit mandatory-Sharp reconciliation above applies to that documented bundle, not just one library label.
+
+**Alternatives rejected:** Describing the bundled runtime as entirely permissive or reducing all native notices to LGPL-2.1.
+
+## Version metadata corrections and unavailable sources
+
+**Decision:** Keep version bytes immutable, but apply manual generation-metadata corrections to the current version as well as the asset so the correction survives later replacement. Preserve unavailable source aliases for history, exclude them from duplicate-divergence counts, reconcile deletions/renames, and show retained assets with a missing-original indicator.
+
+**Reason:** Editing a prompt must not silently lose the correction when the next version arrives. A renamed file is one continuing asset, not an active duplicate of its vanished old path. Retained snapshots remain usable even when sources disappear.
+
+**Alternatives rejected:** Deleting catalog history with source files, counting stale aliases as live duplicates, or retaining corrections only on the mutable current-asset record.

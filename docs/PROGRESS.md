@@ -15,7 +15,7 @@ The user accepted phase 0 on 2026-10-04 and authorized continuous autonomous dev
 
 - Phase 1 documents integrated and independently reviewed: RESEARCH.md, PRD.md, ARCHITECTURE.md and TASKS.md. Final local gate passed (25 unit tests, 1 E2E). Pushed `56433f2`; [GitHub CI 37194418005](https://github.com/Sokol13/Cura/actions/runs/37194418005) succeeded and `gh run watch --exit-status` confirmed it.
 - Task 2 media primitives integrated as `37b0c54`; full local lint/typecheck/test/e2e passed (81 unit tests including 55 media tests, 1 real-server E2E). Publishing with this update.
-- Task 3 persistence integrated at `fc69f20`; full local lint/typecheck/test/e2e passed (94 unit tests, 1 E2E), including metadata/path/media and persistence suites. Publishing now.
+- Task 3 persistence integrated at `fc69f20`; full local lint/typecheck/test/e2e passed (94 unit tests, 1 E2E), including metadata/path/media and persistence suites. [CI37195454257](https://github.com/Sokol13/Cura/actions/runs/37195454257) is green.
 - runtime APIs in feat-runtime (/tmp/cura-runtime); Task 5 UI in feat-web (/tmp/cura-web); preview in feat-preview; stress fixtures in feat-stress. Integration belongs to coordinator.
 - P0 dependency/startup preparation pushed as `3473fb4`; [CI 37194568281](https://github.com/Sokol13/Cura/actions/runs/37194568281) is green. It passed full local gate (25 unit tests, 1 E2E): audited npm licenses, pinned Sharp/exifr/chokidar/WebSocket/fflate/Zustand/Virtual; native Sharp encode/decode verified; start now builds before launch.
 - Mandatory setup succeeded with Node 22.23.3 / pnpm 10.34.6; the provisioned Chromium launch succeeded. Root-only Playwright OS-package installation used the documented fallback.
@@ -25,6 +25,14 @@ The user accepted phase 0 on 2026-10-04 and authorized continuous autonomous dev
 
 - Shared Zod catalog contracts integrated at `b4e6d25`; full local gate passed (26 unit tests, 1 E2E). [GitHub CI 37194854424](https://github.com/Sokol13/Cura/actions/runs/37194854424) is green after the progress commit `9e5c84c`.
 - Runtime/worker integration under /tmp/cura-runtime branch feat-runtime. First real-ingestion integration test fails as expected on missing API (404 versus 201), before implementation.
+
+## Current integration checkpoint
+
+- `/tmp/cura-runtime` (`feat-runtime`) contains actual local APIs/worker/watchers, full three-column UI, preview/annotation/compare, generated fixtures and P0 documentation. Main retains the last complete green module checkpoint until integration gate passes.
+- Real ingestion/organization/security/diagnostic tests pass; two offline preview E2Es and two real catalog workflow E2Es pass in isolated integrated snapshots.
+- 1,000 generated images ingested successfully; all thumbnails and 70 search/filter requests passed the first stress phases. Final UI stress is rerunning after fixing partial-settings defaults; it is NOT yet claimed passed.
+- Independent review fix pass: source rename/delete availability, corrected metadata in version history, unsupported similarity handling, preview navigation/annotation editing, cache controls and retained diagnostic errors. These block release until tests pass.
+- No v0.1.0 tag exists yet. Clean-clone startup, complete final suite, release checklist and remote CI are still required. Do not skip these on resume.
 
 ## Next
 
