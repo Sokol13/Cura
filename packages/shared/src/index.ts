@@ -5,3 +5,5 @@ export const HealthResponseJsonSchema = z.toJSONSchema(HealthResponseSchema, {
   target: 'draft-7',
 });
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
+
+export * from './catalog.js';
