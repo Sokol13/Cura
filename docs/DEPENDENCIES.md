@@ -13,7 +13,7 @@ Cura's own source is [MIT licensed](../LICENSE). Dependencies retain their upstr
 | chokidar, exifr, fflate, env-paths, open                                          | MIT        | Watching, EXIF parsing, ZIP output, OS directories, browser launch                                                  |
 | React, React DOM, i18next, react-i18next, Zustand, `@tanstack/react-virtual`, zod | MIT        | UI, translations, state, virtualization, shared contracts                                                           |
 
-Development tools such as TypeScript, Vite, ESLint, Vitest, and Playwright are separately pinned. No GPL/AGPL application source is copied into Cura. `ffmpeg-static` is **not installed or bundled**; P1 media support must reconcile format coverage with the dependency constraints before release.
+Development tools such as TypeScript, Vite, ESLint, Vitest, and Playwright are separately pinned. No GPL/AGPL application source is copied into Cura. `ffmpeg-static` is **not installed or bundled**; P1 uses native browser video decoding with explicit unsupported-codec states.
 
 ## Sharp and bundled libvips
 
@@ -64,3 +64,12 @@ The original static-serving plugin pulled in a BlueOak-licensed glob dependency 
 Cura selects published better-sqlite3 and Sharp platform binaries and verifies them during `pnpm install`. The SQLite check executes a native query; the Sharp check encodes/decodes an image. Installation must fail clearly rather than compiling with node-gyp when a supported prebuilt is unavailable.
 
 When updating dependencies, review direct/transitive npm licenses **and** bundled-native manifests/notices. Keep the lockfile, this notice, and DECISIONS aligned; verify native smoke checks on the supported OS/architectures. Linux evidence alone does not establish macOS/Windows native compatibility.
+
+## P1 browser renderers
+
+- `@xyflow/react` 12.12.0 (MIT) provides the editable canvas; `three` 0.180.0 (MIT) renders bounded local GLB/OBJ previews.
+- `ag-psd` 14.3.1 (MIT) decodes supported PSD composites. Its actual raw/PackBits output was checked in Node and Chromium.
+- `pdfjs-dist` 5.4.296 (Apache-2.0) renders PDF pages in a local ES-module worker. Optional `@napi-rs/canvas` is excluded: Node rendering is not used. Only permitted worker/assets may be bundled; OFL Liberation fonts and CC0 ICC files are excluded. A final built-asset inventory is required before v0.2.0.
+- Native browser H.264 support is used for MP4/MOV. A development-only system FFmpeg can generate original test fixtures; it is not a runtime dependency or distributed binary.
+
+The integrated installed production graph contains 150 packages before final browser module integration; the license check remains mandatory on every gate.

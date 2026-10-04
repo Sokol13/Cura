@@ -261,7 +261,8 @@ export const UpdateSettingsSchema = z
   })
   .strict();
 export const CatalogEventSchema = z.object({
-  type: z.enum(['scan', 'asset', 'error', 'thumbnail']),
+  boardId: IdSchema.optional(),
+  type: z.enum(['scan', 'asset', 'error', 'thumbnail', 'board']),
   libraryId: IdSchema,
   rootId: IdSchema.optional(),
   assetId: IdSchema.optional(),

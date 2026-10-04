@@ -8,6 +8,7 @@ import { CatalogStore } from './catalog-store.js';
 import { MediaService } from './media/service.js';
 import { registerCatalogRoutes } from './catalog-routes.js';
 import { registerPreviewRoutes } from './media/preview-routes.js';
+import { registerProcessRoutes } from './process/routes.js';
 import { isAllowedLocalRequest } from './security.js';
 import { registerStaticFiles } from './static-files.js';
 
@@ -74,6 +75,8 @@ export async function createApp(options: AppOptions = {}) {
       await media.close();
       await options.onClose?.();
     });
+    // Fastify closes hooks in reverse order: stop generation before media/database.
+    registerProcessRoutes(app, options.database, store, media);
   }
 
   app.all('/api', (_request, reply) => reply.callNotFound());

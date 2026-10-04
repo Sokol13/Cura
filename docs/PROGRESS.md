@@ -20,6 +20,7 @@ The user accepted phase 0 on 2026-10-04 and authorized uninterrupted development
 ## In progress
 
 - P1 is already underway on isolated branches; it is excluded from the P0 tag. Coordinator integration: /tmp/cura-p1 (feat-p1). Module branches: /tmp/cura-boards (boards server), /tmp/cura-board-web (boards UI), /tmp/cura-brands (brands/CMF), /tmp/cura-rich-media (rich previews), /tmp/cura-process (process/export). Shared contracts and initial persistence/helpers are being integrated; these are not yet a completed P1 release.
+- P1 foundation integrated on feat-p1: six ordered migrations, exact-version final owners, stable generation IDs, brand persistence, shared board/process/export contracts, version-scoped preview uploads and local mock generation jobs. The first integrated typecheck and 187 unit tests passed; full regression gate is next. Browser workspaces and portable exports remain in progress.
 - P1 scope/ownership/decisions are specified in docs/P1-IMPLEMENTATION.md on feat-p1. Root owns routing/navigation/journal/dependencies and main pushes. Agents must commit only their assigned module files; temporary integration wiring stays uncommitted in their worktrees.
 
 ## Next

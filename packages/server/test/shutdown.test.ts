@@ -5,8 +5,10 @@ import { expect, it, vi } from 'vitest';
 import { openDatabase } from '../src/database.js';
 import { createApp } from '../src/app.js';
 import { MediaService } from '../src/media/service.js';
+import { GenerationService } from '../src/process/service.js';
+import { CatalogStore } from '../src/catalog-store.js';
 
-it('awaits worker and watcher shutdown before releasing the database', async () => {
+it('stops generation before media workers and releases the database last', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'cura-close-'));
   const paths = {
     data: join(dir, 'data'),
@@ -23,6 +25,14 @@ it('awaits worker and watcher shutdown before releasing the database', async () 
       await original.call(this);
       order.push('media');
     });
+  const originalGenerationClose = GenerationService.prototype.close;
+  const generationSpy = vi
+    .spyOn(GenerationService.prototype, 'close')
+    .mockImplementation(async function (this: GenerationService) {
+      expect(db.sqlite.open).toBe(true);
+      await originalGenerationClose.call(this);
+      order.push('generation');
+    });
   try {
     const app = await createApp({
       staticRoot: false,
@@ -34,11 +44,21 @@ it('awaits worker and watcher shutdown before releasing the database', async () 
       },
     });
     await app.ready();
+    const library = new CatalogStore(db).createLibrary({
+      name: 'Closing jobs',
+    });
+    const queued = await app.inject({
+      method: 'POST',
+      url: `/api/libraries/${library.id}/generations`,
+      payload: { prompt: 'Shutdown while generating', count: 4 },
+    });
+    expect(queued.statusCode).toBe(201);
     await app.close();
-    expect(order).toEqual(['media', 'database']);
+    expect(order).toEqual(['generation', 'media', 'database']);
     expect(db.sqlite.open).toBe(false);
   } finally {
     spy.mockRestore();
+    generationSpy.mockRestore();
     if (db.sqlite.open) db.close();
     await rm(dir, { recursive: true, force: true });
   }

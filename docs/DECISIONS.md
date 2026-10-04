@@ -195,3 +195,31 @@
 **Reason:** A final full-tree audit found eight transitive BlueOak packages despite the direct dependency inventory appearing compliant. The optional plugin is not required by the fixed stack. Root-contained static file serving needs no glob enumeration or extra runtime dependencies.
 
 **Alternatives rejected:** Treating a permissive but unlisted license as implicitly approved, pinning a web of older transitive packages, or broadening the mandatory Sharp exception to unrelated packages.
+
+## P1 version pins, generation identity and preview ownership
+
+**Decision:** Boards, brand logos/fonts and CMF entries pin exact asset/version pairs. Final selections have independent manual or slot owners; only a selection of the current version marks the current asset finalized. Recorded generations have stable IDs across source-divergence clones; statistics count recorded outputs, with deterministic legacy backfill and raw provenance retained.
+
+**Reason:** Replacing an asset must preserve earlier decisions and must not silently finalize the replacement. Counting cloned history twice would inflate output counts.
+
+**Alternatives rejected:** Mutable current-asset references, a global final boolean without ownership, and claiming recorded outputs measure unobserved historical generation attempts.
+
+**Decision:** Browser-generated previews upload bounded PNG data against the expected immutable version hash and preview revision. The worker reencodes the bytes into private cache; generic fallbacks are not cached. Generation jobs stop before media workers and the database during shutdown.
+
+**Reason:** Late browser work must not replace a newer preview or overwrite source files, and shutdown must drain dependent jobs before closing storage.
+
+**Alternatives rejected:** Client-selected output paths, persistent fallback caching, and closing the database before pending jobs settle.
+
+## P1 renderer and export dependency choices
+
+**Decision:** Use pinned MIT React Flow 12.12.0, Three.js 0.180.0, ag-psd 14.3.1 and Apache-2.0 PDF.js 5.4.296. PDF browser workers use ES modules; exclude optional Node canvas dependencies. Native browser video decoding supplies supported MP4/MOV frames; no GPL FFmpeg runtime is distributed. PDF bundled fonts and profiles require a separate allowed-asset audit.
+
+**Reason:** Actual raw/RLE PSD and H.264 MP4/QuickTime MOV probes succeeded. This supports the required formats within the runtime-license constraint and avoids platform binary installation. Unsupported codecs or document modes must report an explicit preview state.
+
+**Alternatives rejected:** ffmpeg-static's GPL binary, readers failing real zero-layer PSD composites, and silently bundling OFL fonts or CC0 profiles outside the declared dependency policy.
+
+**Decision:** Brand PDF export renders paginated raster pages using existing browser/user fonts; HTML and JSON preserve editable text. Neutral library export includes immutable version bytes and all relational metadata from a consistent database snapshot, including trash and unavailable sources.
+
+**Reason:** Chinese output must not depend on redistributing a new font, and an export must preserve the structure needed to leave Cura. Selected exports include referenced dependencies or explicitly identify external references.
+
+**Alternatives rejected:** ASCII-only PDF text, undocumented missing metadata, public paginated asset queries as the export source, and calling a ZIP of current files a complete library export.

@@ -267,6 +267,9 @@ export class MediaService {
       }
     }
   }
+  notify(event: CatalogEvent): void {
+    this.emit(event);
+  }
   subscribe(listener: (event: CatalogEvent) => void): () => void {
     this.listeners.add(listener);
     for (const event of this.recentErrors) {
