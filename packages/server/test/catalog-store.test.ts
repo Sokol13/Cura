@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { openDatabase, type AppDatabase } from '../src/database.js';
 import { resolveUserPaths } from '../src/paths.js';
 import { CatalogStore, type IngestedFile } from '../src/catalog-store.js';
@@ -380,6 +380,118 @@ describe('catalog organization and search', () => {
       expect(result.total).toBe(1000);
       expect(result.items.length).toBe(100);
       expect(elapsed).toBeLessThan(200);
+    }
+  });
+});
+
+describe('catalog preview cache recovery', () => {
+  it('enumerates every immutable version including trash and unregistered roots', async () => {
+    const f = await fixture();
+    const original = f.ingest('original.png', 'original').asset;
+    const replacement = f.store.replaceAsset(
+      original.id,
+      file('replacement'),
+      'replacement.png',
+    );
+    f.store.batchAssets(f.library.id, {
+      assetIds: [original.id],
+      action: 'trash',
+    });
+    f.store.deleteRoot(f.root.id);
+    const library = f.store.createLibrary({ name: 'Second library' });
+    const root = f.store.addRoot(library.id, '/other-pictures');
+    const other = f.store.ingest({
+      libraryId: library.id,
+      rootId: root.id,
+      relativePath: 'other.png',
+      actualRelativePath: 'other.png',
+      processed: file('other', { thumbnailPath: null }),
+    }).asset;
+    expect(f.store.listAllVersions()).toEqual(
+      expect.arrayContaining([
+        {
+          id: original.currentVersionId,
+          assetId: original.id,
+          libraryId: f.library.id,
+          snapshotPath: '/snapshot/original',
+          thumbnailPath: '/thumb/original.webp',
+          type: 'image/png',
+          name: 'original.png',
+        },
+        {
+          id: replacement.currentVersionId,
+          assetId: original.id,
+          libraryId: f.library.id,
+          snapshotPath: '/snapshot/replacement',
+          thumbnailPath: '/thumb/replacement.webp',
+          type: 'image/png',
+          name: 'replacement.png',
+        },
+        {
+          id: other.currentVersionId,
+          assetId: other.id,
+          libraryId: library.id,
+          snapshotPath: '/snapshot/other',
+          thumbnailPath: null,
+          type: 'image/png',
+          name: 'other.png',
+        },
+      ]),
+    );
+    expect(f.store.listAllVersions()).toHaveLength(3);
+  });
+
+  it('persists preview relocation and clearing without changing immutable content or other versions', async () => {
+    const f = await fixture();
+    const asset = f.ingest('first.png', 'first').asset;
+    const replacement = f.store.replaceAsset(
+      asset.id,
+      file('second'),
+      'second.png',
+    );
+    f.store.batchAssets(f.library.id, {
+      assetIds: [asset.id],
+      action: 'trash',
+    });
+    f.store.deleteRoot(f.root.id);
+    const original = f.store
+      .listVersions(asset.id)
+      .find((version) => version.id === asset.currentVersionId)!;
+    const current = f.store.getAsset(asset.id);
+    const unchanged = f.store.getVersionFile(replacement.currentVersionId);
+    const changedAt = '2040-01-02T03:04:05.000Z';
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date(changedAt));
+    try {
+      f.store.updateVersionPreview(
+        original.id,
+        "/relocated-cache/preview'one.webp",
+      );
+      f.reopen();
+      expect(f.store.getVersionFile(original.id)).toMatchObject({
+        snapshotPath: '/snapshot/first',
+        thumbnailPath: "/relocated-cache/preview'one.webp",
+      });
+      expect(
+        f.store
+          .listVersions(asset.id)
+          .find((version) => version.id === original.id),
+      ).toEqual({ ...original, updatedAt: changedAt });
+      expect(f.store.getVersionFile(replacement.currentVersionId)).toEqual(
+        unchanged,
+      );
+      expect(f.store.getAsset(asset.id)).toEqual(current);
+      expect(JSON.stringify(f.store.listVersions(asset.id))).not.toContain(
+        '/relocated-cache/',
+      );
+      f.store.updateVersionPreview(original.id, null);
+      f.reopen();
+      expect(f.store.getVersionFile(original.id).thumbnailPath).toBeNull();
+      expect(() =>
+        f.store.updateVersionPreview(crypto.randomUUID(), '/missing.webp'),
+      ).toThrow('asset_versions record not found');
+    } finally {
+      vi.useRealTimers();
     }
   });
 });

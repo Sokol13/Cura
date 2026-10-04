@@ -407,6 +407,35 @@ export class CatalogStore {
       libraryId: asset.libraryId,
     };
   }
+  listAllVersions(): Array<VersionFile & { id: string }> {
+    return this.rows(
+      `SELECT v.id, v.asset_id, a.library_id, v.snapshot_path, v.thumbnail_path,
+        json_extract(v.payload, '$.type') AS type,
+        json_extract(v.payload, '$.name') AS name
+       FROM asset_versions v JOIN assets a ON a.id = v.asset_id
+       ORDER BY v.created_at, v.id`,
+    ).map((row) => ({
+      id: String(row.id),
+      assetId: String(row.asset_id),
+      libraryId: String(row.library_id),
+      snapshotPath: String(row.snapshot_path),
+      thumbnailPath:
+        row.thumbnail_path === null ? null : String(row.thumbnail_path),
+      type: String(row.type),
+      name: String(row.name),
+    }));
+  }
+  updateVersionPreview(versionId: string, thumbnailPath: string | null): void {
+    this.require('asset_versions', versionId);
+    const date = now();
+    this.run(
+      "UPDATE asset_versions SET thumbnail_path=?, updated_at=?, payload=json_set(payload, '$.updatedAt', ?) WHERE id=?",
+      thumbnailPath,
+      date,
+      date,
+      versionId,
+    );
+  }
   private fileMetadata(processed: IngestedFile) {
     return {
       hash: processed.hash,
