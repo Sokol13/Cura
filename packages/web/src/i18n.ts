@@ -2,6 +2,10 @@ import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 const en = {
+  workspaces: 'Workspaces',
+  workspace_boards: 'Boards',
+  workspace_brands: 'Brands & CMF',
+  workspace_process: 'Creative process',
   similarUnavailable: 'Similarity is unavailable for this file format.',
   cacheUsage: '{{count}} files · {{size}}',
   clearCache: 'Clear thumbnails',
@@ -195,6 +199,10 @@ const en = {
   importFailed: 'Import failed. Please retry the remaining files.',
 };
 const zh: Record<keyof typeof en, string> = {
+  workspaces: '工作区',
+  workspace_boards: '画布',
+  workspace_brands: '品牌与 CMF',
+  workspace_process: '创作过程',
   similarUnavailable: '此文件格式暂不支持相似搜索。',
   cacheUsage: '{{count}} 个文件 · {{size}}',
   clearCache: '清空缩略图缓存',

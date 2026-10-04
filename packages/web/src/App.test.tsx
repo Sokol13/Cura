@@ -11,6 +11,22 @@ import type { Asset } from '@cura/shared';
 import { App } from './App';
 import { i18n } from './i18n';
 
+vi.mock('./media/RichPreviewQueue', () => ({ RichPreviewQueue: () => null }));
+vi.mock('./boards/BoardsWorkspace', () => ({
+  BoardsWorkspace: ({ onBack }: { onBack: () => void }) => (
+    <section aria-label="Board editor" tabIndex={0}>
+      <button onClick={onBack}>Back to library</button>
+    </section>
+  ),
+}));
+vi.mock('./brands/BrandWorkspace', () => ({
+  BrandWorkspace: ({ onBack }: { onBack: () => void }) => (
+    <section aria-label="Brand editor">
+      <button onClick={onBack}>Back to library</button>
+    </section>
+  ),
+}));
+
 const libraryId = '00000000-0000-4000-8000-000000000001';
 const assetId = '00000000-0000-4000-8000-000000000002';
 const timestamp = '2026-10-04T00:00:00.000Z';
@@ -57,6 +73,7 @@ let queries: URL[] = [];
 let cacheFiles = 3;
 
 beforeEach(async () => {
+  window.history.replaceState({}, '', '/');
   vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(720);
   vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(800);
   vi.stubGlobal('WebSocket', undefined);
@@ -534,4 +551,39 @@ describe('Cura catalog', () => {
     );
     expect(screen.getByRole('button', { name: 'Retry' })).toBeVisible();
   });
+});
+
+it('keeps catalog deletion shortcuts inactive while editing a board', async () => {
+  render(<App />);
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Select Forest.png' }),
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'Boards' }));
+  const editor = await screen.findByRole('region', { name: 'Board editor' });
+  editor.focus();
+  fireEvent.keyDown(editor, { key: 'Delete' });
+  fireEvent.keyDown(editor, { key: 'Backspace' });
+  fireEvent.keyDown(editor, { key: ' ', code: 'Space' });
+  expect(queries.some((query) => query.pathname.endsWith('/batch'))).toBe(
+    false,
+  );
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Back to library' }));
+  expect(
+    await screen.findByRole('button', { name: 'Select Forest.png' }),
+  ).toBeVisible();
+  expect(window.location.search).toBe('');
+});
+
+it('restores a workspace URL and follows browser navigation back to the library', async () => {
+  window.history.replaceState({}, '', '/?workspace=brands');
+  render(<App />);
+  expect(
+    await screen.findByRole('region', { name: 'Brand editor' }),
+  ).toBeVisible();
+  window.history.replaceState({}, '', '/');
+  fireEvent.popState(window);
+  expect(
+    await screen.findByRole('button', { name: 'Select Forest.png' }),
+  ).toBeVisible();
 });

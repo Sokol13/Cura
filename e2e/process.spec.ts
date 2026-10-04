@@ -68,13 +68,11 @@ test('offline process timeline, final-output statistics and usable mock jobs sur
       .getByRole('button', { name: 'Select process-scene.png', exact: true })
       .dblclick();
     const preview = page.getByRole('dialog', { name: 'Asset preview' });
-    await preview
-      .getByLabel('Replace file', { exact: true })
-      .setInputFiles({
-        name: 'process-revised.png',
-        mimeType: 'image/png',
-        buffer: await readFile(join(directory, 'cura-00001-comfy.png')),
-      });
+    await preview.getByLabel('Replace file', { exact: true }).setInputFiles({
+      name: 'process-revised.png',
+      mimeType: 'image/png',
+      buffer: await readFile(join(directory, 'cura-00001-comfy.png')),
+    });
     await expect(
       preview.getByRole('button', { name: /View V2:/ }),
     ).toBeVisible();

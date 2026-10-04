@@ -1153,3 +1153,15 @@ progress {
   font-size: 11px;
   line-height: 1.65;
 }
+
+.workspace-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.workspace-navigation button {
+  font-size: 12px;
+  padding: 6px 12px;
+}

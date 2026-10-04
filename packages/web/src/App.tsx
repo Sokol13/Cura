@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useRef,
@@ -38,11 +40,40 @@ import { FilterPanel } from './catalog/Filters';
 import { BatchBar } from './catalog/BatchBar';
 import { SettingsDialog } from './catalog/SettingsDialog';
 
+const BoardsWorkspace = lazy(() =>
+  import('./boards/BoardsWorkspace').then((module) => ({
+    default: module.BoardsWorkspace,
+  })),
+);
+const BrandWorkspace = lazy(() =>
+  import('./brands/BrandWorkspace').then((module) => ({
+    default: module.BrandWorkspace,
+  })),
+);
+const ProcessWorkspace = lazy(() =>
+  import('./process/ProcessWorkspace').then((module) => ({
+    default: module.ProcessWorkspace,
+  })),
+);
+const RichPreviewQueue = lazy(() =>
+  import('./media/RichPreviewQueue').then((module) => ({
+    default: module.RichPreviewQueue,
+  })),
+);
+type Workspace = 'catalog' | 'boards' | 'brands' | 'process';
+const readWorkspace = (): Workspace => {
+  const value = new URLSearchParams(window.location.search).get('workspace');
+  return value === 'boards' || value === 'brands' || value === 'process'
+    ? value
+    : 'catalog';
+};
+
 export function App() {
   const { t, i18n } = useTranslation();
   const { settings, hydrate, update } = useWorkspace();
   const [libraries, setLibraries] = useState<Library[]>([]);
   const [libraryId, setLibraryId] = useState('');
+  const [workspace, setWorkspace] = useState<Workspace>(readWorkspace);
   const [roots, setRoots] = useState<LibraryRoot[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -75,6 +106,30 @@ export function App() {
   const selectedAsset = assets.find((asset) => selected.has(asset.id));
   const reportError = useCallback((failure: unknown) => setError(failure), []);
   const refresh = useCallback(() => setRevision((value) => value + 1), []);
+
+  const navigateWorkspace = useCallback(
+    (next: Workspace) => {
+      const url = new URL(window.location.href);
+      if (next === 'catalog') url.searchParams.delete('workspace');
+      else url.searchParams.set('workspace', next);
+      if (next !== 'boards') url.searchParams.delete('board');
+      window.history.pushState({}, '', url);
+      setWorkspace(next);
+      setPreview(null);
+      setShowSettings(false);
+      refresh();
+    },
+    [refresh],
+  );
+  useEffect(() => {
+    const restore = () => {
+      setWorkspace(readWorkspace());
+      setPreview(null);
+      setShowSettings(false);
+    };
+    window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
+  }, []);
 
   const initialize = useCallback(async () => {
     setBooting(true);
@@ -335,6 +390,7 @@ export function App() {
     [libraryId, selected, refresh, reportError],
   );
   useEffect(() => {
+    if (workspace !== 'catalog') return;
     const onKey = (event: KeyboardEvent) => {
       const target = event.target;
       if (
@@ -388,7 +444,15 @@ export function App() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [assets, selectedAsset, batch, filters.trash, showSettings, preview]);
+  }, [
+    assets,
+    selectedAsset,
+    batch,
+    filters.trash,
+    showSettings,
+    preview,
+    workspace,
+  ]);
 
   const importFiles = async (files: FileList | File[]) => {
     if (!libraryId || upload) return;
@@ -494,311 +558,362 @@ export function App() {
           : `${t('requestFailed')} ${error.message}`
       : t('genericError');
   return (
-    <main
-      className="workspace"
-      style={
-        {
-          '--sidebar-width': `${settings.sidebarWidth}px`,
-          '--inspector-width': `${settings.inspectorWidth}px`,
-        } as CSSProperties
-      }
-      onDragOver={(event) => {
-        if (event.dataTransfer.types.includes('Files')) {
-          event.preventDefault();
-          setDragging(true);
-        }
-      }}
-      onDragLeave={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget as Node))
-          setDragging(false);
-      }}
-      onDrop={(event) => {
-        event.preventDefault();
-        setDragging(false);
-        void importFiles(event.dataTransfer.files);
-      }}
-    >
-      <Sidebar
-        libraries={libraries}
-        libraryId={libraryId}
-        roots={roots}
-        folders={folders}
-        tags={tags}
-        groups={groups}
-        collections={collections}
-        filters={filters}
-        onLibraryChange={changeLibrary}
-        onFilterChange={(next) => {
-          changeFilters(next);
-        }}
-        onChanged={refresh}
-        onError={reportError}
-        onSettings={() => setShowSettings(true)}
-      />
-      <section className="catalog-main">
-        <header className="catalog-header">
-          <div>
-            <p className="eyebrow">{t('localLibrary')}</p>
-            <h2>
-              {filters.trash
-                ? t('trash')
-                : (folders.find((folder) => folder.id === filters.folderId)
-                    ?.name ??
-                  libraries.find((library) => library.id === libraryId)?.name ??
-                  t('library'))}
-            </h2>
-          </div>
-          <button
-            aria-label={t('importFiles')}
-            className="button-primary import-button"
-            disabled={!libraryId || Boolean(upload)}
-            onClick={() => uploadRef.current?.click()}
-          >
-            ＋ {t('importFiles')}
-          </button>
-          <input
-            ref={uploadRef}
-            className="sr-only"
-            type="file"
-            multiple
-            aria-label={t('importFiles')}
-            onChange={(event) => {
-              if (event.target.files) void importFiles(event.target.files);
-              event.target.value = '';
-            }}
-          />
-        </header>
-        <div className="catalog-toolbar">
-          <div className="search-field">
-            <span aria-hidden="true">⌕</span>
-            <input
-              ref={searchRef}
-              type="search"
-              aria-label={t('search')}
-              placeholder={t('searchPlaceholder')}
-              value={filters.q ?? ''}
-              onChange={(e) =>
-                changeFilters({ q: e.target.value || undefined })
-              }
-            />
-            <kbd>⌘ F</kbd>
-          </div>
-          <button
-            aria-label={t('filters')}
-            className={showFilters || hasFilters ? 'active' : ''}
-            onClick={() => setShowFilters(!showFilters)}
-            aria-expanded={showFilters}
-          >
-            ☷ <span>{t('filters')}</span>
-          </button>
-          <div className="view-toggle">
-            <button
-              aria-label={t('gridView')}
-              aria-pressed={settings.layout === 'grid'}
-              onClick={() => {
-                void update({ layout: 'grid' }).catch(reportError);
-              }}
-            >
-              ▦
-            </button>
-            <button
-              aria-label={t('listView')}
-              aria-pressed={settings.layout === 'list'}
-              onClick={() => {
-                void update({ layout: 'list' }).catch(reportError);
-              }}
-            >
-              ☰
-            </button>
-          </div>
-        </div>
-        {showFilters && (
-          <FilterPanel
-            filters={filters}
-            onChange={changeFilters}
-            onClear={() => setFilters({ trash: filters.trash })}
-          />
-        )}
-        {error !== null && (
-          <div role="alert" className="error-banner">
-            <div>
-              {errorMessage}
-              {error instanceof ApiError &&
-                (error.status === 403 ||
-                  ['EPERM', 'EACCES', 'EBUSY'].includes(error.code)) && (
-                  <p>{t('permissionHint')}</p>
-                )}
+    <>
+      {libraryId && (
+        <Suspense fallback={null}>
+          <RichPreviewQueue libraryId={libraryId} />
+        </Suspense>
+      )}
+      {libraryId && workspace !== 'catalog' ? (
+        <Suspense
+          fallback={
+            <div className="empty-state" role="status">
+              {t('loading')}
             </div>
-            <button
-              onClick={() => {
-                if (!libraries.length) void initialize();
-                else refresh();
-              }}
-            >
-              {t('retry')}
-            </button>
-            <button aria-label={t('close')} onClick={() => setError(null)}>
-              ×
-            </button>
-          </div>
-        )}
-        {upload && (
-          <div className="progress-banner" role="status">
-            {t('uploading', upload)}
-            <progress value={upload.current} max={upload.total} />
-          </div>
-        )}
-        {selected.size > 0 && (
-          <BatchBar
-            count={selected.size}
+          }
+        >
+          {workspace === 'boards' ? (
+            <BoardsWorkspace
+              key={libraryId}
+              libraryId={libraryId}
+              onBack={() => navigateWorkspace('catalog')}
+            />
+          ) : workspace === 'brands' ? (
+            <BrandWorkspace
+              key={libraryId}
+              libraryId={libraryId}
+              onBack={() => navigateWorkspace('catalog')}
+            />
+          ) : (
+            <ProcessWorkspace
+              key={libraryId}
+              libraryId={libraryId}
+              onBack={() => navigateWorkspace('catalog')}
+            />
+          )}
+        </Suspense>
+      ) : (
+        <main
+          className="workspace"
+          style={
+            {
+              '--sidebar-width': `${settings.sidebarWidth}px`,
+              '--inspector-width': `${settings.inspectorWidth}px`,
+            } as CSSProperties
+          }
+          onDragOver={(event) => {
+            if (event.dataTransfer.types.includes('Files')) {
+              event.preventDefault();
+              setDragging(true);
+            }
+          }}
+          onDragLeave={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node))
+              setDragging(false);
+          }}
+          onDrop={(event) => {
+            event.preventDefault();
+            setDragging(false);
+            void importFiles(event.dataTransfer.files);
+          }}
+        >
+          <Sidebar
+            libraries={libraries}
+            libraryId={libraryId}
+            roots={roots}
             folders={folders}
             tags={tags}
-            trash={Boolean(filters.trash)}
-            onBatch={(patch) => {
-              void batch(patch);
+            groups={groups}
+            collections={collections}
+            filters={filters}
+            onLibraryChange={changeLibrary}
+            onFilterChange={(next) => {
+              changeFilters(next);
             }}
-            onClear={() => setSelected(new Set())}
-            onSelectAll={() =>
-              setSelected(new Set(assets.map((asset) => asset.id)))
-            }
+            onChanged={refresh}
+            onError={reportError}
+            onSettings={() => setShowSettings(true)}
           />
-        )}
-        {booting || (loading && assets.length === 0) ? (
-          <div className="empty-state" role="status">
-            <span className="loader" />
-            {t('loadingAssets')}
-          </div>
-        ) : !libraryId ? (
-          <div className="empty-state welcome-state">
-            <div className="welcome-art" aria-hidden="true">
-              <span>◈</span>
-              <span>▧</span>
-              <span>✦</span>
-            </div>
-            <p className="eyebrow">CURA · {t('localLibrary')}</p>
-            <h2>{t('welcome')}</h2>
-            <p>{t('welcomeHint')}</p>
-            <button
-              className="button-primary"
-              onClick={() =>
-                document
-                  .querySelector<HTMLButtonElement>('[data-create-library]')
-                  ?.click()
-              }
-            >
-              ＋ {t('createFirst')}
-            </button>
-            <small>{t('localFirst')}</small>
-          </div>
-        ) : assets.length === 0 ? (
-          <div className="empty-state">
-            <span className="empty-icon">
-              {filters.trash ? '♧' : hasFilters ? '⌕' : '▧'}
-            </span>
-            <h2>
-              {t(
-                filters.trash
-                  ? 'emptyTrash'
-                  : hasFilters
-                    ? 'noResults'
-                    : 'emptyLibrary',
-              )}
-            </h2>
-            <p>
-              {t(
-                filters.trash
-                  ? 'emptyTrashHint'
-                  : hasFilters
-                    ? 'noResultsHint'
-                    : 'emptyLibraryHint',
-              )}
-            </p>
-            {hasFilters ? (
-              <button onClick={() => setFilters({ trash: filters.trash })}>
-                {t('clearFilters')}
+          <section className="catalog-main">
+            <header className="catalog-header">
+              <div>
+                <p className="eyebrow">{t('localLibrary')}</p>
+                <h2>
+                  {filters.trash
+                    ? t('trash')
+                    : (folders.find((folder) => folder.id === filters.folderId)
+                        ?.name ??
+                      libraries.find((library) => library.id === libraryId)
+                        ?.name ??
+                      t('library'))}
+                </h2>
+              </div>
+              <button
+                aria-label={t('importFiles')}
+                className="button-primary import-button"
+                disabled={!libraryId || Boolean(upload)}
+                onClick={() => uploadRef.current?.click()}
+              >
+                ＋ {t('importFiles')}
               </button>
-            ) : (
-              !filters.trash && (
+              <input
+                ref={uploadRef}
+                className="sr-only"
+                type="file"
+                multiple
+                aria-label={t('importFiles')}
+                onChange={(event) => {
+                  if (event.target.files) void importFiles(event.target.files);
+                  event.target.value = '';
+                }}
+              />
+            </header>
+            <nav className="workspace-navigation" aria-label={t('workspaces')}>
+              {(['boards', 'brands', 'process'] as const).map((destination) => (
+                <button
+                  key={destination}
+                  disabled={!libraryId}
+                  onClick={() => navigateWorkspace(destination)}
+                >
+                  {t(`workspace_${destination}`)}
+                </button>
+              ))}
+            </nav>
+            <div className="catalog-toolbar">
+              <div className="search-field">
+                <span aria-hidden="true">⌕</span>
+                <input
+                  ref={searchRef}
+                  type="search"
+                  aria-label={t('search')}
+                  placeholder={t('searchPlaceholder')}
+                  value={filters.q ?? ''}
+                  onChange={(e) =>
+                    changeFilters({ q: e.target.value || undefined })
+                  }
+                />
+                <kbd>⌘ F</kbd>
+              </div>
+              <button
+                aria-label={t('filters')}
+                className={showFilters || hasFilters ? 'active' : ''}
+                onClick={() => setShowFilters(!showFilters)}
+                aria-expanded={showFilters}
+              >
+                ☷ <span>{t('filters')}</span>
+              </button>
+              <div className="view-toggle">
+                <button
+                  aria-label={t('gridView')}
+                  aria-pressed={settings.layout === 'grid'}
+                  onClick={() => {
+                    void update({ layout: 'grid' }).catch(reportError);
+                  }}
+                >
+                  ▦
+                </button>
+                <button
+                  aria-label={t('listView')}
+                  aria-pressed={settings.layout === 'list'}
+                  onClick={() => {
+                    void update({ layout: 'list' }).catch(reportError);
+                  }}
+                >
+                  ☰
+                </button>
+              </div>
+            </div>
+            {showFilters && (
+              <FilterPanel
+                filters={filters}
+                onChange={changeFilters}
+                onClear={() => setFilters({ trash: filters.trash })}
+              />
+            )}
+            {error !== null && (
+              <div role="alert" className="error-banner">
+                <div>
+                  {errorMessage}
+                  {error instanceof ApiError &&
+                    (error.status === 403 ||
+                      ['EPERM', 'EACCES', 'EBUSY'].includes(error.code)) && (
+                      <p>{t('permissionHint')}</p>
+                    )}
+                </div>
+                <button
+                  onClick={() => {
+                    if (!libraries.length) void initialize();
+                    else refresh();
+                  }}
+                >
+                  {t('retry')}
+                </button>
+                <button aria-label={t('close')} onClick={() => setError(null)}>
+                  ×
+                </button>
+              </div>
+            )}
+            {upload && (
+              <div className="progress-banner" role="status">
+                {t('uploading', upload)}
+                <progress value={upload.current} max={upload.total} />
+              </div>
+            )}
+            {selected.size > 0 && (
+              <BatchBar
+                count={selected.size}
+                folders={folders}
+                tags={tags}
+                trash={Boolean(filters.trash)}
+                onBatch={(patch) => {
+                  void batch(patch);
+                }}
+                onClear={() => setSelected(new Set())}
+                onSelectAll={() =>
+                  setSelected(new Set(assets.map((asset) => asset.id)))
+                }
+              />
+            )}
+            {booting || (loading && assets.length === 0) ? (
+              <div className="empty-state" role="status">
+                <span className="loader" />
+                {t('loadingAssets')}
+              </div>
+            ) : !libraryId ? (
+              <div className="empty-state welcome-state">
+                <div className="welcome-art" aria-hidden="true">
+                  <span>◈</span>
+                  <span>▧</span>
+                  <span>✦</span>
+                </div>
+                <p className="eyebrow">CURA · {t('localLibrary')}</p>
+                <h2>{t('welcome')}</h2>
+                <p>{t('welcomeHint')}</p>
                 <button
                   className="button-primary"
-                  onClick={() => uploadRef.current?.click()}
+                  onClick={() =>
+                    document
+                      .querySelector<HTMLButtonElement>('[data-create-library]')
+                      ?.click()
+                  }
                 >
-                  {t('importFiles')}
+                  ＋ {t('createFirst')}
                 </button>
-              )
+                <small>{t('localFirst')}</small>
+              </div>
+            ) : assets.length === 0 ? (
+              <div className="empty-state">
+                <span className="empty-icon">
+                  {filters.trash ? '♧' : hasFilters ? '⌕' : '▧'}
+                </span>
+                <h2>
+                  {t(
+                    filters.trash
+                      ? 'emptyTrash'
+                      : hasFilters
+                        ? 'noResults'
+                        : 'emptyLibrary',
+                  )}
+                </h2>
+                <p>
+                  {t(
+                    filters.trash
+                      ? 'emptyTrashHint'
+                      : hasFilters
+                        ? 'noResultsHint'
+                        : 'emptyLibraryHint',
+                  )}
+                </p>
+                {hasFilters ? (
+                  <button onClick={() => setFilters({ trash: filters.trash })}>
+                    {t('clearFilters')}
+                  </button>
+                ) : (
+                  !filters.trash && (
+                    <button
+                      className="button-primary"
+                      onClick={() => uploadRef.current?.click()}
+                    >
+                      {t('importFiles')}
+                    </button>
+                  )
+                )}
+              </div>
+            ) : (
+              <AssetGrid
+                assets={assets}
+                layout={settings.layout}
+                selected={selected}
+                onSelect={selectAsset}
+                onPreview={setPreview}
+                onLoadMore={() => {
+                  void loadMore();
+                }}
+                hasMore={assets.length < total}
+                loading={loading}
+              />
             )}
-          </div>
-        ) : (
-          <AssetGrid
-            assets={assets}
-            layout={settings.layout}
-            selected={selected}
-            onSelect={selectAsset}
-            onPreview={setPreview}
-            onLoadMore={() => {
-              void loadMore();
-            }}
-            hasMore={assets.length < total}
-            loading={loading}
+            <footer className="catalog-status">
+              <span>
+                {t('assetCount', { count: total })}
+                {filters.similarTo && (
+                  <button
+                    onClick={() => changeFilters({ similarTo: undefined })}
+                  >
+                    {t('clearSimilar')}
+                  </button>
+                )}
+              </span>
+              <span className="connection-state">
+                <i />
+                {eventStatus || t('offlineReady')}
+              </span>
+            </footer>
+          </section>
+          <Inspector
+            asset={selectedAsset}
+            tags={tags}
+            folders={folders}
+            onSave={saveAsset}
+            onPreview={() => selectedAsset && setPreview(selectedAsset)}
+            onSimilar={() =>
+              selectedAsset && changeFilters({ similarTo: selectedAsset.id })
+            }
+            onColor={(color) => changeFilters({ color })}
           />
-        )}
-        <footer className="catalog-status">
-          <span>
-            {t('assetCount', { count: total })}
-            {filters.similarTo && (
-              <button onClick={() => changeFilters({ similarTo: undefined })}>
-                {t('clearSimilar')}
-              </button>
-            )}
-          </span>
-          <span className="connection-state">
-            <i />
-            {eventStatus || t('offlineReady')}
-          </span>
-        </footer>
-      </section>
-      <Inspector
-        asset={selectedAsset}
-        tags={tags}
-        folders={folders}
-        onSave={saveAsset}
-        onPreview={() => selectedAsset && setPreview(selectedAsset)}
-        onSimilar={() =>
-          selectedAsset && changeFilters({ similarTo: selectedAsset.id })
-        }
-        onColor={(color) => changeFilters({ color })}
-      />
-      {showSettings && (
-        <SettingsDialog
-          settings={settings}
-          libraryId={libraryId}
-          onUpdate={update}
-          onClose={() => setShowSettings(false)}
-          onError={reportError}
-        />
+          {showSettings && (
+            <SettingsDialog
+              settings={settings}
+              libraryId={libraryId}
+              onUpdate={update}
+              onClose={() => setShowSettings(false)}
+              onError={reportError}
+            />
+          )}
+          {currentPreview && (
+            <AssetPreview
+              asset={currentPreview}
+              hasPrevious={previewIndex > 0}
+              hasNext={
+                previewIndex >= 0 &&
+                (previewIndex < assets.length - 1 || assets.length < total)
+              }
+              onNavigate={(direction) => {
+                void navigatePreview(direction);
+              }}
+              onClose={() => setPreview(null)}
+              onChanged={refresh}
+            />
+          )}
+          {dragging && libraryId && (
+            <div className="drop-overlay">
+              <span>＋</span>
+              <h2>{t('dropFiles')}</h2>
+              <p>{t('dropHint')}</p>
+            </div>
+          )}
+        </main>
       )}
-      {currentPreview && (
-        <AssetPreview
-          asset={currentPreview}
-          hasPrevious={previewIndex > 0}
-          hasNext={
-            previewIndex >= 0 &&
-            (previewIndex < assets.length - 1 || assets.length < total)
-          }
-          onNavigate={(direction) => {
-            void navigatePreview(direction);
-          }}
-          onClose={() => setPreview(null)}
-          onChanged={refresh}
-        />
-      )}
-      {dragging && libraryId && (
-        <div className="drop-overlay">
-          <span>＋</span>
-          <h2>{t('dropFiles')}</h2>
-          <p>{t('dropHint')}</p>
-        </div>
-      )}
-    </main>
+    </>
   );
 }

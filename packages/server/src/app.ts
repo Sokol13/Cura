@@ -11,6 +11,7 @@ import { registerPreviewRoutes } from './media/preview-routes.js';
 import { registerProcessRoutes } from './process/routes.js';
 import { BoardStore } from './boards/store.js';
 import { registerBoardRoutes } from './boards/routes.js';
+import { registerBrandRoutes } from './brands/routes.js';
 import { isAllowedLocalRequest } from './security.js';
 import { registerStaticFiles } from './static-files.js';
 
@@ -72,6 +73,7 @@ export async function createApp(options: AppOptions = {}) {
     });
     await registerCatalogRoutes(app, store, media, options.paths);
     await registerPreviewRoutes(app, store, media);
+    registerBrandRoutes(app, options.database, store, options.paths);
     registerBoardRoutes(app, new BoardStore(options.database), (event) =>
       media.notify(event),
     );
