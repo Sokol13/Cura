@@ -88,8 +88,8 @@
 - [x] Run focused stress E2E: all thumbnails, <=5-second watcher, every search/filter <200 ms, bounded grid DOM and measured scroll responsiveness. Browser input-to-paint, six-format previews and separate synthetic 10,000-record virtualization also passed.
 - [x] Independent review of full P0 diff; reproduce and fix material bugs with tests. Record true platform limits.
 - [x] Clean clone/install/start automatically opens the configured Linux browser; create/reload a library through the Chinese UI.
-- [ ] Verify all nine AGENTS.md v0.1.0 definitions against the final integrated commit.
-- [ ] Full local gate, push main and verify CI, update report/README/smoke/changelog/version, tag only when all gates hold; verify release workflow. Report in chat, continue Task 7.
+- [x] Verify all nine AGENTS.md v0.1.0 definitions against the final integrated commit.
+- [x] Full local gate, push main and verify CI, update report/README/smoke/changelog/version, tag only when all gates hold; verify release workflow. Report in chat, continue Task 7.
 
 ## Task 7: P1 boards, slots and matrices
 
@@ -129,4 +129,4 @@
 
 ## Task ledger
 
-Tasks 1–5: delivered to main with full local gates and observed green CI. Task 6: all nine P0 definitions are verified; 170 unit tests and 9 real-server E2Es pass locally and in CI 37198719712 at 8cec733. Final documentation CI and tag/release publication are the remaining operational steps. The nine-item acceptance ledger is in REPORT-v0.1.0.md. Tasks 7–10 follow immediately; v0.1.0 is not a stopping condition. Per-task evidence and rulings remain in PROGRESS.md and DECISIONS.md.
+Tasks 1–5: delivered to main with full local gates and observed green CI. Task 6: all nine P0 definitions are verified; 170 unit tests and 9 real-server E2Es pass locally and in CI 37198719712 at 8cec733. Published v0.1.0 at c564361; documentation CI 37198939724, tag CI 37199147410 and Release workflow 37199147287 all passed. Reported the release in chat and continued P1. The nine-item acceptance ledger is in REPORT-v0.1.0.md. Tasks 7–10 follow immediately; v0.1.0 is not a stopping condition. Per-task evidence and rulings remain in PROGRESS.md and DECISIONS.md.
