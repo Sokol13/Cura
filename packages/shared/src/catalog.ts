@@ -43,8 +43,12 @@ export const DirectoryListSchema = z.object({
 export const UploadQuerySchema = z
   .object({
     name: NameSchema.refine(
-      (s) => !/[\\/]/.test(s) && s !== '.' && s !== '..',
-      'Use a filename without path separators',
+      (s) =>
+        !/[\\/<>:|?*]/.test(s) &&
+        ![...s].some((character) => character.charCodeAt(0) < 32) &&
+        !/[. ]$/.test(s) &&
+        !/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(s),
+      'Use a portable filename without reserved names or path separators',
     ),
   })
   .strict();
@@ -82,7 +86,13 @@ export const CreateTagSchema = z
     groupId: IdSchema.nullable().default(null),
   })
   .strict();
-export const UpdateTagSchema = CreateTagSchema.partial();
+export const UpdateTagSchema = z
+  .object({
+    name: NameSchema.optional(),
+    color: ColorSchema.optional(),
+    groupId: IdSchema.nullable().optional(),
+  })
+  .strict();
 export const TagSchema = z.object({
   ...entity,
   libraryId: IdSchema,
@@ -171,7 +181,12 @@ export const BatchAssetsResponseSchema = z.object({
 export const CreateFolderSchema = z
   .object({ name: NameSchema, parentId: IdSchema.nullable().default(null) })
   .strict();
-export const UpdateFolderSchema = CreateFolderSchema.partial();
+export const UpdateFolderSchema = z
+  .object({
+    name: NameSchema.optional(),
+    parentId: IdSchema.nullable().optional(),
+  })
+  .strict();
 export const FolderSchema = z.object({
   ...entity,
   libraryId: IdSchema,
@@ -217,7 +232,16 @@ export const SettingsSchema = z
     inspectorWidth: z.number().min(240).max(800).default(320),
   })
   .strict();
-export const UpdateSettingsSchema = SettingsSchema.partial();
+export const UpdateSettingsSchema = z
+  .object({
+    activeLibraryId: IdSchema.nullable().optional(),
+    language: z.enum(['zh-CN', 'en']).optional(),
+    theme: z.enum(['dark', 'light', 'system']).optional(),
+    layout: z.enum(['grid', 'list']).optional(),
+    sidebarWidth: z.number().min(160).max(600).optional(),
+    inspectorWidth: z.number().min(240).max(800).optional(),
+  })
+  .strict();
 export const CatalogEventSchema = z.object({
   type: z.enum(['scan', 'asset', 'error', 'thumbnail']),
   libraryId: IdSchema,
