@@ -22,6 +22,9 @@ const translations = {
   en: {
     title: 'Asset preview',
     close: 'Close preview',
+    previousAsset: 'Previous asset',
+    nextAsset: 'Next asset',
+    edit: 'Edit annotation {{number}}',
     current: 'Current',
     versions: 'Version history',
     viewVersion: 'View V{{version}}: {{name}}',
@@ -66,6 +69,9 @@ const translations = {
   'zh-CN': {
     title: '资产预览',
     close: '关闭预览',
+    previousAsset: '上一个资产',
+    nextAsset: '下一个资产',
+    edit: '编辑标注 {{number}}',
     current: '当前版本',
     versions: '版本历史',
     viewVersion: '查看 V{{version}}：{{name}}',
@@ -232,21 +238,31 @@ function ImageCanvas({
   );
 }
 
+type AssetPreviewProps = {
+  asset: Asset;
+  onClose: () => void;
+  onChanged: () => void;
+  onNavigate?: (direction: -1 | 1) => void;
+  hasPrevious?: boolean;
+  hasNext?: boolean;
+};
+
 function AssetPreviewDialog({
   asset,
   onClose,
   onChanged,
-}: {
-  asset: Asset;
-  onClose: () => void;
-  onChanged: () => void;
-}) {
+  onNavigate,
+  hasPrevious = false,
+  hasNext = false,
+}: AssetPreviewProps) {
   const { t, i18n: language } = useTranslation('preview');
   const dialog = useRef<HTMLElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const textInput = useRef<HTMLTextAreaElement>(null);
   const addNoteButton = useRef<HTMLButtonElement>(null);
+  const previousCurrentId = useRef(asset.currentVersionId);
+  const selectedVersionId = useRef(asset.currentVersionId);
   const [versions, setVersions] = useState<AssetVersion[]>([]);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [selectedId, setSelectedId] = useState(asset.currentVersionId);
@@ -259,6 +275,7 @@ function AssetPreviewDialog({
   const [placing, setPlacing] = useState(false);
   const [draft, setDraft] = useState<Point | null>(null);
   const [text, setText] = useState('');
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -302,8 +319,26 @@ function AssetPreviewDialog({
     const controller = new AbortController();
     setLoading(true);
     setError('');
-    setSelectedId(asset.currentVersionId);
+    const followsCurrent =
+      selectedVersionId.current === previousCurrentId.current;
+    if (followsCurrent) {
+      selectedVersionId.current = asset.currentVersionId;
+      setSelectedId(asset.currentVersionId);
+    }
     setCurrentId(asset.currentVersionId);
+    if (
+      followsCurrent &&
+      previousCurrentId.current !== asset.currentVersionId
+    ) {
+      setDraft(null);
+      setEditingId(null);
+      setText('');
+      setPlacing(false);
+      setCompare(false);
+      setZoom(null);
+      closeButton.current?.focus();
+    }
+    previousCurrentId.current = asset.currentVersionId;
     void load(controller.signal)
       .catch((cause: unknown) => {
         if (!controller.signal.aborted)
@@ -317,7 +352,7 @@ function AssetPreviewDialog({
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [asset.currentVersionId, load, reload]);
+  }, [asset.id, asset.currentVersionId, load, reload]);
 
   useEffect(() => {
     if (draft) textInput.current?.focus();
@@ -350,6 +385,13 @@ function AssetPreviewDialog({
       event.target.closest('input, textarea, select, [contenteditable="true"]')
     )
       return;
+    if (event.key === 'ArrowLeft' && hasPrevious && onNavigate) {
+      event.preventDefault();
+      onNavigate(-1);
+    } else if (event.key === 'ArrowRight' && hasNext && onNavigate) {
+      event.preventDefault();
+      onNavigate(1);
+    }
     if (event.key === 'Escape') {
       event.preventDefault();
       onClose();
@@ -357,11 +399,13 @@ function AssetPreviewDialog({
   }
 
   function selectVersion(id: string) {
+    selectedVersionId.current = id;
     setSelectedId(id);
     setCompare(false);
     setZoom(null);
     setPlacing(false);
     setDraft(null);
+    setEditingId(null);
     setText('');
   }
 
@@ -373,6 +417,7 @@ function AssetPreviewDialog({
       );
       setPlacing(false);
       setDraft(null);
+      setEditingId(null);
     }
     setCompare(!compare);
   }
@@ -382,12 +427,25 @@ function AssetPreviewDialog({
     setBusy(true);
     setError('');
     try {
-      const note = await request<Annotation>(`${endpoint}/annotations`, {
-        method: 'POST',
-        body: { versionId: selected.id, ...draft, text: text.trim() },
-      });
-      setAnnotations((existing) => [...existing, note]);
+      const note = editingId
+        ? await request<Annotation>(
+            `/api/annotations/${encodeURIComponent(editingId)}`,
+            {
+              method: 'PATCH',
+              body: { text: text.trim() },
+            },
+          )
+        : await request<Annotation>(`${endpoint}/annotations`, {
+            method: 'POST',
+            body: { versionId: selected.id, ...draft, text: text.trim() },
+          });
+      setAnnotations((existing) =>
+        editingId
+          ? existing.map((item) => (item.id === note.id ? note : item))
+          : [...existing, note],
+      );
       setDraft(null);
+      setEditingId(null);
       setText('');
       setPlacing(false);
       setStatus(t('saved'));
@@ -408,6 +466,11 @@ function AssetPreviewDialog({
         method: 'DELETE',
       });
       setAnnotations((existing) => existing.filter((note) => note.id !== id));
+      if (editingId === id) {
+        setEditingId(null);
+        setDraft(null);
+        setText('');
+      }
       setStatus(t('removed'));
       addNoteButton.current?.focus();
       onChanged();
@@ -496,15 +559,37 @@ function AssetPreviewDialog({
             <span className="preview-eyebrow">{t('title')}</span>
             <h2>{asset.name}</h2>
           </div>
-          <button
-            type="button"
-            ref={closeButton}
-            className="preview-close"
-            aria-label={t('close')}
-            onClick={onClose}
-          >
-            ×
-          </button>
+          <div className="preview-actions">
+            {onNavigate && (
+              <>
+                <button
+                  type="button"
+                  aria-label={t('previousAsset')}
+                  disabled={!hasPrevious}
+                  onClick={() => onNavigate(-1)}
+                >
+                  ←
+                </button>
+                <button
+                  type="button"
+                  aria-label={t('nextAsset')}
+                  disabled={!hasNext}
+                  onClick={() => onNavigate(1)}
+                >
+                  →
+                </button>
+              </>
+            )}
+            <button
+              type="button"
+              ref={closeButton}
+              className="preview-close"
+              aria-label={t('close')}
+              onClick={onClose}
+            >
+              ×
+            </button>
+          </div>
         </header>
         <div className="preview-toolbar">
           <div className="preview-zoom">
@@ -623,7 +708,7 @@ function AssetPreviewDialog({
                   version={selected}
                   zoom={zoom}
                   notes={notes}
-                  draft={draft}
+                  draft={editingId ? null : draft}
                   placing={placing}
                   onPoint={setDraft}
                   onFitZoom={setFitZoom}
@@ -689,6 +774,8 @@ function AssetPreviewDialog({
                     onClick={() => {
                       setPlacing(!placing);
                       setDraft(null);
+                      setEditingId(null);
+                      setText('');
                     }}
                   >
                     {t('add')}
@@ -738,6 +825,7 @@ function AssetPreviewDialog({
                         disabled={busy}
                         onClick={() => {
                           setDraft(null);
+                          setEditingId(null);
                           setPlacing(false);
                           setText('');
                           addNoteButton.current?.focus();
@@ -758,6 +846,19 @@ function AssetPreviewDialog({
                       >
                         <span className="preview-note-number">{index + 1}</span>
                         <p>{note.text}</p>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          aria-label={t('edit', { number: index + 1 })}
+                          onClick={() => {
+                            setEditingId(note.id);
+                            setDraft({ x: note.x, y: note.y });
+                            setText(note.text);
+                            setPlacing(false);
+                          }}
+                        >
+                          ✎
+                        </button>
                         <button
                           type="button"
                           disabled={busy}
@@ -784,10 +885,6 @@ function AssetPreviewDialog({
   );
 }
 
-export function AssetPreview(props: {
-  asset: Asset;
-  onClose: () => void;
-  onChanged: () => void;
-}) {
+export function AssetPreview(props: AssetPreviewProps) {
   return <AssetPreviewDialog key={props.asset.id} {...props} />;
 }

@@ -1,4 +1,5 @@
 import type { Annotation, Asset, AssetVersion } from '@cura/shared';
+import { useState } from 'react';
 import {
   act,
   fireEvent,
@@ -82,6 +83,16 @@ beforeEach(async () => {
           { error: 'Library is unavailable', code: 'FAILED' },
           { status: 503 },
         );
+      if (url === '/api/assets/asset-b/versions')
+        return Response.json([
+          {
+            ...file,
+            id: 'version-b',
+            assetId: 'asset-b',
+            ordinal: 1,
+            name: 'landscape.png',
+          },
+        ]);
       if (url.endsWith('/versions')) return Response.json(versions);
       if (url.includes('/replace?')) {
         uploaded = init?.body;
@@ -108,6 +119,14 @@ beforeEach(async () => {
         };
         notes.push(note);
         return Response.json(note, { status: 201 });
+      }
+      if (url.includes('/api/annotations/') && init?.method === 'PATCH') {
+        const patch = JSON.parse(String(init.body)) as Partial<
+          Pick<Annotation, 'text' | 'x' | 'y'>
+        >;
+        const note = notes.find((item) => url.endsWith(item.id))!;
+        Object.assign(note, patch);
+        return Response.json(note);
       }
       if (url.includes('/api/annotations/') && init?.method === 'DELETE') {
         notes = notes.filter((note) => !url.endsWith(note.id));
@@ -153,6 +172,170 @@ describe('asset preview', () => {
     unmount();
     expect(trigger).toHaveFocus();
     trigger.remove();
+  });
+
+  it('navigates adjacent assets with buttons and arrows while respecting editable fields and boundaries', async () => {
+    const gallery = [
+      asset,
+      {
+        ...asset,
+        id: 'asset-b',
+        currentVersionId: 'version-b',
+        name: 'landscape.png',
+      },
+    ];
+    function Gallery() {
+      const [index, setIndex] = useState(0);
+      return (
+        <AssetPreview
+          asset={gallery[index]!}
+          onClose={() => {}}
+          onChanged={() => {}}
+          onNavigate={(direction) => setIndex((current) => current + direction)}
+          hasPrevious={index > 0}
+          hasNext={index < gallery.length - 1}
+        />
+      );
+    }
+    render(<Gallery />);
+    await ready();
+    expect(
+      screen.getByRole('button', { name: 'Previous asset' }),
+    ).toBeDisabled();
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Close preview' }), {
+      key: 'ArrowLeft',
+    });
+    expect(screen.getByRole('heading', { name: 'portrait.png' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Next asset' }));
+    expect(
+      await screen.findByRole('img', { name: 'landscape.png — V1' }),
+    ).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Next asset' })).toBeDisabled();
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Close preview' }), {
+      key: 'ArrowLeft',
+    });
+    await ready();
+    fireEvent.click(screen.getByRole('button', { name: 'Add annotation' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Place at center' }));
+    fireEvent.keyDown(
+      screen.getByRole('textbox', { name: 'Annotation text' }),
+      { key: 'ArrowRight' },
+    );
+    expect(screen.getByRole('heading', { name: 'portrait.png' })).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Close preview' }), {
+      key: 'ArrowRight',
+    });
+    expect(
+      await screen.findByRole('img', { name: 'landscape.png — V1' }),
+    ).toBeVisible();
+  });
+
+  it('edits an annotation without changing its identity, version, or coordinates', async () => {
+    notes = [
+      {
+        id: 'note-1',
+        assetId: asset.id,
+        versionId: 'version-2',
+        x: 0.2,
+        y: 0.3,
+        text: 'Original note',
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+    ];
+    mount();
+    await ready();
+    fireEvent.click(screen.getByRole('button', { name: 'Edit annotation 1' }));
+    const textbox = screen.getByRole('textbox', { name: 'Annotation text' });
+    expect(textbox).toHaveValue('Original note');
+    expect(textbox).toHaveFocus();
+    fireEvent.change(textbox, { target: { value: 'Revised note' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save annotation' }));
+    expect(
+      await screen.findByRole('button', { name: 'Annotation 1: Revised note' }),
+    ).toBeVisible();
+    expect(notes).toHaveLength(1);
+    expect(notes[0]).toMatchObject({
+      id: 'note-1',
+      versionId: 'version-2',
+      x: 0.2,
+      y: 0.3,
+      text: 'Revised note',
+    });
+    expect(screen.getByRole('dialog')).toContainElement(
+      document.activeElement as HTMLElement,
+    );
+  });
+
+  it('refreshes an open asset when its current version changes and clears a stale annotation draft', async () => {
+    const { rerender, onClose, onChanged } = mount();
+    await ready();
+    fireEvent.click(screen.getByRole('button', { name: 'Add annotation' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Place at center' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Annotation text' }), {
+      target: { value: 'Old version draft' },
+    });
+    versions.unshift({
+      ...originalVersions[0]!,
+      id: 'version-3',
+      ordinal: 3,
+      name: 'watched.png',
+    });
+    notes = [
+      {
+        id: 'note-3',
+        assetId: asset.id,
+        versionId: 'version-3',
+        x: 0.1,
+        y: 0.7,
+        text: 'Latest note',
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      },
+    ];
+    rerender(
+      <AssetPreview
+        asset={{ ...asset, currentVersionId: 'version-3', name: 'watched.png' }}
+        onClose={onClose}
+        onChanged={onChanged}
+      />,
+    );
+    expect(
+      await screen.findByRole('img', { name: 'watched.png — V3' }),
+    ).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: 'Annotation 1: Latest note' }),
+    ).toBeVisible();
+    expect(
+      screen.queryByRole('textbox', { name: 'Annotation text' }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /View V2/ })).toBeVisible();
+  });
+
+  it('keeps an explicitly selected historical version when a new current version arrives', async () => {
+    const { rerender, onClose, onChanged } = mount();
+    await ready();
+    fireEvent.click(screen.getByRole('button', { name: /View V1/ }));
+    versions.unshift({
+      ...originalVersions[0]!,
+      id: 'version-3',
+      ordinal: 3,
+      name: 'watched.png',
+    });
+    rerender(
+      <AssetPreview
+        asset={{ ...asset, currentVersionId: 'version-3' }}
+        onClose={onClose}
+        onChanged={onChanged}
+      />,
+    );
+    await screen.findByRole('button', { name: /View V3/ });
+    expect(screen.getByRole('img', { name: 'sketch.png — V1' })).toBeVisible();
+    expect(screen.getByRole('button', { name: /View V1/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
   });
 
   it('zooms with buttons and the range, then resets to fit', async () => {
