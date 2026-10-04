@@ -64,3 +64,34 @@ it('rejects a board from another library', async () => {
   expect(result.current.document).toBeNull();
   expect(result.current.error).toBeTruthy();
 });
+
+it('ignores a mutation callback retained from the previous board', async () => {
+  const other = '00000000-0000-4000-8000-000000000004';
+  const fetch = vi.fn(async (path: string, init?: RequestInit) =>
+    Response.json(
+      init?.method === 'PUT'
+        ? document(1)
+        : document(0, path.endsWith(other) ? other : id),
+    ),
+  );
+  vi.stubGlobal('fetch', fetch);
+  const { result, rerender } = renderHook(
+    ({ boardId }) => useBoardDocument(boardId, libraryId),
+    { initialProps: { boardId: id } },
+  );
+  await waitFor(() => expect(result.current.document?.board.id).toBe(id));
+  const oldMutate = result.current.mutate;
+  rerender({ boardId: other });
+  await waitFor(() => expect(result.current.document?.board.id).toBe(other));
+  await act(async () => {
+    await oldMutate(`/api/boards/${id}/layout`, 'PUT', (current) => ({
+      expectedRevision: current.board.revision,
+      items: [],
+      edges: [],
+    }));
+  });
+  expect(result.current.document?.board.id).toBe(other);
+  expect(
+    fetch.mock.calls.filter(([, init]) => init?.method === 'PUT'),
+  ).toHaveLength(0);
+});

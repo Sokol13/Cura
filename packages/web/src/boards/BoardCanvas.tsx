@@ -26,7 +26,6 @@ import {
   type OnConnect,
 } from '@xyflow/react';
 import {
-  AssetSchema,
   BoardPinSchema,
   type BoardDocument,
   type BoardItemInput,
@@ -36,7 +35,7 @@ import {
   type SaveBoardLayout,
 } from '@cura/shared';
 import { useTranslation } from 'react-i18next';
-import { assetUrl, request } from '../catalog/api';
+import { assetUrl } from '../catalog/api';
 import { OrganizationDialog } from '../catalog/OrganizationDialog';
 import { SlotCard } from './SlotCard';
 import {
@@ -58,6 +57,10 @@ type CanvasProps = {
   onAssign: (slot: BoardSlot, pin: BoardPin) => void;
   onHistory: (slot: BoardSlot) => void;
   onSave: (layout: Layout) => Promise<boolean>;
+  onAddPin: (
+    pin: BoardPin,
+    position: { x: number; y: number },
+  ) => Promise<boolean>;
   onViewport: (viewport: BoardViewport) => Promise<boolean>;
   onAddSlot: () => void;
   ref?: Ref<BoardCanvasHandle>;
@@ -140,6 +143,7 @@ function CanvasContent({
   onAssign,
   onHistory,
   onSave,
+  onAddPin,
   onViewport,
   onAddSlot,
   ref,
@@ -256,28 +260,7 @@ function CanvasContent({
   const addPin = async (pin: BoardPin, position = center()) => {
     if (busy) return;
     try {
-      const asset = AssetSchema.parse(
-        await request(`/api/assets/${pin.assetId}`),
-      );
-      const item: BoardItemInput = {
-        id: crypto.randomUUID(),
-        kind: 'asset',
-        ...position,
-        width: 240,
-        height: 220,
-        groupId: null,
-        label: asset.name,
-        text: '',
-        assetId: pin.assetId,
-        versionId: pin.versionId,
-      };
-      if (
-        await onSave({
-          items: [...document.items.map(itemInput), item],
-          edges: document.edges.map(edgeInput),
-        })
-      )
-        setError('');
+      if (await onAddPin(pin, position)) setError('');
     } catch {
       setError(t('saveError'));
     }

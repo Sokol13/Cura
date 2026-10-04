@@ -19,6 +19,7 @@ import { BoardCreateForm, DeleteConfirm, NameForm } from './BoardForms';
 import { SlotHistory } from './SlotHistory';
 import { TemplateManager } from './TemplateManager';
 import { useBoardDocument } from './useBoardDocument';
+import { useBoardAssetAdder } from './useBoardAssetAdder';
 import './i18n';
 import './boards.css';
 
@@ -51,6 +52,7 @@ export function BoardsWorkspace({
   const canvas = useRef<BoardCanvasHandle>(null);
   const boardState = useBoardDocument(selected, libraryId);
   const { document, busy, mutate } = boardState;
+  const addAsset = useBoardAssetAdder(selected, mutate);
   const selectedSlot =
     document?.slots.find((slot) => slot.id === selectedSlotId) ?? null;
   const selectBoard = useCallback((id: string | null) => {
@@ -106,11 +108,11 @@ export function BoardsWorkspace({
   };
   const saveLayout = useCallback(
     (layout: Omit<SaveBoardLayout, 'expectedRevision'>) =>
-      mutate(`/api/boards/${selected}/layout`, 'PUT', (current) => ({
+      mutate(`/api/boards/${selected}/layout`, 'PUT', () => ({
         ...layout,
-        expectedRevision: current.board.revision,
+        expectedRevision: document?.board.revision,
       })),
-    [mutate, selected],
+    [mutate, selected, document?.board.revision],
   );
   const saveViewport = useCallback(
     (viewport: BoardViewport) =>
@@ -293,6 +295,7 @@ export function BoardsWorkspace({
                   onAssign={(slot, pin) => void assignSlot(slot, pin)}
                   onHistory={setHistory}
                   onSave={saveLayout}
+                  onAddPin={addAsset}
                   onViewport={saveViewport}
                   onAddSlot={() => setDialog('slot')}
                 />
