@@ -98,6 +98,7 @@ test('1000 distinct assets stay responsive and usable with only loopback network
   request,
 }, testInfo) => {
   test.setTimeout(180_000);
+  page.setDefaultTimeout(10_000);
   const directory = await mkdtemp(join(tmpdir(), 'cura-stress-'));
   const outsideRequests: string[] = [];
   const timings: {
@@ -219,6 +220,35 @@ test('1000 distinct assets stay responsive and usable with only loopback network
       expect(asset.width).toBeGreaterThan(0);
       expect(asset.colors.length).toBeGreaterThanOrEqual(5);
     }
+    await test.step('SD and Comfy metadata appear automatically in the inspector', async () => {
+      const search = page.getByRole('searchbox', { name: 'Search assets' });
+      const inspector = page.getByRole('complementary', {
+        name: 'Asset details',
+      });
+      for (const [asset, model] of [
+        [sd, 'cura-fixture-sd-v1'],
+        [comfy, 'cura-fixture-comfy-v1.safetensors'],
+      ] as const) {
+        await search.fill(asset.name);
+        await page
+          .getByRole('button', { name: `Select ${asset.name}`, exact: true })
+          .click();
+        await expect(
+          inspector.getByRole('textbox', { name: 'Prompt', exact: true }),
+        ).toHaveValue(asset.prompt);
+        await expect(
+          inspector.getByRole('textbox', { name: 'Model', exact: true }),
+        ).toHaveValue(model);
+        await expect(
+          inspector.getByRole('textbox', { name: 'Seed', exact: true }),
+        ).toHaveValue(seed);
+      }
+      evidence.automaticMetadata = ['sd-webui', 'comfyui'];
+      await search.clear();
+      await expect(
+        page.getByText('1000 assets', { exact: true }),
+      ).toBeVisible();
+    });
     await test.step('fetch every thumbnail over HTTP and decode every result in Chromium', async () => {
       const thumbnails = await page.evaluate(
         async (ids) => {
@@ -446,7 +476,7 @@ test('1000 distinct assets stay responsive and usable with only loopback network
     });
     await test.step('a newly watched file appears in the API and browser within five seconds', async () => {
       await page
-        .getByRole('textbox', { name: 'Search assets' })
+        .getByRole('searchbox', { name: 'Search assets' })
         .fill(fixtureName(count));
       await expect(
         page.getByText('No matching assets', { exact: true }),
@@ -523,15 +553,24 @@ test('1000 distinct assets stay responsive and usable with only loopback network
       'The complete flow must not attempt external HTTP or WebSocket connections',
     ).toEqual([]);
   } finally {
-    await testInfo.attach('p0-stress-evidence.json', {
-      body: JSON.stringify(evidence, null, 2),
-      contentType: 'application/json',
-    });
-    if (rootId) await request.delete(`/api/roots/${rootId}`);
-    await Promise.all(
-      [directory, `${directory}-watch.png`, `${directory}-replace.png`].map(
-        (path) => rm(path, { recursive: true, force: true }),
-      ),
-    );
+    try {
+      if (rootId) await request.delete(`/api/roots/${rootId}`);
+    } catch (error) {
+      // Playwright closes request fixtures on timeout. Keep the primary failure.
+      evidence.cleanupRequestError = String(error);
+    } finally {
+      const cleanup = await Promise.allSettled(
+        [directory, `${directory}-watch.png`, `${directory}-replace.png`].map(
+          (path) => rm(path, { recursive: true, force: true }),
+        ),
+      );
+      evidence.cleanupFileErrors = cleanup.flatMap((result) =>
+        result.status === 'rejected' ? [String(result.reason)] : [],
+      );
+      await testInfo.attach('p0-stress-evidence.json', {
+        body: JSON.stringify(evidence, null, 2),
+        contentType: 'application/json',
+      });
+    }
   }
 });
