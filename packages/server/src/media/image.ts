@@ -246,7 +246,9 @@ export async function processFile(input: {
           : signature.startsWith('%PDF-')
             ? 'application/pdf'
             : signature.slice(4, 8) === 'ftyp' &&
-                /^(qt  |isom|iso2|mp41|mp42|avc1)$/.test(signature.slice(8, 12))
+                /^(qt {2}|isom|iso2|mp41|mp42|avc1)$/.test(
+                  signature.slice(8, 12),
+                )
               ? signature.slice(8, 12) === 'qt  '
                 ? 'video/quicktime'
                 : 'video/mp4'
