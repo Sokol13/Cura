@@ -8,7 +8,7 @@
 
 - During P2 the injected shell GitHub token expired. Existing connected GitHub app access still permits exact-tree Git commits and non-force main updates; public fetch and remote CI inspection work. Development and publication continue through that verified route without requesting credentials.
 
-No phase-0 release blocker remains: local acceptance, GitHub CI and the automatic v0.0.1 Release were verified.
+No milestone release blocker remains. All v0.1.0, v0.2.0 and v0.3.0 gates and Releases were verified. For v0.3.0, the CI-gated fallback used the repository Actions token after complete core/cloud CI and created the immutable annotated tag and GitHub Release; its consumed request is removed from main.
 
 ## Current-container limitations
 

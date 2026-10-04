@@ -132,10 +132,10 @@
 - [x] Plan concrete P2 module tests before implementation: auto tags/naming, nonfinal archive rules, script entity extraction, setting documents, optional login/local-first incremental conflict logs/team RLS, FCPXML validation.
 - [x] Implement all three complete slices and test every capability. No P2 group is omitted. Real local vision inference, real Supabase Auth/RLS/Storage/two-device sync and independent FCPXML validation pass; hosted and physical platform limits are documented.
 - [x] Independent review, all earlier milestone gates and full suite/CI (candidate 1f24a5b, CI 37210499373). Release documentation is ready.
-- [ ] Verify final request CI, immutable v0.3.0 tag/Release and final main CI, then stop under section 1(a).
+- [x] Verify final request CI 37211290714 and publication 37211646421; annotated v0.3.0 points to d90a567 and GitHub Release is published. Final progress publication uses the same full main CI before chat completion and section 1(a) stop.
 
 ## Task ledger
 
-Tasks 1–5: delivered to main with full local gates and observed green CI. Task 6: all nine P0 definitions are verified; 170 unit tests and 9 real-server E2Es pass locally and in CI 37198719712 at 8cec733. Published v0.1.0 at c564361; documentation CI 37198939724, tag CI 37199147410 and Release workflow 37199147287 all passed. Reported the release in chat and continued P1. The nine-item acceptance ledger is in REPORT-v0.1.0.md. Tasks 7–10 follow immediately; v0.1.0 is not a stopping condition. Per-task evidence and rulings remain in PROGRESS.md and DECISIONS.md.
+Tasks 1–5: delivered to main with full local gates and observed green CI. Task 6: all nine P0 definitions are verified; 170 unit tests and 9 real-server E2Es pass locally and in CI 37198719712 at 8cec733. Published v0.1.0 at c564361; documentation CI 37198939724, tag CI 37199147410 and Release workflow 37199147287 all passed. Reported the release in chat and continued P1. The nine-item acceptance ledger is in REPORT-v0.1.0.md. Tasks 7–10 subsequently completed; v0.1.0 alone was not a stopping condition. Per-task evidence and rulings remain in PROGRESS.md and DECISIONS.md.
 
-Task 10 implementation and all acceptance gates passed at candidate `1f24a5b` in CI 37210499373. Final tag/publication verification is tracked in PROGRESS.md.
+Task 10 implementation and all acceptance gates passed at candidate `1f24a5b` in CI 37210499373. The final corrected request passed CI 37211290714 and published v0.3.0 through workflow 37211646421. All tasks are complete; final main verification is tracked in PROGRESS.md.

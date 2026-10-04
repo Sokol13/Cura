@@ -2,7 +2,7 @@
 
 The user authorized milestone tags and Releases only after the milestone completion definitions and CI are verified. If the interactive GitHub credential cannot publish them, `.github/workflows/release-fallback.yml` can use the repository's Actions token. This fallback adds no new release authorization and does not weaken the acceptance checklist.
 
-The fallback is inactive unless the successful CI commit contains `.github/release-request.json`. This implementation does **not** include that file. The coordinator creates it only after all v0.3.0 acceptance evidence is complete, including inherited milestones, live provider/cloud checks, independent FCPXML validation, documentation and known platform limits.
+The fallback is inactive unless the successful CI commit contains `.github/release-request.json`. The current main branch does **not** include that file; its consumed copy remains in the immutable v0.3.0 tag. The coordinator creates it only after all v0.3.0 acceptance evidence is complete, including inherited milestones, live provider/cloud checks, independent FCPXML validation, documentation and known platform limits.
 
 ## Future activation
 
@@ -53,3 +53,7 @@ Tags pushed using `GITHUB_TOKEN` do not trigger the existing tag-push Release wo
 If publication is interrupted after the tag push, rerunning the fallback for the same successful CI SHA creates the missing Release without changing the tag. If the correct tag and a published stable Release already exist, rerunning is a no-op. A different tag target, orphaned Release, draft, prerelease, API/authentication/network failure, changed main or stale readiness evidence stops the job. Correct the actual cause; do not force a tag or reinterpret a failed command as a missing Release. If main has moved, preserve the existing tag and resolve the failed publication explicitly rather than submitting a new commit under the same version.
 
 All commands use `execFileSync` argument arrays. Subprocess output is captured and omitted from failure messages so authentication diagnostics cannot disclose credentials. Tests use an injected command seam and never create actual tags, call GitHub or publish Releases. Run them with `node --test scripts/release-from-ci.test.mjs`; they also run under `pnpm test` and CI.
+
+## Verified publication
+
+The fallback published annotated v0.3.0 at `d90a567` after CI 37211290714 passed both core and real-cloud jobs. Publication workflow 37211646421 succeeded; remote tag target and stable GitHub Release were independently verified. The consumed request was then removed from main.

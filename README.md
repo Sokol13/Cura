@@ -2,7 +2,7 @@
 
 Cura is a local-first visual asset manager for AI creators, brand designers, and product designers. Run a local server, open your browser, and organize images without an account. Your files and their creative context stay on your computer.
 
-The current workflow includes watched folders and uploads, metadata extraction, folders and colored tags, search and filters, previews, annotations, retained versions, and diagnostics. Canvas/slot/matrix workflows, brands and CMF, rich previews, creative-process statistics and portable exports are available. The P2 integration adds reviewable automation, retained scripts and setting documents, optional Supabase team libraries and FCPXML timelines. [PROGRESS.md](docs/PROGRESS.md) records integration and validation status; a feature description here is not a claim that a milestone has been released.
+The current workflow includes watched folders and uploads, metadata extraction, folders and colored tags, search and filters, previews, annotations, retained versions, and diagnostics. Canvas/slot/matrix workflows, brands and CMF, rich previews, creative-process statistics and portable exports are available. [v0.3.0](https://github.com/Sokol13/Cura/releases/tag/v0.3.0) adds reviewable automation, retained scripts and setting documents, optional Supabase team libraries and FCPXML timelines. See the [release report](docs/REPORT-v0.3.0.md), [desktop smoke checklist](docs/SMOKE_TEST.md) and [progress](docs/PROGRESS.md) for verified results and platform limits.
 
 ![Cura image library captured with the real server and Chromium](docs/screenshots/v0.3.0.png)
 

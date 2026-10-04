@@ -1,0 +1,37 @@
+{
+  "milestone": "v0.3.0",
+  "publishedAt": "2026-10-04T15:04:43Z",
+  "releaseUrl": "https://github.com/Sokol13/Cura/releases/tag/v0.3.0",
+  "releaseId": 403071401,
+  "tagObject": "0277bd8f69992341c24ea7c54879747a6c3579e6",
+  "tagType": "annotated",
+  "targetCommit": "d90a567fbfe8989241bce8e65db27ffc31640c66",
+  "ci": {
+    "id": 37211290714,
+    "url": "https://github.com/Sokol13/Cura/actions/runs/37211290714",
+    "status": "completed",
+    "conclusion": "success",
+    "defaultUnitAndToolTests": 434,
+    "defaultBrowserScenarios": 27,
+    "realCloudNativeTests": 17,
+    "realCloudBrowserScenarios": 1,
+    "cloudSkipped": 0,
+    "cloudFlaky": 0
+  },
+  "publication": {
+    "id": 37211646421,
+    "url": "https://github.com/Sokol13/Cura/actions/runs/37211646421",
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "productionTrees": {
+    "server": "2623c9c07958fb6ad824ae04e070fd07b704bce7",
+    "shared": "620958c6f4e2022063156ebe10b060e680d1c6c6",
+    "web": "2cbc9497411ea334bbc946e0eb889c5beab42a93"
+  },
+  "notes": [
+    "Archive performance suite runs after other unit workers with original thresholds and all cases retained.",
+    "The GitHub Actions token publishes the annotated tag and Release after complete CI; it does not trigger duplicate tag workflows.",
+    "Physical macOS/Windows, hosted Supabase and Final Cut Pro application checks remain unverified."
+  ]
+}
