@@ -156,9 +156,11 @@ export function DirectoryBrowserDialog({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const requestId = useRef(0);
+  const pathEditVersion = useRef(0);
 
   async function browse(directory?: string) {
     const id = ++requestId.current;
+    const editVersion = pathEditVersion.current;
     setLoading(true);
     setError('');
     try {
@@ -167,7 +169,7 @@ export function DirectoryBrowserDialog({
       );
       if (id !== requestId.current) return;
       setListing(result);
-      setPath(result.path);
+      if (editVersion === pathEditVersion.current) setPath(result.path);
     } catch (failure) {
       if (id !== requestId.current) return;
       setError(
@@ -215,7 +217,10 @@ export function DirectoryBrowserDialog({
           <span>{t('directoryPath', 'Directory path')}</span>
           <input
             value={path}
-            onChange={(event) => setPath(event.target.value)}
+            onChange={(event) => {
+              pathEditVersion.current += 1;
+              setPath(event.target.value);
+            }}
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
                 event.preventDefault();

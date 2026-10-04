@@ -1,4 +1,5 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
@@ -195,6 +196,78 @@ describe('catalog sidebar', () => {
         body: JSON.stringify({ path: '/home/Pictures' }),
       }),
     );
+  });
+
+  it('preserves a typed directory while the initial home listing is still loading', async () => {
+    let resolveHome: ((response: Response) => void) | undefined;
+    const home = new Promise<Response>((resolve) => {
+      resolveHome = resolve;
+    });
+    fetchMock.mockImplementation(async (input) => {
+      if (input === '/api/directories') return home;
+      if (input === '/api/directories?path=%2Ftmp%2Fcura-images')
+        return ok({
+          path: '/tmp/cura-images',
+          parent: '/tmp',
+          directories: [],
+        });
+      return ok({ ok: true });
+    });
+    const callbacks = mount();
+    fireEvent.click(screen.getByRole('button', { name: 'Register directory' }));
+    const dialog = screen.getByRole('dialog', { name: 'Register directory' });
+    const input = within(dialog).getByLabelText('Directory path');
+    fireEvent.change(input, { target: { value: '/tmp/cura-images' } });
+    await act(async () =>
+      resolveHome?.(
+        ok({ path: '/home/runner', parent: '/home', directories: [] }),
+      ),
+    );
+    expect(input).toHaveValue('/tmp/cura-images');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Browse' }));
+    await waitFor(() =>
+      expect(
+        within(dialog).getByRole('button', { name: 'Register directory' }),
+      ).toBeEnabled(),
+    );
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Register directory' }),
+    );
+    await waitFor(() => expect(callbacks.onChanged).toHaveBeenCalled());
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/libraries/library-1/roots',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ path: '/tmp/cura-images' }),
+      }),
+    );
+  });
+
+  it('preserves newer path edits when an explicit browse response completes', async () => {
+    let resolveBrowse: ((response: Response) => void) | undefined;
+    const listing = new Promise<Response>((resolve) => {
+      resolveBrowse = resolve;
+    });
+    fetchMock.mockImplementation(async (input) => {
+      if (input === '/api/directories')
+        return ok({ path: '/home/runner', parent: '/home', directories: [] });
+      if (input === '/api/directories?path=%2Ftmp%2Ffirst') return listing;
+      return ok({ ok: true });
+    });
+    mount();
+    fireEvent.click(screen.getByRole('button', { name: 'Register directory' }));
+    const dialog = screen.getByRole('dialog', { name: 'Register directory' });
+    const input = within(dialog).getByLabelText('Directory path');
+    await waitFor(() => expect(input).toHaveValue('/home/runner'));
+    fireEvent.change(input, { target: { value: '/tmp/first' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Browse' }));
+    fireEvent.change(input, { target: { value: '/tmp/new-choice' } });
+    await act(async () =>
+      resolveBrowse?.(
+        ok({ path: '/tmp/first', parent: '/tmp', directories: [] }),
+      ),
+    );
+    expect(input).toHaveValue('/tmp/new-choice');
   });
 
   it('keeps failed mutations open with the entered value for correction', async () => {
