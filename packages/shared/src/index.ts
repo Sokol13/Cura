@@ -7,3 +7,4 @@ export const HealthResponseJsonSchema = z.toJSONSchema(HealthResponseSchema, {
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
 export * from './catalog.js';
+export * from './brands.js';
