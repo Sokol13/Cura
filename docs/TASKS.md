@@ -127,4 +127,6 @@
 
 ## Task ledger
 
+Task 2: media module integrated at 37b0c54, 55 media tests and full local suite passed; worker/API E2E integration remains in Task 4.
+
 Task 1: complete (commits 68c38ee..56433f2; lint/typecheck/test/e2e passed, 25 unit tests and 1 E2E; GitHub CI 37194418005 green). Tasks 2, 3 and 5 started in isolated worktrees. Per-task test evidence, commit ranges and rulings are recorded in PROGRESS.md and DECISIONS.md, the user-selected durable ledger locations.

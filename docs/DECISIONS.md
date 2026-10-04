@@ -135,3 +135,17 @@
 **Reason:** The milestone requires a clean clone/install/start without a separate build command. Rebuilding on start is simple, guarantees current source and works identically on macOS/Windows; the startup cost is acceptable for v0.1. Native module smoke checks fail visibly when a platform binary is unavailable without invoking a compiler.
 
 **Alternatives rejected:** A complex timestamp-based build cache, requiring undocumented build steps, or letting native install scripts fall back to node-gyp.
+
+## Manual replacement and media bounds
+
+**Decision:** Source aliases retain their last observed source hash separately from an asset's current version. Upload replacement appends a version without editing a registered source; rescanning unchanged source bytes is a no-op.
+
+**Reason:** The original-preservation promise otherwise conflicts with replacement: an unchanged external file could undo the new current version on every rescan.
+
+**Alternatives rejected:** Overwriting registered sources or treating the current asset hash as the last observed source hash.
+
+**Decision:** Bound raster decoding to 100 million pixels, SVG input to 8 MiB, and PNG text/graph work to explicit parser limits. Animated GIF thumbnails use the first frame. Palettes contain up to eight actual dominant colors; flat-color images may contain fewer than five.
+
+**Reason:** Bounded work protects the local service from malformed files and memory exhaustion. Repeating invented palette entries would misrepresent single-color artwork.
+
+**Alternatives rejected:** Unbounded decoding and fabricated colors. Originals remain retained and manageable when preview extraction cannot proceed.
