@@ -22,6 +22,27 @@
       "when": 1791101000000,
       "tag": "0002_source_availability",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1791102000000,
+      "tag": "0003_process",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1791103000000,
+      "tag": "0004_boards",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791104000000,
+      "tag": "0005_brands",
+      "breakpoints": true
     }
   ]
 }

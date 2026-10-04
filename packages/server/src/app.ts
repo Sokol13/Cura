@@ -7,6 +7,7 @@ import type { UserPaths } from './paths.js';
 import { CatalogStore } from './catalog-store.js';
 import { MediaService } from './media/service.js';
 import { registerCatalogRoutes } from './catalog-routes.js';
+import { registerPreviewRoutes } from './media/preview-routes.js';
 import { isAllowedLocalRequest } from './security.js';
 import { registerStaticFiles } from './static-files.js';
 
@@ -67,6 +68,7 @@ export async function createApp(options: AppOptions = {}) {
         );
     });
     await registerCatalogRoutes(app, store, media, options.paths);
+    await registerPreviewRoutes(app, store, media);
     app.addHook('onReady', () => media.resume());
     app.addHook('onClose', async () => {
       await media.close();

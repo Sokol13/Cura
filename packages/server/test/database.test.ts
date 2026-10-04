@@ -33,7 +33,7 @@ describe('SQLite infrastructure', () => {
         first.sqlite
           .prepare('SELECT count(*) AS count FROM __drizzle_migrations')
           .get(),
-      ).toEqual({ count: 3 });
+      ).toEqual({ count: 6 });
     } finally {
       first.close();
     }
@@ -52,7 +52,7 @@ describe('SQLite infrastructure', () => {
       reopened.sqlite
         .prepare('SELECT count(*) AS count FROM __drizzle_migrations')
         .get(),
-    ).toEqual({ count: 3 });
+    ).toEqual({ count: 6 });
     expect((await stat(join(paths.data, 'cura.sqlite'))).isFile()).toBe(true);
     for (const directory of Object.values(paths)) {
       expect((await stat(directory)).isDirectory()).toBe(true);
