@@ -247,3 +247,11 @@
 ## P1 inherited E2E assertions
 
 Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate correctly; update the two legacy URL assertions to verify the explicit integer revision query. Cache maintenance is global across all libraries, so its round-trip E2E compares the observed pre-clear count with the rebuilt count rather than assuming only its own three files exist. Earlier P1 scenarios legitimately create other libraries. The clear-to-zero assertion remains exact. Performance limits and actual image decoding checks remain unchanged.
+
+## Fresh-environment PDF and timer verification
+
+**Decision:** Run PDF.js decoding in actual browser E2E, where DOMMatrix and browser image primitives exist. Keep binary PDF offsets/lengths and layout/bounds unit tests independent of Node canvas. Do not install an optional native canvas or fabricate a DOM rendering shim for this test.
+
+**Reason:** Fresh CI correctly excluded the optional Node canvas package and exposed a parser-unit import dependency that the development environment masked through NODE_PATH. Clean verification explicitly clears NODE_PATH. The existing exported six-page PDF rendering plus the transferred exact 2×2 JPEG decoding assertion preserve independent verification.
+
+**Decision:** Advance the watched-preview unit test's application invalidation/debounce timers deterministically, then assert the new version. Real-server E2Es still verify actual watcher timing and the five-second limit. This removes contention with the default one-second DOM query deadline without weakening user-facing performance limits.

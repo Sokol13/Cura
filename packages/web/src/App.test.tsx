@@ -478,11 +478,24 @@ describe('Cura catalog', () => {
     );
     await screen.findByRole('button', { name: 'View V1: Forest.png' });
     asset.currentVersionId = nextVersionId;
-    act(() =>
-      channels[0]?.onmessage?.({
-        data: JSON.stringify({ type: 'asset', libraryId, assetId }),
-      }),
-    );
+    // Exercise both application delays deterministically. A busy CI worker
+    // should not spend the query's one-second wait budget on real timers.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      act(() =>
+        channels.at(-1)?.onmessage?.({
+          data: JSON.stringify({ type: 'asset', libraryId, assetId }),
+        }),
+      );
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(250);
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(60);
+      });
+    } finally {
+      vi.useRealTimers();
+    }
     expect(
       await screen.findByRole('button', { name: 'View V2: Forest.png' }),
     ).toBeVisible();

@@ -1,6 +1,6 @@
 # Codex Cloud environment
 
-The checkout is `/workspace/Cura`. Use this existing isolated checkout; do not create a Git worktree. Installation prepares dependencies. Application processes must be restarted in each new task.
+The checkout is `/workspace/Cura`. Keep main here; the accepted autonomous delivery workflow uses isolated worktrees for parallel modules, integrated and pushed by the coordinator. Installation prepares dependencies. Application processes must be restarted in each new task.
 
 ## Variables and credentials
 
@@ -33,6 +33,7 @@ export XDG_DATA_HOME="$CURA_TOOL_HOME/data"
 export XDG_STATE_HOME="$CURA_TOOL_HOME/state"
 export PLAYWRIGHT_BROWSERS_PATH="$CURA_TOOL_HOME/ms-playwright"
 export CURA_OPEN_BROWSER="${CURA_OPEN_BROWSER:-0}"
+unset NODE_PATH # Do not resolve undeclared packages from the managed image.
 
 if ! command -v node >/dev/null 2>&1 || [[ "$(node -p 'process.versions.node.split(".")[0]')" != 22 ]]; then
   echo 'Node 22 is required. Set CODEX_ENV_NODE_VERSION=22 in environment settings.' >&2
@@ -102,3 +103,5 @@ Installation-script exports may not automatically reach later shells. Persist th
 Required network destinations include `registry.npmjs.org`, `nodejs.org`, `github.com`, `api.github.com`, `release-assets.githubusercontent.com`, `cdn.playwright.dev`, `playwright.download.prss.microsoft.com`, and the base image's existing package repositories. If an allowlist is used, add required domains while preserving existing entries. Keep TLS, package-signature, and artifact checks enabled.
 
 The tested install_script, start_skill, Node 22/browser variable requirements, and additive network destinations have been saved to the environment draft. Apply/publish that draft in environment settings to use it for later tasks; no new GitHub secret is needed. A saved configuration draft does not execute its script, update the running network policy, or publish the environment. See [PROGRESS.md](PROGRESS.md) and [BLOCKERS.md](BLOCKERS.md) for actual validation and publication status.
+
+Fresh acceptance must clear `NODE_PATH` so modules preinstalled by the managed image cannot mask an undeclared or intentionally excluded dependency. P1 CI exposed exactly this with an optional Node canvas. Browser PDF verification runs in Chromium; pure Node unit tests require no canvas package.
