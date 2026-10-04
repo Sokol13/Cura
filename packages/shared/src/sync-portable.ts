@@ -167,35 +167,45 @@ export const PortableRecordSchema = z.discriminatedUnion('kind', [
   portableRecord('scriptBreakdown', ScriptBreakdownSchema),
   portableRecord('settingDocument', SettingDocumentSchema),
 ]);
-export const SyncChangeSchema = z
+const recordEnvelope = z
   .object({
-    kind: z.string().min(1).max(64),
+    kind: z.enum(
+      PortableRecordSchema.options.map((schema) => schema.shape.kind.value),
+    ),
     key: IdSchema,
-    expectedRevision: SyncSequenceSchema,
     payload: PortableRecordSchema.nullable(),
     tombstone: z.boolean(),
   })
-  .strict()
-  .refine(
-    (value) => value.tombstone === (value.payload === null),
-    'Tombstone requires null payload',
-  );
-export const SyncRemoteRecordSchema = SyncChangeSchema.omit({
-  expectedRevision: true,
-})
+  .strict();
+const matchesEnvelope = (value: z.infer<typeof recordEnvelope>) =>
+  value.tombstone === (value.payload === null) &&
+  (!value.payload ||
+    (value.kind === value.payload.kind && value.key === value.payload.id));
+export const SyncChangeSchema = recordEnvelope
   .extend({
-    revision: SyncSequenceSchema,
+    expectedRevision: SyncSequenceSchema,
+  })
+  .refine(matchesEnvelope, 'Record envelope must match its payload');
+export const SyncRemoteRecordSchema = recordEnvelope
+  .extend({
+    revision: SyncSequenceSchema.refine((value) => BigInt(value) > 0n),
     createdAt: TimestampSchema,
     updatedAt: TimestampSchema,
   })
-  .strict();
+  .refine(matchesEnvelope, 'Record envelope must match its payload');
 export const SyncCommitSchema = z
   .object({
-    sequence: SyncSequenceSchema,
+    sequence: SyncSequenceSchema.refine((value) => BigInt(value) > 0n),
     operationId: IdSchema,
-    changes: z.array(SyncRemoteRecordSchema).max(10000),
+    changes: z.array(SyncRemoteRecordSchema).min(1).max(10000),
   })
-  .strict();
+  .strict()
+  .refine(
+    (value) =>
+      new Set(value.changes.map((change) => `${change.kind}:${change.key}`))
+        .size === value.changes.length,
+    'Commit records must be unique',
+  );
 export const SyncPullSchema = z
   .object({
     head: SyncSequenceSchema,
@@ -203,7 +213,21 @@ export const SyncPullSchema = z
     hasMore: z.boolean(),
     commits: z.array(SyncCommitSchema).max(100),
   })
-  .strict();
+  .strict()
+  .refine((value) => {
+    if (
+      BigInt(value.cursor) > BigInt(value.head) ||
+      value.hasMore !== BigInt(value.cursor) < BigInt(value.head)
+    )
+      return false;
+    if (!value.commits.length) return !value.hasMore;
+    if (value.commits.at(-1)!.sequence !== value.cursor) return false;
+    return value.commits.every(
+      (commit, index) =>
+        index === 0 ||
+        BigInt(commit.sequence) > BigInt(value.commits[index - 1]!.sequence),
+    );
+  }, 'Pull page must contain ordered complete commits through its cursor');
 export type PortableRecord = z.infer<typeof PortableRecordSchema>;
 export type PortableAsset = z.infer<typeof PortableAssetSchema>;
 export type PortableVersion = z.infer<typeof PortableVersionSchema>;

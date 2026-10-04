@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { mkdtemp, rm, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -8,6 +8,8 @@ import { openDatabase } from '../src/database.js';
 import { CatalogStore, type IngestedFile } from '../src/catalog-store.js';
 import { BoardStore } from '../src/boards/store.js';
 import { BrandStore } from '../src/brands/store.js';
+import { AutomationRepository } from '../src/automation/repository.js';
+import { ArchiveRuleSchema } from '@cura/shared';
 
 const cleanup: Array<() => void | Promise<unknown>> = [];
 afterEach(async () => {
@@ -114,5 +116,135 @@ export async function graphFixture() {
     fonts: [],
     logos: [{ name: '历史', pin }],
   });
-  return { ...f, library, root, asset, pin };
+  const repo = new AutomationRepository(f.db),
+    date = '2026-01-02T03:04:05.000Z';
+  const identity = () => ({
+    id: randomUUID(),
+    libraryId: library.id,
+    createdAt: date,
+    updatedAt: date,
+  });
+  const provenance = {
+    providerId: 'metadata-rules',
+    kind: 'metadata-rules' as const,
+    mode: 'rules' as const,
+    model: null,
+    rawText: 'historical model response',
+    derivation: 'rules-v1',
+    inputKind: 'metadata' as const,
+    sourceHash: processed.hash,
+  };
+  const job = repo.put('automation_jobs', {
+    ...identity(),
+    kind: 'analysis',
+    providerId: 'metadata-rules',
+    status: 'completed',
+    pins: [pin],
+    total: 1,
+    processed: 1,
+    results: [],
+    errorCode: null,
+    ruleId: null,
+    scriptId: null,
+  });
+  const pendingJob = repo.put('automation_jobs', {
+    ...job,
+    ...identity(),
+    status: 'running',
+  });
+  const proposalId = randomUUID(),
+    changeId = randomUUID();
+  repo.put('automation_proposals', {
+    ...identity(),
+    id: proposalId,
+    jobId: job.id,
+    ...pin,
+    sourceName: 'original.png',
+    sourceHash: processed.hash,
+    caption: '建议',
+    provenance,
+    changeIds: [changeId],
+  });
+  repo.put('automation_changes', {
+    ...identity(),
+    id: changeId,
+    proposalId,
+    ...pin,
+    field: 'displayName',
+    beforeValue: null,
+    afterValue: '审定名字',
+    suggestedTagNames: [],
+    beforeTagLabels: [],
+    afterTagLabels: [],
+    status: 'undone',
+    appliedAt: date,
+    undoneAt: date,
+  });
+  repo.put('automation_jobs', {
+    ...job,
+    results: [{ ...pin, proposalId, errorCode: null }],
+  });
+  repo.put(
+    'archive_rules',
+    ArchiveRuleSchema.parse({
+      ...identity(),
+      name: 'Old drafts',
+      enabled: false,
+      filters: {
+        olderThanDays: 30,
+        folderId: randomUUID(),
+        tagIds: [randomUUID()],
+      },
+      revision: 3,
+      lastJobId: pendingJob.id,
+    }),
+  );
+  const entity = {
+    id: randomUUID(),
+    kind: 'character' as const,
+    name: 'ALICE',
+    notes: 'Keep costume',
+    references: [{ startLine: 1, endLine: 1, excerpt: 'ALICE' }],
+  };
+  const script = repo.put('script_breakdowns', {
+    ...identity(),
+    title: 'Original script',
+    sourcePin: pin,
+    sourceHash: processed.hash,
+    lineCount: 1,
+    revision: 2,
+    entities: [entity],
+    provenance: { ...provenance, kind: 'structured-script', inputKind: 'text' },
+  });
+  const version = f.catalog
+    .listVersions(asset.id)
+    .find((v) => v.id === pin.versionId)!;
+  repo.put('setting_documents', {
+    ...identity(),
+    title: 'Character setting',
+    kind: 'character',
+    language: 'zh-CN',
+    revision: 4,
+    markdown: '# Hand-edited setting',
+    sources: [
+      {
+        ...pin,
+        hash: version.hash,
+        name: version.name,
+        note: 'Historical note',
+        prompt: version.prompt,
+        negativePrompt: version.negativePrompt,
+        model: version.model,
+        source: version.source,
+        seed: version.seed,
+        width: version.width,
+        height: version.height,
+        tags: ['主角'],
+      },
+    ],
+    scriptId: script.id,
+    entities: [entity],
+    provenance: 'metadata-document-v1',
+  });
+  return { ...f, library, root, asset, pin, pendingJob };
 }

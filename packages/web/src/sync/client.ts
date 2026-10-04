@@ -67,13 +67,16 @@ export function useSyncClient(libraryId: string, fallbackError: string) {
     };
   }, [refresh, report, invalidate]);
   useEffect(() => {
-    if (busy || !status?.links.some((link) => isActiveSync(link.state))) return;
+    if (busy || !status?.configured || !status.links.length) return;
+    const delay = status.links.some((link) => isActiveSync(link.state))
+      ? 500
+      : 5000;
     const controller = new AbortController();
     const timer = window.setTimeout(() => {
       void refresh(controller.signal).catch((reason: unknown) => {
         if (!controller.signal.aborted) report(reason);
       });
-    }, 500);
+    }, delay);
     return () => {
       window.clearTimeout(timer);
       controller.abort();

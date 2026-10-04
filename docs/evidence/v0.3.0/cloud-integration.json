@@ -1,0 +1,33 @@
+{
+  "scope": "Real disposable local Supabase; sequential protocol, Auth/file, two-device graph and browser tests; no hosted project",
+  "productionCommit": "41e45b187e2f6c0ae646f67e91fc909c3b320f97",
+  "native": {
+    "protocol": {
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0,
+      "success": true
+    },
+    "auth": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "success": true
+    },
+    "service": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "success": true
+    }
+  },
+  "securityAdvisors": "passed with no warning-level findings",
+  "browser": {
+    "expected": 1,
+    "unexpected": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "duration": 27784.137
+  },
+  "credentials": "Private status/accounts/reporter output excluded from this public evidence"
+}

@@ -64,12 +64,17 @@ The library row is locked before CAS checks and before incrementing its transact
 
 ## Reproducible local verification
 
-Use pinned Supabase CLI **2.119.0** and a disposable local Docker stack. Initialize/start it using that CLI's documented `init` and `start` commands, with email confirmation disabled for test signup and `cura_sync` excluded from exposed schemas. Capture `supabase status -o json` into a private file (`chmod 600`); it contains local credentials and must never be committed or printed. These tests use only its `API_URL` and `ANON_KEY`.
+Use pinned Supabase CLI **2.119.0** and the checked-in `supabase/config.toml` from the repository root; `supabase init` is unnecessary. The disposable `cura-ci` configuration disables email confirmation, exposes only `public` and disables automatic Data API grants. Start it with `supabase --agent no start --exclude realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor`, directing stdout/stderr to a private file. Capture `supabase --agent no status -o json` into a private file (`umask 077`, `chmod 600`); it contains local credentials and must never be committed or printed. These tests use only its `API_URL` and `ANON_KEY`. The [required CI workflow](CI.md) captures all raw test output privately and prints credential-safe phase summaries.
 
 ```sh
+umask 077
+cloud_test_exit=0
 CURA_SYNC_TEST_STATUS=/absolute/private/status.json \
-CURA_SYNC_TEST_CONTAINER=supabase_db_your-local-project \
-pnpm --filter @cura/server exec vitest run test/sync-cloud.test.ts
+CURA_SYNC_TEST_CONTAINER=supabase_db_cura-ci \
+pnpm --filter @cura/server exec vitest run test/sync-cloud.test.ts \
+  --reporter=json --outputFile=/absolute/private/protocol.json \
+  > /absolute/private/protocol.log 2>&1 || cloud_test_exit=$?
+node scripts/summarize-cloud-check.mjs protocol "$cloud_test_exit" /absolute/private/protocol.json
 ```
 
 The suite refuses non-loopback URLs. It drops/recreates only `cura_sync` and its two named Storage policies, then reapplies the checked-in migration through `psql`. It does not reset Auth, other schemas, buckets or unrelated data. It creates isolated random test accounts and object prefixes. Do not run it while application sync uses the same disposable stack. Without the explicit environment variable the suite is skipped, so ordinary offline tests do not require Docker or cloud credentials.
@@ -77,3 +82,23 @@ The suite refuses non-loopback URLs. It drops/recreates only `cura_sync` and its
 Coverage includes actual Auth login/refresh; anonymous/outsider isolation; owner/editor/viewer permissions and revocation; owner immutability; direct REST table denial; hidden bootstrap; strict envelopes and cross-library rejection; atomic stale-CAS rejection; identical retry and changed-request rejection; concurrent commit ordering; complete commit pagination; tombstones; exact immutable private object bytes and rejected overwrites; local-scope sign-out. Run `supabase db advisors --local --type security --level warn --fail-on warn` after schema changes. Hosted project deployment and user-specific Auth configuration remain separate from this local verification.
 
 Verified on 2026-10-04 against the real disposable local stack: all **11 integration scenarios passed** in 4.6 seconds, including a writer blocked behind concurrent revocation. Server TypeScript, scoped ESLint/Prettier and the Supabase security advisor passed with zero warning-level findings. The stack used CLI 2.119.0 and PostgreSQL 17.11; no hosted project was modified.
+
+### Browser acceptance fixture
+
+After starting the disposable stack and applying the migration, seed four real local Auth accounts for the separate two-device browser gate. The seeder is a development tool; it does not configure the Cura application or reset the stack. Its private CLI status input must include `API_URL`, `ANON_KEY` and `SERVICE_ROLE_KEY` (or `SECRET_KEY`). Alternatively provide the admin key through `CURA_SUPABASE_SERVICE_ROLE_KEY` only for this command.
+
+```sh
+# The parent directory must already exist outside the repository.
+# Capture CLI status without exposing its credentials in terminal output.
+umask 077
+supabase status -o json > /absolute/private/status.json
+CURA_SYNC_TEST_STATUS=/absolute/private/status.json \
+CURA_SYNC_E2E_FIXTURE=/absolute/private/cura-e2e.private.json \
+node supabase/seed-browser-fixture.mjs
+
+node --test supabase/seed-browser-fixture.test.mjs
+```
+
+The URL must identify a loopback project; redirects are rejected. Generated owner/editor/viewer/outsider accounts have confirmed test emails and random passwords. The output is created exclusively with mode 0600, outside the repository, and contains only `{url,anonKey,accounts}`; each account has `{id,email,password}`. It never contains an admin key. Existing matching private output is preserved byte for byte, without creating additional users. Use a different private output path to create a fresh cohort. Failed creation removes already created accounts and the partial output when cleanup succeeds; an incomplete cleanup produces a generic error for the disposable stack.
+
+The script's four local HTTP contract tests cover confirmed distinct users, secret omission, restrictive permissions, idempotence, remote/repository refusal and partial-failure cleanup. Actual local Supabase creation was also exercised; browser use is verified separately. Run the configured command in [CLOUD-WORKSPACE.md](../docs/CLOUD-WORKSPACE.md) with this fixture. Do not run the schema-reset integration suite concurrently with application sync. Windows users must also restrict the private directory ACL to their account; POSIX mode bits are not a substitute for Windows ACLs.

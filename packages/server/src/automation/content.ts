@@ -278,7 +278,7 @@ export class AutomationContent {
           '',
         ]),
         ...entities.flatMap((e) => [
-          `## ${e.name} (${e.kind})`,
+          `## ${e.name} (${zh ? { character: '人物', prop: '道具', scene: '场景' }[e.kind] : e.kind})`,
           '',
           e.notes || missing,
           ...e.references.map(

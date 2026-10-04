@@ -167,6 +167,316 @@ export interface MergeResult {
   records: S.PortableRecord[];
   conflicts: S.SyncConflictDetail[];
 }
+type PortableMap = Map<string, S.PortableRecord>;
+type Dependency = {
+  kind: S.PortableRecord['kind'];
+  id: string;
+  path: string;
+  clear?: () => void;
+};
+
+/** Restore only incoming parent links involved in a cycle; valid local moves stay intact. */
+function resolveParentCycles(
+  nodes: Array<{
+    id: string;
+    parent: string | null;
+    localParent: string | null | undefined;
+    restore: (parent: string | null) => void;
+  }>,
+): void {
+  const byId = new Map(nodes.map((node) => [node.id, node]));
+  const ordered = [...nodes].sort((a, b) => a.id.localeCompare(b.id));
+  for (;;) {
+    const done = new Set<string>();
+    let restored = false;
+    for (const start of ordered) {
+      const path = new Map<string, number>();
+      let id: string | null = start.id;
+      while (id && byId.has(id) && !done.has(id)) {
+        if (path.has(id)) {
+          const cycle = [...path.keys()].slice(path.get(id)!);
+          const incoming = cycle
+            .sort()
+            .map((key) => byId.get(key)!)
+            .find(
+              (node) =>
+                node.localParent !== undefined &&
+                node.parent !== node.localParent,
+            );
+          if (incoming) {
+            incoming.parent = incoming.localParent!;
+            incoming.restore(incoming.parent);
+            restored = true;
+          }
+          break;
+        }
+        path.set(id, path.size);
+        id = byId.get(id)!.parent;
+      }
+      if (restored) break;
+      for (const key of path.keys()) done.add(key);
+    }
+    // A cycle wholly present in an input remains invalid and is rejected by graph validation.
+    if (!restored) return;
+  }
+}
+
+/** Strong references must stay closed after independently valid edits merge.
+ * Restoring a locally retained dependency honors local edits; a local deletion
+ * instead clears newly received mutable references to that deleted identity. */
+function closeDependencies(
+  libraryId: string,
+  linkId: string,
+  operationId: string,
+  records: S.PortableRecord[],
+  conflicts: S.SyncConflictDetail[],
+  base: PortableMap,
+  local: PortableMap,
+  remote: PortableMap,
+): void {
+  const resolved = new Map(
+    records.map((record) => [recordKey(record), record]),
+  );
+  const log = (record: S.PortableRecord, path: string) => {
+    const key = recordKey(record);
+    const previous = conflicts.find(
+      (value) =>
+        value.entityKind === record.kind && value.entityId === record.id,
+    );
+    if (previous) {
+      previous.changedFields = [...new Set([...previous.changedFields, path])];
+      previous.resolved = structuredClone(record);
+      return;
+    }
+    const entity =
+      record.kind === 'asset'
+        ? record.data.asset
+        : record.kind === 'board'
+          ? record.data.board
+          : record.data;
+    conflicts.push({
+      id: stableId(`${operationId}:${key}:conflict`),
+      linkId,
+      libraryId,
+      entityKind: record.kind,
+      entityId: record.id,
+      resolution: 'local-wins',
+      changedFields: [path],
+      base: base.get(key) ?? null,
+      local: local.get(key) ?? null,
+      remote: remote.get(key) ?? null,
+      resolved: structuredClone(record),
+      ordinalRemaps: [],
+      createdAt: entity.updatedAt,
+      updatedAt: entity.updatedAt,
+    });
+  };
+  for (let index = 0; index < records.length; index++) {
+    const record = records[index]!;
+    const dependencies: Dependency[] = [];
+    const add = (
+      kind: Dependency['kind'],
+      id: string | null,
+      path: string,
+      clear?: () => void,
+    ) => {
+      if (id)
+        dependencies.push({ kind, id, path, ...(clear ? { clear } : {}) });
+    };
+    const pin = (value: { assetId: string } | null, path: string) =>
+      add('asset', value?.assetId ?? null, path);
+    switch (record.kind) {
+      case 'folder':
+        add('folder', record.data.parentId, '/data/parentId', () => {
+          record.data.parentId = null;
+        });
+        break;
+      case 'tag':
+        add('tagGroup', record.data.groupId, '/data/groupId', () => {
+          record.data.groupId = null;
+        });
+        break;
+      case 'asset':
+        add(
+          'folder',
+          record.data.asset.folderId,
+          '/data/asset/folderId',
+          () => {
+            record.data.asset.folderId = null;
+          },
+        );
+        for (const link of record.data.tagLinks)
+          add('tag', link.tagId, `/data/tagLinks/${link.tagId}`, () => {
+            record.data.tagLinks = record.data.tagLinks.filter(
+              (value) => value.tagId !== link.tagId,
+            );
+          });
+        for (const version of record.data.versions)
+          add(
+            'generation',
+            version.generationId,
+            `/data/versions/${version.id}/generationId`,
+          );
+        break;
+      case 'board': {
+        const before = base.get(recordKey(record)),
+          ours = local.get(recordKey(record)),
+          theirs = remote.get(recordKey(record));
+        const items = new Map(record.data.items.map((item) => [item.id, item]));
+        const localItems = new Map(
+          ours?.kind === 'board'
+            ? ours.data.items.map((item) => [item.id, item])
+            : [],
+        );
+        const locallyDeleted = (id: string) =>
+          !localItems.has(id) &&
+          before?.kind === 'board' &&
+          before.data.items.some((item) => item.id === id) &&
+          theirs?.kind === 'board' &&
+          theirs.data.items.some((item) => item.id === id);
+        const restoreItem = (id: string): boolean => {
+          if (items.has(id)) return true;
+          const item = localItems.get(id);
+          if (!item) return false;
+          const restored = structuredClone(item);
+          items.set(id, restored);
+          record.data.items.push(restored);
+          log(record, `/data/items/${id}`);
+          return true;
+        };
+        record.data.edges = record.data.edges.filter((edge) => {
+          const missing = [edge.sourceId, edge.targetId].filter(
+            (id) => !items.has(id),
+          );
+          if (missing.some(locallyDeleted)) {
+            log(record, `/data/edges/${edge.id}`);
+            return false;
+          }
+          for (const id of missing) restoreItem(id);
+          return true;
+        });
+        // Restored endpoints can themselves have parents; process the growing list to closure.
+        for (const item of record.data.items) {
+          if (
+            item.groupId &&
+            !restoreItem(item.groupId) &&
+            locallyDeleted(item.groupId)
+          ) {
+            item.groupId = null;
+            log(record, `/data/items/${item.id}/groupId`);
+          }
+        }
+        resolveParentCycles(
+          record.data.items.map((item) => ({
+            id: item.id,
+            parent: item.groupId,
+            localParent: localItems.get(item.id)?.groupId,
+            restore: (parent) => {
+              item.groupId = parent;
+              log(record, `/data/items/${item.id}/groupId`);
+            },
+          })),
+        );
+        record.data.items.sort(
+          (a, b) =>
+            a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id),
+        );
+        // Ensure a conflict snapshot includes all edge filtering and restored ancestors.
+        const conflict = conflicts.find(
+          (value) =>
+            value.entityKind === 'board' && value.entityId === record.id,
+        );
+        if (conflict) conflict.resolved = structuredClone(record);
+        add('template', record.data.board.templateId, '/data/board/templateId');
+        for (const item of record.data.items)
+          if (item.assetId)
+            pin({ assetId: item.assetId }, `/data/items/${item.id}`);
+        for (const slot of record.data.slots)
+          pin(slot.currentPin, `/data/slots/${slot.id}/currentPin`);
+        for (const revision of record.data.revisions)
+          pin(revision.pin, `/data/revisions/${revision.id}/pin`);
+        for (const selection of record.data.finalSelections)
+          pin(selection, `/data/finalSelections/${selection.id}`);
+        break;
+      }
+      case 'brand':
+        for (const child of [...record.data.fonts, ...record.data.logos])
+          pin(child.pin, `/data/pins/${child.id}`);
+        break;
+      case 'cmf':
+        for (const child of record.data.entries)
+          pin(child.pin, `/data/entries/${child.id}`);
+        break;
+      case 'generationJob':
+        for (const id of record.data.assetIds)
+          add('asset', id, '/data/assetIds');
+        break;
+      case 'activity':
+        add('asset', record.data.assetId, '/data/assetId');
+        break;
+      case 'automationJob':
+        for (const value of record.data.pins) pin(value, '/data/pins');
+        for (const result of record.data.results) {
+          pin(result, '/data/results');
+          add(
+            'automationProposal',
+            result.proposalId,
+            '/data/results/proposalId',
+          );
+        }
+        break;
+      case 'automationProposal':
+        pin(record.data, '/data/assetId');
+        add('automationJob', record.data.jobId, '/data/jobId');
+        for (const id of record.data.changeIds)
+          add('automationChange', id, '/data/changeIds');
+        break;
+      case 'automationChange':
+        pin(record.data, '/data/assetId');
+        add('automationProposal', record.data.proposalId, '/data/proposalId');
+        break;
+      case 'scriptBreakdown':
+        pin(record.data.sourcePin, '/data/sourcePin');
+        break;
+      case 'settingDocument':
+        for (const source of record.data.sources) pin(source, '/data/sources');
+        break;
+      // Collection/archive filters and copied automation/script audit references
+      // are intentionally weak; they must not resurrect deleted records.
+    }
+    for (const dependency of dependencies) {
+      const key = `${dependency.kind}:${dependency.id}`;
+      if (resolved.has(key)) continue;
+      const retained = local.get(key);
+      if (retained) {
+        const restored = structuredClone(retained);
+        resolved.set(key, restored);
+        records.push(restored);
+        log(restored, `/required-by/${recordKey(record)}`);
+      } else if (base.has(key) && remote.has(key) && dependency.clear) {
+        dependency.clear();
+        log(record, dependency.path);
+      }
+    }
+  }
+  resolveParentCycles(
+    records
+      .filter((record) => record.kind === 'folder')
+      .map((record) => {
+        const ours = local.get(recordKey(record));
+        return {
+          id: record.id,
+          parent: record.data.parentId,
+          localParent: ours?.kind === 'folder' ? ours.data.parentId : undefined,
+          restore: (parent: string | null) => {
+            record.data.parentId = parent;
+            log(record, '/data/parentId');
+          },
+        };
+      }),
+  );
+}
+
 /** Three-way metadata merge, retaining both immutable histories. Dirty local fields win. */
 export function mergeGraphs(
   libraryId: string,
@@ -209,7 +519,7 @@ export function mergeGraphs(
         theirs.data.versions,
         'assetVersion',
         remaps,
-      );
+      ).sort((a, b) => b.ordinal - a.ordinal);
       const currentId = resolved.data.asset.currentVersionId;
       const currentVersion = resolved.data.versions.find(
         (v) => v.id === currentId,
@@ -239,8 +549,65 @@ export function mergeGraphs(
       theirs.kind === 'board' &&
       resolved?.kind === 'board'
     ) {
+      const resurrectBoard = Boolean(
+        theirs.data.board.deletedAt &&
+          !ours.data.board.deletedAt &&
+          !equal(ours, before),
+      );
+      if (resurrectBoard) {
+        resolved.data.board.deletedAt = null;
+        fields.add('/data/board/deletedAt');
+      }
       const revisions: S.SlotRevision[] = [];
       for (const slot of resolved.data.slots) {
+        const own = ours.data.slots.find((value) => value.id === slot.id);
+        const previous =
+          before?.kind === 'board'
+            ? before.data.slots.find((value) => value.id === slot.id)
+            : undefined;
+        const incoming = theirs.data.slots.find(
+          (value) => value.id === slot.id,
+        );
+        if (resolved.data.board.deletedAt || own?.deletedAt) {
+          slot.deletedAt =
+            own?.deletedAt ?? slot.deletedAt ?? resolved.data.board.deletedAt;
+          slot.currentPin = null;
+        } else if (
+          own &&
+          !own.deletedAt &&
+          (resurrectBoard || (incoming?.deletedAt && !equal(own, previous)))
+        ) {
+          slot.deletedAt = null;
+          slot.currentPin = structuredClone(own.currentPin);
+          fields.add(`/data/slots/${slot.id}/deletedAt`);
+          fields.add(`/data/slots/${slot.id}/currentPin`);
+        }
+        if (!slot.deletedAt && resolved.data.board.kind === 'matrix') {
+          for (const [axis, id] of [
+            ['rows', slot.rowId],
+            ['columns', slot.columnId],
+          ] as const) {
+            if (
+              !id ||
+              resolved.data.board[axis].some((value) => value.id === id)
+            )
+              continue;
+            const retained = ours.data.board[axis].find(
+              (value) => value.id === id,
+            );
+            if (retained) {
+              const position = ours.data.board[axis].findIndex(
+                (value) => value.id === id,
+              );
+              resolved.data.board[axis].splice(
+                position,
+                0,
+                structuredClone(retained),
+              );
+              fields.add(`/data/board/${axis}/${id}`);
+            }
+          }
+        }
         const history = unionHistory(
           before?.kind === 'board'
             ? before.data.revisions.filter((v) => v.slotId === slot.id)
@@ -299,16 +666,34 @@ export function mergeGraphs(
         resolved.data.board.revision =
           Math.max(ours.data.board.revision, theirs.data.board.revision) + 1;
     }
+    if (
+      competing &&
+      resolved &&
+      ours &&
+      theirs &&
+      'revision' in resolved.data &&
+      'revision' in ours.data &&
+      'revision' in theirs.data
+    ) {
+      resolved.data.revision =
+        Math.max(ours.data.revision, theirs.data.revision) + 1;
+    }
     if (resolved) resolved = S.PortableRecordSchema.parse(resolved);
     if (competing) {
       const entity = ours ?? theirs ?? before!,
-        date =
-          [ours?.data, theirs?.data]
-            .flatMap((value) =>
-              value && 'updatedAt' in value ? [value.updatedAt] : [],
-            )
-            .sort()
-            .at(-1) ?? new Date().toISOString();
+        date = [ours, theirs, before]
+          .flatMap((value) => {
+            if (!value) return [];
+            const data =
+              value.kind === 'asset'
+                ? value.data.asset
+                : value.kind === 'board'
+                  ? value.data.board
+                  : value.data;
+            return [data.updatedAt];
+          })
+          .sort()
+          .at(-1)!;
       conflicts.push(
         S.SyncConflictDetailSchema.parse({
           id: stableId(`${operationId}:${key}:conflict`),
@@ -330,6 +715,16 @@ export function mergeGraphs(
     }
     if (resolved) records.push(resolved);
   }
+  closeDependencies(
+    libraryId,
+    linkId,
+    operationId,
+    records,
+    conflicts,
+    b,
+    l,
+    r,
+  );
   const owned = new Set(
     records.flatMap((record) =>
       record.kind === 'asset'

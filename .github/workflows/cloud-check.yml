@@ -1,0 +1,100 @@
+name: Cloud integration
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cloud:
+    name: Real Supabase Auth, RLS, Storage and two-device sync
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NODE_PATH: ''
+      CURA_SYNC_TEST_CONTAINER: supabase_db_cura-ci
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.119.0
+      - name: Prepare private local test state
+        shell: bash
+        run: |
+          umask 077
+          mkdir -p "$RUNNER_TEMP/cura-cloud"
+          printf 'CURA_SYNC_TEST_STATUS=%s\n' "$RUNNER_TEMP/cura-cloud/status.private.json" >> "$GITHUB_ENV"
+          printf 'CURA_SYNC_E2E_FIXTURE=%s\n' "$RUNNER_TEMP/cura-cloud/browser.private.json" >> "$GITHUB_ENV"
+      - name: Install locked dependencies and build
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm build
+      - name: Verify credential-safe report summaries
+        run: node --test scripts/summarize-cloud-check.test.mjs
+      - name: Start only the disposable database, Auth, REST, Storage and gateway
+        shell: bash
+        run: |
+          umask 077
+          cloud_phase='Local Supabase startup'
+          trap 'cloud_phase_exit=$?; printf "%s failed; private diagnostics suppressed.\n" "$cloud_phase"; docker ps --all --filter name=cura-ci --format "{{.Names}} {{.Status}}" 2> "$RUNNER_TEMP/cura-cloud/docker.private.log" || true; exit "$cloud_phase_exit"' ERR
+          supabase --agent no start --exclude realtime,imgproxy,mailpit,postgres-meta,studio,edge-runtime,logflare,vector,supavisor > "$RUNNER_TEMP/cura-cloud/start.private.log" 2>&1
+          cloud_phase='Local Supabase status'
+          supabase --agent no status -o json > "$CURA_SYNC_TEST_STATUS" 2> "$RUNNER_TEMP/cura-cloud/status.private.log"
+          chmod 600 "$CURA_SYNC_TEST_STATUS"
+          node -e 'const fs=require("node:fs"); const value=JSON.parse(fs.readFileSync(process.env.CURA_SYNC_TEST_STATUS,"utf8")); if(!["127.0.0.1","localhost"].includes(new URL(value.API_URL).hostname)||!value.ANON_KEY) throw Error("Local Supabase status is incomplete");' > "$RUNNER_TEMP/cura-cloud/status-validation.private.log" 2>&1
+          printf 'Local Supabase startup and status: PASS.\n'
+      # This suite resets its own protocol schema. It must finish before any app sync starts.
+      - name: Real SQL, RLS, CAS, revocation and immutable Storage checks
+        run: |
+          umask 077
+          cloud_test_exit=0
+          pnpm --filter @cura/server exec vitest run test/sync-cloud.test.ts --reporter=json --outputFile="$RUNNER_TEMP/cura-cloud/protocol.private.json" > "$RUNNER_TEMP/cura-cloud/protocol.private.log" 2>&1 || cloud_test_exit=$?
+          node scripts/summarize-cloud-check.mjs protocol "$cloud_test_exit" "$RUNNER_TEMP/cura-cloud/protocol.private.json"
+      - name: Real session persistence, refresh and file transfer checks
+        run: |
+          umask 077
+          cloud_test_exit=0
+          pnpm --filter @cura/server exec vitest run test/sync-auth-cloud.test.ts --reporter=json --outputFile="$RUNNER_TEMP/cura-cloud/auth.private.json" > "$RUNNER_TEMP/cura-cloud/auth.private.log" 2>&1 || cloud_test_exit=$?
+          node scripts/summarize-cloud-check.mjs auth "$cloud_test_exit" "$RUNNER_TEMP/cura-cloud/auth.private.json"
+      - name: Real two-device graph, offline recovery and corruption checks
+        run: |
+          umask 077
+          cloud_test_exit=0
+          pnpm --filter @cura/server exec vitest run test/sync-service-cloud.test.ts --reporter=json --outputFile="$RUNNER_TEMP/cura-cloud/service.private.json" > "$RUNNER_TEMP/cura-cloud/service.private.log" 2>&1 || cloud_test_exit=$?
+          node scripts/summarize-cloud-check.mjs service "$cloud_test_exit" "$RUNNER_TEMP/cura-cloud/service.private.json"
+      - name: Reject warning-level security advisor findings
+        shell: bash
+        run: |
+          umask 077
+          supabase --agent no db advisors --local --type security --level warn --fail-on warn > "$RUNNER_TEMP/cura-cloud/advisors.private.log" 2>&1 || { printf 'Cloud security advisors: FAIL; private diagnostics suppressed.\n'; exit 1; }
+          printf 'Cloud security advisors: PASS.\n'
+      - name: Seed four private browser accounts
+        run: |
+          umask 077
+          node supabase/seed-browser-fixture.mjs > "$RUNNER_TEMP/cura-cloud/seed.private.log" 2>&1 || { printf 'Cloud browser fixture: FAIL; private diagnostics suppressed.\n'; exit 1; }
+          printf 'Cloud browser fixture: PASS.\n'
+      - name: Install Chromium and codec-capable Chrome
+        run: pnpm exec playwright install --with-deps chromium chrome
+      - name: Real owner/editor/viewer browser workflow on two Cura servers
+        env:
+          CURA_E2E_PORT: '4342'
+        run: |
+          umask 077
+          cloud_test_exit=0
+          PLAYWRIGHT_JSON_OUTPUT_FILE="$RUNNER_TEMP/cura-cloud/browser-result.private.json" pnpm exec playwright test --config=e2e/sync.configured.config.ts --reporter=json > "$RUNNER_TEMP/cura-cloud/browser.private.log" 2>&1 || cloud_test_exit=$?
+          node scripts/summarize-cloud-check.mjs browser "$cloud_test_exit" "$RUNNER_TEMP/cura-cloud/browser-result.private.json"
+      - name: Stop only this disposable stack and remove private test files
+        if: always()
+        shell: bash
+        run: |
+          umask 077
+          supabase --agent no stop --no-backup > "$RUNNER_TEMP/cura-cloud-stop.private.log" 2>&1 || true
+          rm -rf -- "$RUNNER_TEMP/cura-cloud"
+          rm -f -- "$RUNNER_TEMP/cura-cloud-stop.private.log"

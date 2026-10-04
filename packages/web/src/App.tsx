@@ -55,6 +55,21 @@ const ProcessWorkspace = lazy(() =>
     default: module.ProcessWorkspace,
   })),
 );
+const AutomationWorkspace = lazy(() =>
+  import('./automation/AutomationWorkspace').then((module) => ({
+    default: module.AutomationWorkspace,
+  })),
+);
+const SyncWorkspace = lazy(() =>
+  import('./sync/SyncWorkspace').then((module) => ({
+    default: module.SyncWorkspace,
+  })),
+);
+const FcpxmlWorkspace = lazy(() =>
+  import('./fcpxml/FcpxmlWorkspace').then((module) => ({
+    default: module.FcpxmlWorkspace,
+  })),
+);
 const RichPreviewQueue = lazy(() =>
   import('./media/RichPreviewQueue').then((module) => ({
     default: module.RichPreviewQueue,
@@ -65,10 +80,22 @@ const ExportDialog = lazy(() =>
     default: module.ExportDialog,
   })),
 );
-type Workspace = 'catalog' | 'boards' | 'brands' | 'process';
+type Workspace =
+  | 'catalog'
+  | 'boards'
+  | 'brands'
+  | 'process'
+  | 'automation'
+  | 'sync'
+  | 'fcpxml';
 const readWorkspace = (): Workspace => {
   const value = new URLSearchParams(window.location.search).get('workspace');
-  return value === 'boards' || value === 'brands' || value === 'process'
+  return value === 'boards' ||
+    value === 'brands' ||
+    value === 'process' ||
+    value === 'automation' ||
+    value === 'sync' ||
+    value === 'fcpxml'
     ? value
     : 'catalog';
 };
@@ -119,6 +146,7 @@ export function App() {
       if (next === 'catalog') url.searchParams.delete('workspace');
       else url.searchParams.set('workspace', next);
       if (next !== 'boards') url.searchParams.delete('board');
+      if (next !== 'automation') url.searchParams.delete('automationTab');
       window.history.pushState({}, '', url);
       setWorkspace(next);
       setPreview(null);
@@ -598,6 +626,28 @@ export function App() {
               libraryId={libraryId}
               onBack={() => navigateWorkspace('catalog')}
             />
+          ) : workspace === 'automation' ? (
+            <AutomationWorkspace
+              key={libraryId}
+              libraryId={libraryId}
+              onBack={() => navigateWorkspace('catalog')}
+            />
+          ) : workspace === 'sync' ? (
+            <SyncWorkspace
+              key={libraryId}
+              libraryId={libraryId}
+              onBack={() => navigateWorkspace('catalog')}
+              onOpenLibrary={(id) => {
+                changeLibrary(id);
+                navigateWorkspace('catalog');
+              }}
+            />
+          ) : workspace === 'fcpxml' ? (
+            <FcpxmlWorkspace
+              key={libraryId}
+              libraryId={libraryId}
+              onBack={() => navigateWorkspace('catalog')}
+            />
           ) : (
             <ProcessWorkspace
               key={libraryId}
@@ -686,7 +736,16 @@ export function App() {
               />
             </header>
             <nav className="workspace-navigation" aria-label={t('workspaces')}>
-              {(['boards', 'brands', 'process'] as const).map((destination) => (
+              {(
+                [
+                  'boards',
+                  'brands',
+                  'process',
+                  'automation',
+                  'sync',
+                  'fcpxml',
+                ] as const
+              ).map((destination) => (
                 <button
                   key={destination}
                   disabled={!libraryId}

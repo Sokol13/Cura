@@ -1,5 +1,13 @@
 # Decisions
 
+## CI-gated publication fallback (2026-10-04)
+
+**Decision:** Provide an inactive, explicit-request `workflow_run` publication fallback for v0.3.0. The user already authorized milestone tags/Releases after completion and green CI. The coordinator alone activates `.github/release-request.json` after reviewing all acceptance evidence; no request file is included with the fallback implementation. The complete triggering CI run must succeed for a same-repository main push, and the tested SHA must still be remote main before each publication write.
+
+**Reason:** Interactive GitHub credentials may expire while the connected app can still publish ordinary main commits. The repository's Actions token can publish an immutable annotated tag and generated Release notes, but its tag push does not trigger the existing Release workflow. The fallback publishes within the same guarded job, validates four package versions, report readiness and all three package trees, and recovers a missing Release without retagging. Exact activation and removal steps are in RELEASE-FALLBACK.md.
+
+**Alternatives rejected:** Publishing before acceptance evidence, creating the request as part of infrastructure work, bypassing failed CI, dispatching a workflow with unavailable credentials, treating auth errors as missing Releases, force-moving tags, or silently accepting draft/prerelease artifacts as the stable milestone.
+
 ## Scope and authority
 
 **Decision:** Implement only phase 0 of AGENTS.md section 4 and stop before phase 1, as explicitly requested for this task. Use the existing isolated cloud checkout; do not create a worktree.
@@ -283,3 +291,13 @@ Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate cor
 **Reason:** The injected shell token expired during P2, while the connected app retains repository write access. The user already authorized main pushes and uninterrupted work. This preserves the exact tested content and avoids exposing, replacing or requesting credentials.
 
 **Alternatives rejected:** Force-pushing unrelated history, publishing an unverified tree, stopping development for a token request, or treating local tests as a substitute for actual remote CI.
+
+## P2 portability and review closure
+
+**Decision:** Treat FCPXML generated packages and ready download locations as device-local operational artifacts. Cloud portable records include the P0/P1 domain graph and completed automation/scripts/documents, but do not recreate ready FCPXML jobs without their generated package. Neutral export retains completed FCPXML requests and their immutable dependencies; a transferred editing package uses its included relinker.
+
+**Reason:** Restoring a ready job with another computer's package path would produce unavailable downloads and false success. The documented ZIP/manifest/request preserves interchange without treating a cache as synchronized domain data.
+
+**Decision:** Preserve valid catalog tag labels up to the catalog's 255-character limit in historical automation snapshots, while retaining the smaller model-suggestion bound. Archive work yields between guarded batches of at most 20 assets. Concurrent folder/group moves are reconciled to a valid graph with local-parent preference and explicit conflict snapshots; merged arrays retain each domain reader's canonical order to avoid false new edits after replay.
+
+**Alternatives rejected:** Truncating user-authored history, blocking the request thread for a whole library, accepting cyclic merged graphs, or suppressing real changes through a global order-insensitive hash.

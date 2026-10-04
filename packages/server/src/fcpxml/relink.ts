@@ -27,7 +27,7 @@ try {
  xml=xml.replace(/<asset\s[^>]*\/>/g,tag=>{
   const id=/\bid="([^"]+)"/.exec(tag)?.[1];
   if(!targets.has(id)||seen.has(id)||! /\bsrc="[^"]*"/.test(tag))throw new Error('Unknown or duplicate XML resource');
-  seen.add(id);return tag.replace(/\bsrc="[^"]*"/,'src="'+escape(targets.get(id))+'"');
+  seen.add(id);return tag.replace(/\bsrc="[^"]*"/,()=> 'src="'+escape(targets.get(id))+'"');
  });
  if(seen.size!==targets.size)throw new Error('Missing XML media resources');
  const temporary=xmlPath+'.'+randomUUID()+'.partial';

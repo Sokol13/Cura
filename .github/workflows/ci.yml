@@ -12,6 +12,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  cloud:
+    name: Mandatory real cloud integration
+    uses: ./.github/workflows/cloud-check.yml
+
   check:
     name: Lint, types, unit tests and Chromium E2E
     runs-on: ubuntu-latest

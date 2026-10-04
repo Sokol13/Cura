@@ -35,10 +35,15 @@ export class AutomationService {
   private readonly textProvider: HTTPTextProvider | undefined;
   private readonly running = new Map<
     string,
-    { controller: AbortController; promise: Promise<void> }
+    {
+      controller: AbortController;
+      promise: Promise<void>;
+      ruleId: string | null;
+    }
   >();
   private closed = false;
   private timer: NodeJS.Timeout | undefined;
+  private ticking: Promise<void> | undefined;
   constructor(readonly options: AutomationOptions) {
     this.repo = new AutomationRepository(options.database);
     const configured = configuredProviders();
@@ -55,10 +60,10 @@ export class AutomationService {
       if (['queued', 'running'].includes(job.status))
         this.saveJob({ ...job, status: 'failed', errorCode: 'INTERRUPTED' });
     if (options.schedule !== false) {
-      this.timer = setInterval(() => this.tick(), 60000);
+      this.timer = setInterval(() => this.scheduleTick(), 60000);
       this.timer.unref();
       setImmediate(() => {
-        if (!this.closed) this.tick();
+        if (!this.closed) this.scheduleTick();
       });
     }
   }
@@ -137,7 +142,7 @@ export class AutomationService {
         }
       })
       .finally(() => this.running.delete(job.id));
-    this.running.set(job.id, { controller, promise });
+    this.running.set(job.id, { controller, promise, ruleId: job.ruleId });
     return job;
   }
   private newJob(
@@ -574,45 +579,83 @@ export class AutomationService {
     )
       throw new AutomationError('INVALID_FOLDER');
   }
-  private candidates(rule: C.ArchiveRule): C.ArchivePreview {
-    const result: C.ArchivePreview = {
-      eligible: [],
-      protected: [],
-      eligibleTotal: 0,
-      protectedTotal: 0,
-    };
-    const cutoff = Date.now() - rule.filters.olderThanDays * 86400000;
-    for (const id of this.assetIds(rule.libraryId)) {
-      const asset = this.options.store.getAsset(id);
-      if (
-        asset.deletedAt ||
-        asset.archivedAt ||
-        asset.rating > rule.filters.maxRating ||
-        (rule.filters.folderId && asset.folderId !== rule.filters.folderId) ||
-        !rule.filters.tagIds.every((tag) =>
-          asset.tags.some((t) => t.id === tag),
-        )
-      )
-        continue;
-      const version = this.options.store
-        .listVersions(id)
-        .find((v) => v.id === asset.currentVersionId)!;
-      if (Date.parse(version.createdAt) > cutoff) continue;
-      const protectedByFinal = !!this.options.database.sqlite
-        .prepare('SELECT id FROM final_selections WHERE asset_id=? LIMIT 1')
-        .get(id);
-      const entry: C.ArchivePreview['eligible'][number] = {
-        assetId: id,
-        versionId: asset.currentVersionId,
-        name: C.assetDisplayName(asset),
-        reason: protectedByFinal ? 'final-selection' : 'eligible',
-      };
-      if (protectedByFinal) result.protected.push(entry);
-      else result.eligible.push(entry);
+  // Read only candidate identity/display fields here. Hydrating every complete asset
+  // and version through Zod made even a 1000-record queue request block the API.
+  private candidateQuery(rule: C.ArchiveRule) {
+    const where = [
+      'a.library_id=?',
+      'a.deleted_at IS NULL',
+      "json_extract(a.payload,'$.archivedAt') IS NULL",
+      "json_extract(a.payload,'$.rating') <= ?",
+      'julianday(v.created_at) <= julianday(?)',
+    ];
+    const params: Array<string | number> = [
+      rule.libraryId,
+      rule.filters.maxRating,
+      new Date(
+        Date.now() - rule.filters.olderThanDays * 86400000,
+      ).toISOString(),
+    ];
+    if (rule.filters.folderId) {
+      where.push('a.folder_id=?');
+      params.push(rule.filters.folderId);
     }
-    result.eligibleTotal = result.eligible.length;
-    result.protectedTotal = result.protected.length;
-    return result;
+    for (const tagId of rule.filters.tagIds) {
+      where.push(
+        'EXISTS(SELECT 1 FROM asset_tags t WHERE t.asset_id=a.id AND t.tag_id=?)',
+      );
+      params.push(tagId);
+    }
+    return {
+      from: `FROM assets a JOIN asset_versions v ON v.id=json_extract(a.payload,'$.currentVersionId') WHERE ${where.join(' AND ')}`,
+      params,
+    };
+  }
+  private candidateRows(
+    rule: C.ArchiveRule,
+    options: {
+      ids?: string[];
+      protected?: boolean;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ) {
+    const { from, params } = this.candidateQuery(rule);
+    const final =
+      'EXISTS(SELECT 1 FROM final_selections f WHERE f.asset_id=a.id)';
+    let extra = '';
+    if (options.ids) {
+      if (!options.ids.length) return [];
+      extra += ` AND a.id IN (${options.ids.map(() => '?').join(',')})`;
+      params.push(...options.ids);
+    }
+    if (options.protected !== undefined) {
+      extra += ` AND ${final}=?`;
+      params.push(options.protected ? 1 : 0);
+    }
+    params.push(options.limit ?? 10001, options.offset ?? 0);
+    return this.options.database.sqlite
+      .prepare(
+        `SELECT a.id AS assetId,v.id AS versionId,
+      COALESCE(json_extract(a.payload,'$.displayName'),json_extract(a.payload,'$.name')) AS name,
+      ${final} AS protectedByFinal ${from}${extra} ORDER BY a.id LIMIT ? OFFSET ?`,
+      )
+      .all(...params) as Array<{
+      assetId: string;
+      versionId: string;
+      name: string;
+      protectedByFinal: number;
+    }>;
+  }
+  private candidateCount(rule: C.ArchiveRule) {
+    const { from, params } = this.candidateQuery(rule);
+    return this.options.database.sqlite
+      .prepare(
+        `SELECT
+      COALESCE(SUM(CASE WHEN EXISTS(SELECT 1 FROM final_selections f WHERE f.asset_id=a.id) THEN 0 ELSE 1 END),0) AS eligibleTotal,
+      COALESCE(SUM(CASE WHEN EXISTS(SELECT 1 FROM final_selections f WHERE f.asset_id=a.id) THEN 1 ELSE 0 END),0) AS protectedTotal ${from}`,
+      )
+      .get(...params) as { eligibleTotal: number; protectedTotal: number };
   }
   previewRule(
     libraryId: string,
@@ -625,27 +668,43 @@ export class AutomationService {
     if (rule.revision !== expectedRevision)
       throw new AutomationError('REVISION_CHANGED', 409);
     const { offset, limit } = C.AutomationPageQuerySchema.parse(query);
-    const result = this.candidates(rule);
+    const entry = (
+      row: ReturnType<AutomationService['candidateRows']>[number],
+    ): C.ArchivePreview['eligible'][number] => ({
+      assetId: row.assetId,
+      versionId: row.versionId,
+      name: row.name,
+      reason: row.protectedByFinal ? 'final-selection' : 'eligible',
+    });
     return {
-      ...result,
-      eligible: result.eligible.slice(offset, offset + limit),
-      protected: result.protected.slice(offset, offset + limit),
+      ...this.candidateCount(rule),
+      eligible: this.candidateRows(rule, {
+        protected: false,
+        offset,
+        limit,
+      }).map(entry),
+      protected: this.candidateRows(rule, {
+        protected: true,
+        offset,
+        limit,
+      }).map(entry),
     };
   }
+
   runRule(libraryId: string, id: string, input: unknown): C.AutomationJob {
     this.ensureCapacity();
     const { expectedRevision } = C.AutomationRevisionRequestSchema.parse(input);
     const rule = this.repo.get('archive_rules', libraryId, id);
     if (rule.revision !== expectedRevision)
       throw new AutomationError('REVISION_CHANGED', 409);
-    const preview = this.candidates(rule);
-    if (preview.eligibleTotal + preview.protectedTotal > 10000)
+    const candidates = this.candidateRows(rule);
+    if (candidates.length > 10000)
       throw new AutomationError('RULE_TOO_MANY_ASSETS', 413);
     const job = this.newJob(
       libraryId,
       'archive',
       'archive-rule',
-      [...preview.eligible, ...preview.protected].map((p) => ({
+      candidates.map((p) => ({
         assetId: p.assetId,
         versionId: p.versionId,
       })),
@@ -657,119 +716,128 @@ export class AutomationService {
       filters: rule.filters,
     };
     return this.launch(job, async (signal) => {
-      signal.throwIfAborted();
-      this.options.database.sqlite.transaction(() => {
-        const current = this.repo.get('archive_rules', libraryId, id);
-        if (current.revision !== expectedRevision)
-          throw new AutomationError('REVISION_CHANGED', 409);
-        const fresh = this.candidates(current);
-        const eligible = new Set(fresh.eligible.map((a) => a.assetId));
-        const protectedIds = new Set(fresh.protected.map((a) => a.assetId));
-        const results: C.AutomationJob['results'] = [];
-        for (const pin of job.pins) {
-          if (!eligible.has(pin.assetId)) {
-            results.push({
+      // A chunk commits its archive writes, exact history and progress together.
+      // Yield between chunks so HTTP cancellation and final-owner changes can run.
+      const batchSize = 20;
+      for (
+        let offset = 0;
+        offset < Math.max(1, job.pins.length);
+        offset += batchSize
+      ) {
+        signal.throwIfAborted();
+        const batch = job.pins.slice(offset, offset + batchSize);
+        const changed: string[] = [];
+        this.options.database.sqlite.transaction(() => {
+          const current = this.repo.get('archive_rules', libraryId, id);
+          if (current.revision !== expectedRevision)
+            throw new AutomationError('REVISION_CHANGED', 409);
+          const fresh = new Map(
+            this.candidateRows(current, {
+              ids: batch.map((pin) => pin.assetId),
+            }).map((candidate) => [candidate.assetId, candidate]),
+          );
+          const results: C.AutomationJob['results'] = [];
+          for (const pin of batch) {
+            const asset = this.ownedAsset(libraryId, pin.assetId);
+            let code: string | null = null;
+            if (asset.currentVersionId !== pin.versionId)
+              code = 'VERSION_CHANGED';
+            else if (!fresh.has(pin.assetId)) code = 'NO_LONGER_ELIGIBLE';
+            else if (fresh.get(pin.assetId)!.protectedByFinal)
+              code = 'FINAL_SELECTION';
+            if (code) {
+              results.push({ ...pin, proposalId: null, errorCode: code });
+              continue;
+            }
+            const date = now(),
+              proposalId = randomUUID(),
+              changeId = randomUUID();
+            this.options.store.updateAsset(asset.id, { archivedAt: date });
+            this.repo.put('automation_proposals', {
+              id: proposalId,
+              libraryId,
+              jobId: job.id,
               ...pin,
-              proposalId: null,
-              errorCode: protectedIds.has(pin.assetId)
-                ? 'FINAL_SELECTION'
-                : 'NO_LONGER_ELIGIBLE',
-            });
-            continue;
-          }
-          const asset = this.ownedAsset(libraryId, pin.assetId);
-          if (asset.currentVersionId !== pin.versionId) {
-            results.push({
-              ...pin,
-              proposalId: null,
-              errorCode: 'VERSION_CHANGED',
-            });
-            continue;
-          }
-          const date = now(),
-            proposalId = randomUUID(),
-            changeId = randomUUID();
-          this.options.store.updateAsset(asset.id, { archivedAt: date });
-          this.repo.put('automation_proposals', {
-            id: proposalId,
-            libraryId,
-            jobId: job.id,
-            ...pin,
-            sourceName: asset.name,
-            sourceHash: asset.hash,
-            caption: '',
-            provenance: {
-              providerId: 'archive-rule',
-              kind: 'archive-rule',
-              mode: 'rules',
-              model: null,
-              rawText: '',
-              derivation: 'archive-rule-v1',
-              inputKind: 'metadata',
+              sourceName: asset.name,
               sourceHash: asset.hash,
-            },
-            changeIds: [changeId],
-            createdAt: date,
-            updatedAt: date,
+              caption: '',
+              provenance: {
+                providerId: 'archive-rule',
+                kind: 'archive-rule',
+                mode: 'rules',
+                model: null,
+                rawText: '',
+                derivation: 'archive-rule-v1',
+                inputKind: 'metadata',
+                sourceHash: asset.hash,
+              },
+              changeIds: [changeId],
+              createdAt: date,
+              updatedAt: date,
+            });
+            this.repo.put('automation_changes', {
+              id: changeId,
+              libraryId,
+              proposalId,
+              ...pin,
+              field: 'archivedAt',
+              beforeValue: null,
+              afterValue: date,
+              suggestedTagNames: [],
+              beforeTagLabels: [],
+              afterTagLabels: [],
+              status: 'applied',
+              appliedAt: date,
+              undoneAt: null,
+              createdAt: date,
+              updatedAt: date,
+            });
+            results.push({ ...pin, proposalId, errorCode: null });
+            changed.push(asset.id);
+          }
+          const latest = this.job(libraryId, job.id);
+          this.saveJob({
+            ...latest,
+            processed: latest.processed + results.length,
+            results: [...latest.results, ...results],
           });
-          this.repo.put('automation_changes', {
-            id: changeId,
-            libraryId,
-            proposalId,
-            ...pin,
-            field: 'archivedAt',
-            beforeValue: null,
-            afterValue: date,
-            suggestedTagNames: [],
-            beforeTagLabels: [],
-            afterTagLabels: [],
-            status: 'applied',
-            appliedAt: date,
-            undoneAt: null,
-            createdAt: date,
-            updatedAt: date,
+          this.repo.put('archive_rules', {
+            ...current,
+            lastJobId: job.id,
+            updatedAt: now(),
           });
-          results.push({ ...pin, proposalId, errorCode: null });
-          this.options.media.notify({
-            type: 'asset',
-            libraryId,
-            assetId: asset.id,
-          });
-        }
-        this.saveJob({
-          ...this.job(libraryId, job.id),
-          processed: results.length,
-          results,
-        });
-        this.repo.put('archive_rules', {
-          ...current,
-          lastJobId: job.id,
-          updatedAt: now(),
-        });
-      })();
+        })();
+        for (const assetId of changed)
+          this.options.media.notify({ type: 'asset', libraryId, assetId });
+        if (offset + batchSize < job.pins.length)
+          await new Promise<void>((resolve) => setImmediate(resolve));
+      }
     });
   }
-  private tick() {
-    if (this.closed) return;
+  private scheduleTick() {
+    if (this.closed || this.ticking) return;
+    this.ticking = this.tick().finally(() => {
+      this.ticking = undefined;
+    });
+  }
+  private async tick() {
     for (const rule of this.repo.all('archive_rules')) {
-      if (this.running.size >= 2) break;
+      if (this.closed || this.running.size >= 2) break;
       if (!rule.enabled || this.runningHasRule(rule.id)) continue;
       try {
-        if (this.candidates(rule).eligibleTotal)
+        // An existence check avoids both a full hydration scan and no-op jobs.
+        if (this.candidateRows(rule, { protected: false, limit: 1 }).length)
           this.runRule(rule.libraryId, rule.id, {
             expectedRevision: rule.revision,
           });
       } catch {
-        /* User-visible explicit runs report errors; next interval retries eligible rules. */
+        /* Explicit runs report errors; the next interval retries eligible rules. */
       }
+      await new Promise<void>((resolve) => setImmediate(resolve));
     }
   }
   private runningHasRule(ruleId: string) {
-    return [...this.running.keys()].some((id) =>
-      this.repo
-        .all('automation_jobs')
-        .some((j) => j.id === id && j.ruleId === ruleId),
-    );
+    return [...this.running.values()].some((task) => task.ruleId === ruleId);
   }
   async close() {
     if (this.closed) return;
@@ -777,6 +845,7 @@ export class AutomationService {
     clearInterval(this.timer);
     for (const task of this.running.values()) task.controller.abort();
     await Promise.allSettled([...this.running.values()].map((t) => t.promise));
+    await this.ticking;
     await this.content.close();
   }
 }

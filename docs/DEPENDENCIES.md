@@ -8,6 +8,7 @@ Cura's own source is [MIT licensed](../LICENSE). Dependencies retain their upstr
 | --------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------- |
 | Fastify, `@fastify/websocket`, Pino                                               | MIT        | Local HTTP/WebSocket server, static assets, logging                                                                 |
 | better-sqlite3                                                                    | MIT        | SQLite bindings and published native addon; SQLite itself is [public domain](https://www.sqlite.org/copyright.html) |
+| `@supabase/supabase-js` 2.117.2 and its SDK packages                              | MIT        | Optional server-side Auth, database RPC and Storage; no browser Supabase client                                     |
 | Drizzle ORM                                                                       | Apache-2.0 | Database schema/migration integration                                                                               |
 | Sharp                                                                             | Apache-2.0 | Native image processing wrapper; this license does **not** cover every bundled native library                       |
 | chokidar, exifr, fflate, env-paths, open                                          | MIT        | Watching, EXIF parsing, ZIP output, OS directories, browser launch                                                  |
@@ -55,7 +56,7 @@ Preserve upstream license, copyright, and source-availability notices when redis
 
 ## Runtime license enforcement
 
-`pnpm check:licenses` inspects the installed production dependency graph, including transitive packages, and is part of `pnpm lint`/CI. The allowed package licenses are MIT, ISC, Apache-2.0 and BSD-2/3-Clause; dual-license expressions are accepted only where an allowed option can be selected. Only the explicitly mandated `@img/sharp-libvips-*` native bundle has the documented exception above. Native contents and bundled fonts/assets still need separate notice review.
+`pnpm check:licenses` inspects the installed production dependency graph, including transitive packages, and is part of `pnpm lint`/CI. The allowed package licenses are MIT, ISC, Apache-2.0 and 0BSD/BSD-2/3-Clause; dual-license expressions are accepted only where an allowed option can be selected. Only the explicitly mandated `@img/sharp-libvips-*` native bundle has the documented exception above. Native contents and bundled fonts/assets still need separate notice review.
 
 The original static-serving plugin pulled in a BlueOak-licensed glob dependency tree. Cura removed that optional plugin and serves built web resources directly using Node/Fastify with root containment, correct MIME types and HEAD/cache handling. Downgrading that dependency tree or silently expanding the license list was rejected.
 
@@ -69,7 +70,15 @@ When updating dependencies, review direct/transitive npm licenses **and** bundle
 
 - `@xyflow/react` 12.12.0 (MIT) provides the editable canvas; `three` 0.180.0 (MIT) renders bounded local GLB/OBJ previews.
 - `ag-psd` 14.3.1 (MIT) decodes supported PSD composites. Its actual raw/PackBits output was checked in Node and Chromium.
-- `pdfjs-dist` 5.4.296 (Apache-2.0) renders PDF pages in a local ES-module worker. Optional `@napi-rs/canvas` is excluded: Node rendering is not used. Only permitted worker/assets may be bundled; OFL Liberation fonts and CC0 ICC files are excluded. A final built-asset inventory is required before v0.2.0.
+- `pdfjs-dist` 5.4.296 (Apache-2.0) renders PDF pages in a local ES-module worker. Optional `@napi-rs/canvas` is excluded: Node rendering is not used. Only permitted worker/assets may be bundled; OFL Liberation fonts and CC0 ICC files are excluded. The [v0.2.0 inventory](evidence/v0.2.0/browser-bundle-licenses.json) records the exact 190-file release build; that historical evidence is retained unchanged.
 - Native browser H.264 support is used for MP4/MOV. A development-only system FFmpeg can generate original test fixtures; it is not a runtime dependency or distributed binary.
 
-The integrated installed production graph contains 150 packages before final browser module integration; the license check remains mandatory on every gate.
+## P2 runtime and final browser inventory
+
+The frozen v0.3.0 candidate at `41e45b1` passed the installed production license gate: **159 package groups**, including the existing mandated Sharp native exception. Supabase adds its MIT-licensed SDK family and transitive `iceberg-js` 0.8.1 (MIT) and `tslib` 2.8.1 (0BSD). The installed tslib license explicitly permits use, copying, modification and distribution, with a warranty disclaimer; Zero-Clause BSD is within the permitted BSD family, as recorded in DECISIONS.md. The automated allowlist includes `0BSD`.
+
+The [v0.3.0 browser inventory](evidence/v0.3.0/browser-bundle-licenses.json) records **196 emitted files / 4,351,021 bytes**, their SHA-256 hashes and roles. It also records 42 browser dependency name/version pairs and the full runtime package license groups. The browser graph uses MIT, ISC, Apache-2.0 and BSD-3-Clause packages; type/tooling metadata in that graph is identified separately. Supabase's SDK is absent from the browser dependency graph and runs only on the local server.
+
+The emitted PDF worker exactly matches the pinned PDF.js package. All 168 Adobe BSD-3-Clause CMaps and their preserved license notice exactly match the package files. No font, ICC profile, optional WASM or native binary is emitted; raw and base64 scans found none of the excluded PDF.js assets inside other output files. With `NODE_PATH` empty, canvas cannot resolve from the root, web or pinned PDF.js context, and no `@napi-rs/canvas` or platform implementation is physically installed in the audited workspace. The upstream PDF.js Node-only require literal is not a bundled canvas implementation.
+
+These hashes identify the frozen candidate build and were checked again at the end of the audit without rebuilding. Minified output is not an exact module provenance map. The PDF.js npm archive still contains separately licensed assets outside the output; native-platform and desktop compatibility boundaries above remain unchanged.

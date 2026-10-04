@@ -13,6 +13,10 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  cloud:
+    name: Mandatory real cloud integration
+    uses: ./.github/workflows/cloud-check.yml
+
   validate:
     name: Validate tagged source
     runs-on: ubuntu-latest
@@ -54,7 +58,7 @@ jobs:
 
   release:
     name: Create release and generated notes
-    needs: validate
+    needs: [validate, cloud]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

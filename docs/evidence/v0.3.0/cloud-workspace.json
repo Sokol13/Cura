@@ -1,0 +1,24 @@
+{
+  "environment": "Linux headless Chromium; two real Cura servers; disposable local Supabase Auth/Postgres/Storage",
+  "elapsedMs": 24860,
+  "devices": 2,
+  "browserExternalRequests": 0,
+  "assertions": [
+    "server-managed password sign-in and refresh",
+    "publish and authorized join",
+    "verified retained original bytes and version UUID",
+    "open materialized library",
+    "pause/resume and incremental metadata pull",
+    "local-wins conflict UI and complete downloaded JSON",
+    "owner add/change/remove roles",
+    "viewer pending edits retained without upload",
+    "viewer still downloads remote changes",
+    "revoked member blocked with local files retained",
+    "outsider join rejected",
+    "local sign-out preserves other device session",
+    "browser storage has no passwords or session tokens"
+  ],
+  "limits": [
+    "No hosted Supabase project or physical macOS/Windows browser was used."
+  ]
+}

@@ -82,6 +82,24 @@ describe('script and setting document persistence', () => {
       ),
     ).toEqual(bytes);
   });
+  it('uses Chinese entity kind headings in generated Chinese documents', async () => {
+    const f = await fixture();
+    const script = await f.service.content.importScript(
+      f.library.id,
+      'scene.txt',
+      Buffer.from('人物：小林\n道具：灯笼\n场景：森林'),
+    );
+    const doc = f.service.content.createDocument(f.library.id, {
+      title: '设定',
+      language: 'zh-CN',
+      pins: [script.sourcePin],
+      scriptId: script.id,
+      entityIds: script.entities.map((e) => e.id),
+    });
+    expect(doc.markdown).toContain('## 小林 (人物)');
+    expect(doc.markdown).toContain('## 灯笼 (道具)');
+    expect(doc.markdown).toContain('## 森林 (场景)');
+  });
   it('pins document source metadata across replacement and preserves manual markdown revisions', async () => {
     const f = await fixture();
     const a = await f.add();

@@ -2,9 +2,9 @@
 
 Cura is a local-first visual asset manager for AI creators, brand designers, and product designers. Run a local server, open your browser, and organize images without an account. Your files and their creative context stay on your computer.
 
-The current workflow includes watched folders and uploads, metadata extraction, folders and colored tags, search and filters, previews, annotations, retained versions, and diagnostics. The v0.2 workflow adds canvas/slot/matrix workflows, brands and CMF, rich previews, creative-process statistics and portable exports. [PROGRESS.md](docs/PROGRESS.md) records integration and validation status; a feature description here is not a claim that a milestone has been released.
+The current workflow includes watched folders and uploads, metadata extraction, folders and colored tags, search and filters, previews, annotations, retained versions, and diagnostics. Canvas/slot/matrix workflows, brands and CMF, rich previews, creative-process statistics and portable exports are available. The P2 integration adds reviewable automation, retained scripts and setting documents, optional Supabase team libraries and FCPXML timelines. [PROGRESS.md](docs/PROGRESS.md) records integration and validation status; a feature description here is not a claim that a milestone has been released.
 
-![Cura image library captured with the real server and Chromium](docs/screenshots/v0.2.0.png)
+![Cura image library captured with the real server and Chromium](docs/screenshots/v0.3.0.png)
 
 ## Start on macOS or Windows
 
@@ -37,7 +37,7 @@ pnpm.cmd start
 3. Create nested logical folders, colored tags and tag groups. Filter by folder/tag plus format, exact rating, source, color, indexed date, and minimum dimensions. Smart collections save a search and its filters.
 4. Search filenames, tags, prompts, and notes. English terms use full-text matching; Chinese/CJK input also uses substring matching. Click a palette swatch for nearby colors, or **Similar images** for visual pHash ranking. This is visual similarity, not semantic or face recognition.
 5. Open preview with Space or the preview control. Zoom, add/edit anchored text annotations, move between assets with arrow keys, inspect versions, replace the current file, and compare two versions side by side. An open current preview follows a watched file replacement; a selected historical version remains selected. Download an individual retained version when needed.
-6. Use multi-selection for ratings, folders, tags, and trash/restore. Trash is reversible. Settings provides language, theme, panel widths, rescan, thumbnail cache usage/clear/rebuild, and a diagnostic ZIP download. Clearing thumbnails preserves originals and retained versions; rebuild restores their previews.
+6. Set a readable display name without renaming the original. Use multi-selection for ratings, folders, tags, archive/restore and trash/restore. Archive is separate from Trash; assets selected as final, including historical pins, are protected. Trash is reversible. Settings provides language, theme, panel widths, rescan, thumbnail cache usage/clear/rebuild, and a diagnostic ZIP download. Clearing thumbnails preserves originals and retained versions; rebuild restores their previews.
 
 The default interface is Simplified Chinese with a dark theme and orange accents. English, light/system themes, grid/list choice, and panel widths are saved locally. Cmd/Ctrl+F focuses search, arrow keys change selection, Space previews, and Delete moves selected assets to Trash; shortcuts do not replace normal editing inside text fields.
 
@@ -60,11 +60,20 @@ The inspector exposes raw parameters and parser warnings. You can correct missin
 - **Boards:** Place assets, text and groups on a pannable canvas; connect items and save layouts. Character, scene, product and brand templates provide slots. Dragging an exact asset version into a slot finalizes that version; replacing the slot appends its own revision history. Character-angle and scene-option matrices retain assignments when axes change. [Board guide](docs/BOARDS.md).
 - **Brands & CMF:** Build named HEX/RGB/CMYK palettes, register font files, pin logo variants, write guidelines and compose material/color/finish entries. Export self-contained HTML, paginated PDF, JSON and ASE. PDF text is rasterized to preserve the browser's Chinese/font appearance; HTML/JSON retain editable text. CMYK values are unprofiled arithmetic conversions. [Brand guide](docs/BRANDS.md).
 - **Creative process:** Inspect prompt/version history and selection rates by model/source. Counts measure distinct recorded outputs, not unknown past attempts. The clearly labeled local mock produces real deterministic images without an external generation service. Selection actions validate the displayed version. [Process and export guide](docs/PROCESS-EXPORT.md).
-- **Neutral export:** Export a whole library from Creative process, or selected assets from the catalog's selection toolbar. The ZIP extracts into a readable folder containing original/version bytes, `manifest.json`, `assets.csv` and a README. It retains trash, unavailable-source history, organization, annotations, boards, brands and process metadata; selected exports include referenced dependencies. Every byte is hash-verified. Classic ZIP bounds are explicit: 3.5 GB including metadata and 65,532 distinct payload files. Oversized or missing/corrupt-byte exports fail visibly; split the selection when needed.
+- **Neutral export:** Export a whole library from Creative process, or selected assets from the catalog's selection toolbar. The ZIP extracts into a readable folder containing original/version bytes, `manifest.json`, `assets.csv` and a README. It retains trash, archive/display labels, unavailable-source history, organization, annotations, boards, brands, process metadata, completed automation/documents, sync conflicts and completed FCPXML request history; selected exports include referenced dependencies. Every byte is hash-verified. Classic ZIP bounds are explicit: 3.5 GB including metadata and 65,532 distinct payload files. Oversized or missing/corrupt-byte exports fail visibly; split the selection when needed.
 
 ![Cura board with retained slot revisions](docs/screenshots/v0.2-boards.png)
 
-Agent automation, Supabase/team synchronization and FCPXML follow in P2. [PRD.md](docs/PRD.md) and [PROGRESS.md](docs/PROGRESS.md) distinguish released features from work in progress.
+## Automation, scripts, cloud and timelines
+
+- **Automation & documents:** Analyze into reviewable tag/name proposals, apply selected fields and undo unchanged applied fields. Offline metadata rules are labelled explicitly; a configured OpenAI-compatible vision adapter can inspect image bytes. Strict JSON and explicit caption modes retain distinct provenance. Saved rules archive non-final work in cancellable batches, while original files stay unchanged. [Automation guide](docs/AUTOMATION.md).
+- Import UTF-8 text, Markdown or Fountain scripts and edit character/prop/scene lists with exact retained line references. Generate editable setting documents from pinned versions and metadata, then export Markdown/JSON. Offline structured parsing does not infer arbitrary prose; a configured text provider can perform model-assisted extraction. [Workspace guide](docs/AUTOMATION-UI.md).
+- **Cloud & team:** Optional Supabase password login, incremental verified file/metadata transfer, local-wins conflicts and owner/editor/viewer sharing. Configure only the server; access/refresh tokens stay server-side, and passwords/tokens are not persisted in browser storage or library exports. Without configuration the workspace shows Local mode and all local features remain available. [Cloud guide](docs/CLOUD-WORKSPACE.md), [Supabase setup and RLS](supabase/README.md).
+- **FCPXML timeline:** Arrange exact historical image/video pins, inspect source timing, set frame counts and export FCPXML 1.7 with retained media. Transfer the ZIP and run its standalone `relink.mjs` on the editing computer before importing. Supported timing/codecs and physical Final Cut Pro verification limits are explicit in the [FCPXML guide](docs/FCPXML.md).
+
+![Cura automation proposal review](docs/screenshots/v0.3-automation.png)
+
+[PRD.md](docs/PRD.md) and [PROGRESS.md](docs/PROGRESS.md) distinguish implemented features, verified gates and published tags.
 
 ## Development and verification
 
@@ -85,11 +94,15 @@ Open [http://127.0.0.1:5173](http://127.0.0.1:5173); Vite proxies the local API.
 
 ```bash
 pnpm exec playwright install chromium chrome
+python3 -m pip install lxml==6.1.1
+python3 scripts/validate-fcpxml.py --prepare
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm e2e
 ```
+
+Python/lxml and the downloaded Apple DTD are development-only independent FCPXML checks; normal `pnpm install && pnpm start` needs neither. Real Supabase integration uses a disposable local Docker stack; see the separate configured acceptance command in [the cloud guide](docs/CLOUD-WORKSPACE.md).
 
 E2E uses the installed Chrome channel for native H.264 MP4/MOV decoding, or the explicitly configured `CURA_CHROMIUM_EXECUTABLE` build. The browser is a test/user prerequisite, not a Cura runtime dependency.
 

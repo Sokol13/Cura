@@ -15,6 +15,7 @@ import { registerBrandRoutes } from './brands/routes.js';
 import { registerExportRoutes } from './exports/routes.js';
 import { registerAutomationRoutes } from './automation/routes.js';
 import { registerFcpxmlRoutes } from './fcpxml/routes.js';
+import { SyncService, registerSyncRoutes } from './sync/index.js';
 import { isAllowedLocalRequest } from './security.js';
 import { registerStaticFiles } from './static-files.js';
 
@@ -96,6 +97,18 @@ export async function createApp(options: AppOptions = {}) {
     });
     app.addHook('onClose', () => automation.close());
     registerFcpxmlRoutes(app, options.database, options.paths);
+    const sync = new SyncService(options.database, options.paths, {
+      notify: (event) => media.notify(event),
+      rebuildVersions: (ids) => media.rebuildVersions(ids),
+    });
+    registerSyncRoutes(app, sync);
+    app.addHook('onClose', () => sync.close());
+    void sync.initialize().catch(() => {
+      app.log.error(
+        { operation: 'sync', code: 'SYNC_INITIALIZATION' },
+        'Cloud synchronization could not initialize. Local libraries remain available.',
+      );
+    });
   }
 
   app.all('/api', (_request, reply) => reply.callNotFound());

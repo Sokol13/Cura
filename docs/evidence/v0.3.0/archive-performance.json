@@ -1,0 +1,28 @@
+{
+  "scope": "1,000 schema-valid catalog assets sharing a small retained raster fixture; setup excluded from measurement; not an image-ingestion claim",
+  "regression": "packages/server/test/automation-archive-performance.test.ts",
+  "reviewerBefore": {
+    "queuedResponseMsApprox": 361,
+    "maxHeartbeatGapMsApprox": 1468
+  },
+  "after": {
+    "assets": 1000,
+    "queuedResponseMs": 9.46687200000008,
+    "finishedMs": 1564.201304,
+    "maxHeartbeatGapMs": 43.257465000000025,
+    "status": "completed"
+  },
+  "heartbeatIntervalMs": 5,
+  "regressionLimits": {
+    "previewResponseMs": 200,
+    "queuedResponseMs": 200,
+    "maxHeartbeatGapMs": 250
+  },
+  "transactionAssetLimit": 20,
+  "additionalChecks": [
+    "cancellation preserves committed partial history and counts",
+    "later final owner excludes remaining asset",
+    "later source replacement conflicts",
+    "rule revision change stops subsequent transactions"
+  ]
+}

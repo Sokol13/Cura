@@ -1,6 +1,6 @@
 import { join } from 'node:path';
 import { processFile } from '../src/media/image.js';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AutomationService } from '../src/automation/service.js';
 import { setFinalSelection } from '../src/process/final-selections.js';
 import { automationFixture } from './automation-fixture.js';
@@ -112,6 +112,28 @@ describe('archive rules protect historical final owners', () => {
       revision: 0,
       filters: rule.filters,
     });
+  });
+  it('runs enabled rules after restart without accumulating no-op scheduled jobs', async () => {
+    const f = await fixture();
+    const asset = await f.add();
+    f.service.createRule(f.library.id, {
+      name: 'Scheduled',
+      enabled: true,
+      filters: { olderThanDays: 0 },
+    });
+    await f.service.close();
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    const restarted = new AutomationService({ ...f });
+    cleanup.push(async () => {
+      await restarted.close();
+      vi.useRealTimers();
+    });
+    for (let i = 0; i < 100 && !f.store.getAsset(asset.id).archivedAt; i++)
+      await new Promise((r) => setTimeout(r, 10));
+    expect(f.store.getAsset(asset.id).archivedAt).toBeTruthy();
+    expect(restarted.jobs(f.library.id, {}).total).toBe(1);
+    await vi.advanceTimersByTimeAsync(120000);
+    expect(restarted.jobs(f.library.id, {}).total).toBe(1);
   });
   it('uses revision CAS and does not reset enabled on a name-only patch', async () => {
     const f = await fixture();

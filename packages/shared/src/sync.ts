@@ -1,6 +1,10 @@
 import { z } from 'zod';
 import { IdSchema, TimestampSchema } from './catalog.js';
-import { PortableRecordSchema, SyncSequenceSchema } from './sync-portable.js';
+import {
+  PortableRecordSchema,
+  SyncSequenceSchema,
+  SyncRemoteRecordSchema,
+} from './sync-portable.js';
 export * from './sync-portable.js';
 
 const time = { createdAt: TimestampSchema, updatedAt: TimestampSchema };
@@ -125,3 +129,28 @@ export type SyncMember = z.infer<typeof SyncMemberSchema>;
 export type SyncConflictSummary = z.infer<typeof SyncConflictSummarySchema>;
 export type SyncConflictDetail = z.infer<typeof SyncConflictDetailSchema>;
 export type SyncSignIn = z.infer<typeof SyncSignInSchema>;
+
+// Strict cloud adapter envelopes; cloud timestamps/revisions are distinct from domain metadata.
+export const SyncRemoteLibrarySchema = CloudLibrarySchema.extend({
+  published: z.boolean(),
+  head: SyncSequenceSchema,
+}).strict();
+export const SyncLibraryEnvelopeSchema = z
+  .object({ library: SyncRemoteLibrarySchema })
+  .strict();
+export const SyncLibrariesEnvelopeSchema = z
+  .object({ libraries: z.array(SyncRemoteLibrarySchema) })
+  .strict();
+export const SyncMembersEnvelopeSchema = z
+  .object({ members: z.array(SyncMemberSchema.omit({ libraryId: true })) })
+  .strict();
+
+export const SyncManifestSchema = z
+  .object({
+    library: SyncRemoteLibrarySchema,
+    sequence: SyncSequenceSchema,
+    records: z.array(SyncRemoteRecordSchema).max(10000),
+  })
+  .strict();
+export type SyncManifest = z.infer<typeof SyncManifestSchema>;
+export type SyncRemoteLibrary = z.infer<typeof SyncRemoteLibrarySchema>;

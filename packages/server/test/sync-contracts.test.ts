@@ -82,3 +82,68 @@ it('adds local sync state without changing existing sources and enforces one man
     db.close();
   }
 });
+it('rejects mismatched record envelopes and impossible pull pages', async () => {
+  const {
+    SyncChangeSchema,
+    SyncRemoteRecordSchema,
+    SyncCommitSchema,
+    SyncPullSchema,
+  } = await import('../../shared/src/sync-portable.js');
+  const id = randomUUID(),
+    stamp = '2026-01-01T00:00:00.000Z';
+  const payload = {
+    kind: 'library',
+    id,
+    libraryId: id,
+    data: { id, name: 'Library', createdAt: stamp, updatedAt: stamp },
+  };
+  const remote = {
+    kind: 'library',
+    key: id,
+    revision: '1',
+    payload,
+    tombstone: false,
+    createdAt: stamp,
+    updatedAt: stamp,
+  };
+  expect(
+    SyncRemoteRecordSchema.safeParse({ ...remote, tombstone: true }).success,
+  ).toBe(false);
+  expect(
+    SyncRemoteRecordSchema.safeParse({ ...remote, key: randomUUID() }).success,
+  ).toBe(false);
+  expect(
+    SyncChangeSchema.safeParse({
+      kind: 'tag',
+      key: id,
+      payload,
+      tombstone: false,
+      expectedRevision: '0',
+    }).success,
+  ).toBe(false);
+  const commit = {
+    sequence: '1',
+    operationId: randomUUID(),
+    changes: [remote],
+  };
+  expect(
+    SyncCommitSchema.safeParse({ ...commit, changes: [remote, remote] })
+      .success,
+  ).toBe(false);
+  expect(
+    SyncPullSchema.safeParse({
+      head: '2',
+      cursor: '2',
+      hasMore: false,
+      commits: [commit],
+    }).success,
+  ).toBe(false);
+  expect(
+    SyncPullSchema.safeParse({
+      head: '1',
+      cursor: '1',
+      hasMore: false,
+      commits: [commit, commit],
+    }).success,
+  ).toBe(false);
+});

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.3.0 — release candidate
+
+- Add bilingual automation review with explicit offline metadata rules and a configured real vision provider, exact-version proposal apply/selective undo, source preservation and provider provenance.
+- Add portable display names, archive/restore controls and saved non-final archive rules with bounded cancellable processing and historical final-owner protection.
+- Retain UTF-8 scripts and editable character/prop/scene references; generate editable exact-version setting documents and export Markdown/JSON.
+- Add optional server-owned Supabase sessions, verified incremental bytes/metadata, durable retries, local-wins conflict snapshots and owner/editor/viewer team libraries; keep unconfigured startup and local work offline.
+- Reconcile concurrent version/history/folder/group changes without losing retained bytes, creating hierarchy cycles or echoing unchanged metadata. Reject corrupt peers before graph/cursor commit.
+- Add FCPXML 1.7 timelines with explicit historical pins, rational source/project timing, board import, portable retained-media packages and standalone hash-verified relinking.
+- Preserve new metadata/dependencies in neutral exports; verify real vision inference, real local Supabase, official Apple DTD, database upgrade and all inherited P0/P1 acceptance. Final gate and publication status are recorded in REPORT-v0.3.0.md.
+
 ## 0.2.0 — 2026-10-04
 
 - Add persisted infinite canvases with assets, groups, edges, text, viewport controls, four slot templates and stable character/scene matrices.

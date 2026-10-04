@@ -1,0 +1,400 @@
+{
+  "status": "passed",
+  "verifiedAt": "2026-10-04T14:38:05.800Z",
+  "runtime": {
+    "node": "v22.23.3",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "scope": "Actual tagged v0.2.0 services create synthetic private data; P2 applies SQL migrations and serves real loopback HTTP. No browser, physical desktop, hosted cloud, or model-inference claim.",
+  "source": {
+    "release": "v0.2.0",
+    "commit": "571955275d7d5c3018aa9f340453f98229e518fd",
+    "serverSourceTree": "90c4c667ff3eb2d6b067537e8734f3e35d712dc1",
+    "migrations": [
+      {
+        "tag": "0000_infrastructure",
+        "sha256": "940c3048b9cb98eab1d7cefad7a9534e1a29a2a7feddc6dfa9cc6bd8c33af9a1"
+      },
+      {
+        "tag": "0001_catalog",
+        "sha256": "ff7d6444145872385399a4f89884158f7df38cc51b4536cd84472487a3fd0aea"
+      },
+      {
+        "tag": "0002_source_availability",
+        "sha256": "2da02fcf56a08015c3539b4130abb5672b11c285a67d6f2aeea5f9b41e95bb27"
+      },
+      {
+        "tag": "0003_process",
+        "sha256": "621b989e0c97b352891a1a85e70d5e99042d904b93bdf777e61e38931f9a8875"
+      },
+      {
+        "tag": "0004_boards",
+        "sha256": "4f7e3c64ba56fdf535b10314e89c3ce16f0ec12c91a01f3f47947f55086d11af"
+      },
+      {
+        "tag": "0005_brands",
+        "sha256": "9c3072a04385e150de9bfab9355fa5039a697e1c1cec6a7670edb36b969d4c4c"
+      }
+    ]
+  },
+  "target": {
+    "milestone": "v0.3.0 candidate",
+    "commit": "41e45b187e2f6c0ae646f67e91fc909c3b320f97",
+    "serverSourceTree": "26f8a6177ba2001b88b1ee0934bc806ff7a5cf97",
+    "migrations": [
+      {
+        "tag": "0000_infrastructure",
+        "sha256": "940c3048b9cb98eab1d7cefad7a9534e1a29a2a7feddc6dfa9cc6bd8c33af9a1"
+      },
+      {
+        "tag": "0001_catalog",
+        "sha256": "ff7d6444145872385399a4f89884158f7df38cc51b4536cd84472487a3fd0aea"
+      },
+      {
+        "tag": "0002_source_availability",
+        "sha256": "2da02fcf56a08015c3539b4130abb5672b11c285a67d6f2aeea5f9b41e95bb27"
+      },
+      {
+        "tag": "0003_process",
+        "sha256": "621b989e0c97b352891a1a85e70d5e99042d904b93bdf777e61e38931f9a8875"
+      },
+      {
+        "tag": "0004_boards",
+        "sha256": "4f7e3c64ba56fdf535b10314e89c3ce16f0ec12c91a01f3f47947f55086d11af"
+      },
+      {
+        "tag": "0005_brands",
+        "sha256": "9c3072a04385e150de9bfab9355fa5039a697e1c1cec6a7670edb36b969d4c4c"
+      },
+      {
+        "tag": "0006_automation",
+        "sha256": "6cc0348162b443b70d4e532d8efa5a7d060f569e062d8925e619fd19cbf7bc15"
+      },
+      {
+        "tag": "0007_sync",
+        "sha256": "6f74ca2a6493c9ba11bb30bb1a8b462c3280c3377c32308f6f6dca68a5639edb"
+      },
+      {
+        "tag": "0008_fcpxml",
+        "sha256": "4658ff17e4f849736725e7add733616eeca8cb58f5597e871d5d90827c33695e"
+      }
+    ]
+  },
+  "fixture": {
+    "libraryName": "升级验证 · 设计资料 é",
+    "libraryId": "00e1a829-878f-446d-9074-363d6c81d8e9",
+    "rootId": "1f2efe79-9661-4029-9e43-2729d13a7844",
+    "referencePathNFC": "方案 α/角色 é 初稿.png",
+    "originalSha256": "7ac773eb0af9537b1e59afb0a0ab67776a7ddcc14b93396eb531fe516188a255",
+    "fontSha256": "7ba7d37d78991f8176c15bb875f3f53d7088cd5ae41587516beb8f7baaacff35",
+    "exactSeed": "18446744073709551615",
+    "assetCount": 4,
+    "versionCount": 5,
+    "annotationCount": 2,
+    "boardCount": 2,
+    "activeSlots": 3,
+    "deletedSlots": 2,
+    "slotRevisionCount": 4,
+    "deletedTemplateCount": 1,
+    "brandCount": 1,
+    "cmfBoardCount": 1,
+    "processJobStatuses": ["completed", "failed"],
+    "finalOwners": [
+      {
+        "ownerKind": "manual",
+        "assetId": "9a5ca630-38d8-42cb-9b5c-f2ce5ac249cc",
+        "versionId": "c5b7cad3-d6bc-42b2-8681-0dfd5a32b522"
+      },
+      {
+        "ownerKind": "slot",
+        "assetId": "9a5ca630-38d8-42cb-9b5c-f2ce5ac249cc",
+        "versionId": "7d1a9a49-74d6-4b1b-b72b-79cc08a70d0d"
+      },
+      {
+        "ownerKind": "slot",
+        "assetId": "9a5ca630-38d8-42cb-9b5c-f2ce5ac249cc",
+        "versionId": "7d1a9a49-74d6-4b1b-b72b-79cc08a70d0d"
+      }
+    ],
+    "versions": [
+      {
+        "id": "6b569c36-4d22-4d7d-9363-f1c29dbac8e2",
+        "assetId": "73b244f6-2e19-42bf-b93d-87adffd22d95",
+        "ordinal": 1,
+        "sha256": "1325188790e5d018ad25fd69a46e1fcdbf1064d50d85ecb607ec0aa30c2b4deb"
+      },
+      {
+        "id": "c5b7cad3-d6bc-42b2-8681-0dfd5a32b522",
+        "assetId": "9a5ca630-38d8-42cb-9b5c-f2ce5ac249cc",
+        "ordinal": 2,
+        "sha256": "c57927bd3c838e3e053e6e433eb2dd4c80c55bf2a448ae849ff8b327108b73ef"
+      },
+      {
+        "id": "7d1a9a49-74d6-4b1b-b72b-79cc08a70d0d",
+        "assetId": "9a5ca630-38d8-42cb-9b5c-f2ce5ac249cc",
+        "ordinal": 1,
+        "sha256": "7ac773eb0af9537b1e59afb0a0ab67776a7ddcc14b93396eb531fe516188a255"
+      },
+      {
+        "id": "ec9dfaf6-d5b6-428b-b469-306f0717c02f",
+        "assetId": "cdf58308-cac1-47d1-a983-01c699e2fb66",
+        "ordinal": 1,
+        "sha256": "7ba7d37d78991f8176c15bb875f3f53d7088cd5ae41587516beb8f7baaacff35"
+      },
+      {
+        "id": "2a700881-36d4-4900-ab83-f0261087e04e",
+        "assetId": "ddeece87-6304-4fe2-b8bd-bae5c14daab6",
+        "ordinal": 1,
+        "sha256": "109b5fe1d63028dcc19c9e1769ca2a693cd7d9760b9056f5ead125122c336fab"
+      }
+    ],
+    "originalSources": [
+      {
+        "id": "7edb6b29-6cad-453d-a283-771f20709e35",
+        "sha256": "7ac773eb0af9537b1e59afb0a0ab67776a7ddcc14b93396eb531fe516188a255"
+      },
+      {
+        "id": "8c5c90ed-b703-41ea-8fb6-8c0a241d2935",
+        "sha256": "7ba7d37d78991f8176c15bb875f3f53d7088cd5ae41587516beb8f7baaacff35"
+      },
+      {
+        "id": "a49616e3-fb72-4d16-b0dc-3dc05102d605",
+        "sha256": "109b5fe1d63028dcc19c9e1769ca2a693cd7d9760b9056f5ead125122c336fab"
+      },
+      {
+        "id": "fb77818f-e37c-42e3-aed4-9f86b6041777",
+        "sha256": "1325188790e5d018ad25fd69a46e1fcdbf1064d50d85ecb607ec0aa30c2b4deb"
+      }
+    ]
+  },
+  "upgrade": {
+    "migrationCounts": {
+      "before": 6,
+      "after": 9,
+      "afterReopens": [9, 9]
+    },
+    "legacyTablesCompared": [
+      {
+        "name": "activity",
+        "columns": 7,
+        "rows": 20
+      },
+      {
+        "name": "annotations",
+        "columns": 8,
+        "rows": 2
+      },
+      {
+        "name": "app_metadata",
+        "columns": 4,
+        "rows": 0
+      },
+      {
+        "name": "asset_fts",
+        "columns": 2,
+        "rows": 4
+      },
+      {
+        "name": "asset_fts_config",
+        "columns": 2,
+        "rows": 1
+      },
+      {
+        "name": "asset_fts_content",
+        "columns": 3,
+        "rows": 4
+      },
+      {
+        "name": "asset_fts_data",
+        "columns": 2,
+        "rows": 16
+      },
+      {
+        "name": "asset_fts_docsize",
+        "columns": 2,
+        "rows": 4
+      },
+      {
+        "name": "asset_fts_idx",
+        "columns": 3,
+        "rows": 14
+      },
+      {
+        "name": "asset_sources",
+        "columns": 9,
+        "rows": 4
+      },
+      {
+        "name": "asset_tags",
+        "columns": 4,
+        "rows": 1
+      },
+      {
+        "name": "asset_versions",
+        "columns": 8,
+        "rows": 5
+      },
+      {
+        "name": "assets",
+        "columns": 11,
+        "rows": 4
+      },
+      {
+        "name": "board_edges",
+        "columns": 8,
+        "rows": 1
+      },
+      {
+        "name": "board_items",
+        "columns": 15,
+        "rows": 3
+      },
+      {
+        "name": "boards",
+        "columns": 12,
+        "rows": 2
+      },
+      {
+        "name": "brand_colors",
+        "columns": 7,
+        "rows": 2
+      },
+      {
+        "name": "brand_fonts",
+        "columns": 9,
+        "rows": 1
+      },
+      {
+        "name": "brand_logos",
+        "columns": 8,
+        "rows": 2
+      },
+      {
+        "name": "brands",
+        "columns": 7,
+        "rows": 1
+      },
+      {
+        "name": "cmf_boards",
+        "columns": 6,
+        "rows": 1
+      },
+      {
+        "name": "cmf_entries",
+        "columns": 11,
+        "rows": 1
+      },
+      {
+        "name": "collections",
+        "columns": 6,
+        "rows": 1
+      },
+      {
+        "name": "export_jobs",
+        "columns": 6,
+        "rows": 0
+      },
+      {
+        "name": "final_selections",
+        "columns": 8,
+        "rows": 3
+      },
+      {
+        "name": "folders",
+        "columns": 6,
+        "rows": 2
+      },
+      {
+        "name": "generation_jobs",
+        "columns": 5,
+        "rows": 2
+      },
+      {
+        "name": "libraries",
+        "columns": 4,
+        "rows": 1
+      },
+      {
+        "name": "library_roots",
+        "columns": 7,
+        "rows": 2
+      },
+      {
+        "name": "recorded_generations",
+        "columns": 8,
+        "rows": 5
+      },
+      {
+        "name": "settings",
+        "columns": 4,
+        "rows": 1
+      },
+      {
+        "name": "slot_revisions",
+        "columns": 8,
+        "rows": 4
+      },
+      {
+        "name": "slot_templates",
+        "columns": 8,
+        "rows": 5
+      },
+      {
+        "name": "slots",
+        "columns": 17,
+        "rows": 5
+      },
+      {
+        "name": "tag_groups",
+        "columns": 5,
+        "rows": 1
+      },
+      {
+        "name": "tags",
+        "columns": 7,
+        "rows": 1
+      }
+    ],
+    "newAutomationJobId": "9e55ee74-5629-4a33-b296-a826b6daa872",
+    "newScriptId": "1a7f0da9-b14e-47da-9766-a67157cbc1ca",
+    "newDocumentId": "e6d4a4d0-0f66-4b15-9a7f-232b5da785df",
+    "exportedAssets": 4,
+    "exportedVersions": 5,
+    "idempotentReopens": [
+      {
+        "reopen": 1,
+        "migrationCount": 9,
+        "logicalDigest": "ae38b71a6b3ec45833608749ac246ce93d0977d35256159a3a0fbf807fe99911",
+        "integrity": "ok",
+        "foreignKeyViolations": 0
+      },
+      {
+        "reopen": 2,
+        "migrationCount": 9,
+        "logicalDigest": "ae38b71a6b3ec45833608749ac246ce93d0977d35256159a3a0fbf807fe99911",
+        "integrity": "ok",
+        "foreignKeyViolations": 0
+      }
+    ]
+  },
+  "checks": {
+    "exactTaggedV020ServicesCreatedP0P1Fixture": true,
+    "closedBackupDatabaseAndRetainedBytesVerified": true,
+    "allLegacyTableColumnsRowsAndTimestampsUnchanged": true,
+    "sixToNineMigrationsPreserveOriginalJournal": true,
+    "chineseNFCMetadataSeedsAnnotationsAndOrganizationPreserved": true,
+    "historicalSlotAndManualFinalOwnersPreserved": true,
+    "matrixAxisIdsDeletedCellsAndTemplateHistoryPreserved": true,
+    "brandFontLogoColorAndCmfPinsPreserved": true,
+    "processJobsGenerationIdsTimelineAndStatisticsPreserved": true,
+    "displayNameArchiveAndManagedRootDefaultsCompatible": true,
+    "realLoopbackP2AutomationApplyUndoAndDisplayNameWork": true,
+    "realLoopbackArchiveRestoreAndAtomicFinalProtectionWork": true,
+    "realLoopbackUtf8ScriptAndHistoricalDocumentApisWork": true,
+    "neutralExportRetainsP1AndP2DependencyClosure": true,
+    "twoReopensIdempotentAcrossAllTables": true,
+    "originalFontAndAllRetainedVersionBytesUnchanged": true,
+    "sqliteIntegrityAndForeignKeys": true
+  }
+}

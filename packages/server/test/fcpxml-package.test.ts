@@ -15,6 +15,7 @@ import { promisify } from 'node:util';
 import { afterEach, expect, test } from 'vitest';
 import { unzipSync } from 'fflate';
 import sharp from 'sharp';
+import { FcpxmlManifestSchema, type CreateFcpxml } from '@cura/shared';
 import { openDatabase } from '../src/database.js';
 import { resolveUserPaths } from '../src/paths.js';
 import { CatalogStore } from '../src/catalog-store.js';
@@ -53,13 +54,61 @@ const still = async (color: string, jpeg = false) => {
   });
   return jpeg ? image.jpeg().toBuffer() : image.png().toBuffer();
 };
+test('exports orientation-swapped JPEGs with displayed dimensions and unchanged retained bytes', async () => {
+  const f = await fixture(),
+    clips: CreateFcpxml['clips'] = [],
+    originals = new Map<string, Buffer>();
+  for (const orientation of [5, 6, 7, 8]) {
+    const bytes = await sharp({
+      create: { width: 64, height: 48, channels: 3, background: 'red' },
+    })
+      .jpeg()
+      .withMetadata({ orientation })
+      .toBuffer();
+    const asset = await f.media.upload(
+      f.library.id,
+      `portrait-${orientation}.jpg`,
+      bytes,
+    );
+    expect([asset.width, asset.height]).toEqual([48, 64]);
+    originals.set(asset.currentVersionId, bytes);
+    clips.push({
+      id: randomUUID(),
+      assetId: asset.id,
+      versionId: asset.currentVersionId,
+      durationFrames: 25,
+    });
+  }
+  const job = f.service.start(f.library.id, { name: 'Portraits', clips });
+  await f.service.close();
+  expect(f.service.get(job.id).status).toBe('completed');
+  const xmlFile = f.service.file(job.id, 'xml').path,
+    directory = dirname(xmlFile),
+    manifest = FcpxmlManifestSchema.parse(
+      JSON.parse(await readFile(join(directory, 'manifest.json'), 'utf8')),
+    ),
+    xml = await readFile(xmlFile, 'utf8');
+  for (const media of manifest.media) {
+    expect([media.width, media.height]).toEqual([48, 64]);
+    expect(await readFile(join(directory, ...media.path.split('/')))).toEqual(
+      originals.get(media.versionId),
+    );
+    expect(xml).toContain(
+      `<format id="format-${media.versionId}" name="FFVideoFormatRateUndefined" width="48" height="64"/>`,
+    );
+  }
+  const validator = fileURLToPath(
+    new URL('../../../scripts/validate-fcpxml.py', import.meta.url),
+  );
+  await run('python3', [validator, xmlFile, '--package', directory]);
+}, 30000);
 test('worker package retains replaced/trash bytes, historical extensions, exact source timing; moved package relinks independently', async () => {
   const f = await fixture();
   const oldBytes = await still('red', true),
     asset = await f.media.upload(f.library.id, '历史.jpg', oldBytes);
   await f.media.replace(asset.id, 'new.png', await still('blue'));
   f.catalog.updateAsset(asset.id, {
-    displayName: '客户 选定.png',
+    displayName: '客户 ' + 'x'.repeat(235) + '.png',
   });
   f.catalog.batchAssets(f.library.id, {
     assetIds: [asset.id],
@@ -115,7 +164,7 @@ test('worker package retains replaced/trash bytes, historical extensions, exact 
     );
   await run('python3', [validator, xmlFile, '--package', dirname(xmlFile)]);
   const zip = unzipSync(await readFile(f.service.file(job.id, 'package').path)),
-    extract = join(f.directory, 'moved folder 中文');
+    extract = join(f.directory, 'moved folder 中文 $&');
   for (const [name, bytes] of Object.entries(zip)) {
     const file = join(extract, ...name.split('/'));
     await mkdir(dirname(file), { recursive: true });
@@ -199,7 +248,12 @@ test('per-clip failures reject unsupported, cross-library, source overrun and mi
       },
     ],
   });
+  const png = f.service.start(f.library.id, {
+    name: 'PNG still',
+    clips: [entry(asset.id, asset.currentVersionId)],
+  });
   await f.service.close();
+  expect(f.service.get(png.id).status).toBe('completed');
   expect(f.service.get(forged.id).status).toBe('failed');
   expect(f.service.get(forged.id).problems[0]?.message).toContain('differs');
   const another = new FcpxmlService(f.db, f.paths);

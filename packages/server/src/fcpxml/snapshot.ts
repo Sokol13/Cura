@@ -111,7 +111,7 @@ export function readFcpxmlSnapshot(
               versionId: version.id,
               originalName: version.name,
               name,
-              path: `media/${version.id}-${name}`,
+              path: `media/${version.id}/${name}`,
               hash: version.hash,
               size: version.size,
               type: version.type,

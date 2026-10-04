@@ -41,6 +41,22 @@ export function validateGraph(
     if (record.libraryId !== libraryId || byKey.has(recordKey(record)))
       invalidGraph('Duplicate or cross-library portable identity');
     byKey.set(recordKey(record), record);
+    if (record.kind === 'automationJob' || record.kind === 'generationJob') {
+      const table =
+        record.kind === 'automationJob' ? 'automation_jobs' : 'generation_jobs';
+      const existing = database.sqlite
+        .prepare(`SELECT payload FROM ${table} WHERE id=?`)
+        .get(record.id) as { payload: string } | undefined;
+      if (
+        existing &&
+        ['queued', 'running'].includes(
+          (JSON.parse(existing.payload) as { status: string }).status,
+        )
+      )
+        invalidGraph(
+          'Incoming history cannot replace an active device-local job',
+        );
+    }
     const entity =
       record.kind === 'asset'
         ? record.data.asset
@@ -71,8 +87,14 @@ export function validateGraph(
         if (version.ordinal > 10000000)
           invalidGraph('Version ordinal is outside supported range');
         versions.set(version.id, version);
-        if (!exists('generation', version.generationId))
-          invalidGraph('Recorded generation is missing');
+        const generation = byKey.get(`generation:${version.generationId}`);
+        if (
+          generation?.kind !== 'generation' ||
+          generation.data.hash !== version.hash
+        )
+          invalidGraph(
+            'Recorded generation is missing or has a different output hash',
+          );
         const old = database.sqlite
           .prepare('SELECT asset_id,payload FROM asset_versions WHERE id=?')
           .get(version.id) as { asset_id: string; payload: string } | undefined;

@@ -11,6 +11,23 @@ it('captures full portable metadata and ignores preview-only timestamps without 
     before = readPortableGraph(f.db, f.library.id);
   expect(JSON.stringify(before.records)).not.toContain(f.dir);
   expect(JSON.stringify(before.records)).not.toContain('relativePath');
+  expect(before.records.map((record) => record.kind)).toEqual(
+    expect.arrayContaining([
+      'automationJob',
+      'automationProposal',
+      'automationChange',
+      'archiveRule',
+      'scriptBreakdown',
+      'settingDocument',
+    ]),
+  );
+  expect(before.records.some((record) => record.id === f.pendingJob.id)).toBe(
+    false,
+  );
+  expect(
+    before.records.find((record) => record.kind === 'archiveRule')!.data
+      .lastJobId,
+  ).toBeNull();
   expect(
     before.records.filter((r) => r.kind === 'asset')[0]!.data.versions[0]!.seed,
   ).toBe('18446744073709551615');
@@ -75,4 +92,22 @@ it('rejects corrupt historical ownership and rolls back every record', async () 
     ),
   ).toThrow();
   expect(target.catalog.listLibraries()).toEqual([]);
+});
+it('does not let incoming terminal history take over an active device-local job identity', async () => {
+  const f = await graphFixture(),
+    graph = readPortableGraph(f.db, f.library.id);
+  const terminal = structuredClone(
+    graph.records.find((record) => record.kind === 'automationJob')!,
+  );
+  terminal.id = f.pendingJob.id;
+  terminal.data.id = f.pendingJob.id;
+  terminal.data.results = [];
+  graph.records.push(terminal);
+  expect(() =>
+    replayPortableGraph(f.db, f.paths, f.library.id, graph.records),
+  ).toThrow(/active/);
+  const row = f.db.sqlite
+    .prepare('SELECT payload FROM automation_jobs WHERE id=?')
+    .get(f.pendingJob.id) as { payload: string };
+  expect(JSON.parse(row.payload).status).toBe('running');
 });

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
 import { mkdir, open, realpath, writeFile, stat, rm } from 'node:fs/promises';
-import { join, relative, isAbsolute } from 'node:path';
+import { join, dirname, relative, isAbsolute } from 'node:path';
 import { once } from 'node:events';
 import { Zip, ZipPassThrough } from 'fflate';
 import sharp from 'sharp';
@@ -40,6 +40,7 @@ export async function writeFcpxmlPackage(
             versionId: media.versionId,
           }));
       const target = join(temporary, ...media.path.split('/'));
+      await mkdir(dirname(target), { recursive: true });
       try {
         const source = await realpath(snapshot.sources[media.versionId]!),
           inside = relative(root, source);
@@ -94,11 +95,15 @@ export async function writeFcpxmlPackage(
             );
         } else {
           const image = sharp(target, { limitInputPixels: 268402689 }),
-            metadata = await image.metadata();
+            metadata = await image.metadata(),
+            swap =
+              metadata.orientation !== undefined && metadata.orientation >= 5,
+            width = swap ? metadata.height : metadata.width,
+            height = swap ? metadata.width : metadata.height;
           if (
             !['png', 'jpeg'].includes(metadata.format ?? '') ||
-            metadata.width !== media.width ||
-            metadata.height !== media.height ||
+            width !== media.width ||
+            height !== media.height ||
             (metadata.pages ?? 1) > 1
           )
             throw new Error('Still image metadata is unsupported or changed.');

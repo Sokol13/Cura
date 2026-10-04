@@ -1,0 +1,52 @@
+{
+  "formats": ["HTML", "JSON", "ASE", "PDF"],
+  "pdfPages": [
+    {
+      "dark": 16973,
+      "orange": 119475,
+      "blue": 10563,
+      "width": 595.28,
+      "height": 841.89
+    },
+    {
+      "dark": 14292,
+      "orange": 0,
+      "blue": 113744,
+      "width": 595.28,
+      "height": 841.89
+    },
+    {
+      "dark": 24926,
+      "orange": 0,
+      "blue": 0,
+      "width": 595.28,
+      "height": 841.89
+    },
+    {
+      "dark": 24926,
+      "orange": 0,
+      "blue": 0,
+      "width": 595.28,
+      "height": 841.89
+    },
+    {
+      "dark": 25256,
+      "orange": 0,
+      "blue": 0,
+      "width": 595.28,
+      "height": 841.89
+    },
+    {
+      "dark": 11810,
+      "orange": 0,
+      "blue": 0,
+      "width": 595.28,
+      "height": 841.89
+    }
+  ],
+  "originalUnchanged": true,
+  "pinnedOldVersion": true,
+  "externalRequests": [],
+  "independentHtmlRequests": [],
+  "htmlVerification": "Exact downloaded file bytes rendered with setContent in a fresh context; managed browser disallows top-level file/data navigation. All network blocked."
+}

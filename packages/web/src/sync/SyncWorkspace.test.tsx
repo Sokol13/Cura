@@ -95,6 +95,44 @@ describe('cloud workspace', () => {
     expect(back).toHaveBeenCalledOnce();
   });
 
+  it('refreshes idle linked libraries so automatic sync progress becomes visible', async () => {
+    vi.useFakeTimers();
+    try {
+      let current = SyncStatusSchema.parse({ ...signedIn, links: [link] });
+      fetchHarness((call) =>
+        call.path === '/api/sync/libraries' ? [] : current,
+      );
+      await act(async () => {
+        render(<SyncWorkspace libraryId={libraryId} onBack={() => {}} />);
+      });
+      expect(screen.getByText('Ready to sync')).toBeVisible();
+      current = SyncStatusSchema.parse({
+        ...current,
+        links: [
+          {
+            ...link,
+            state: 'syncing',
+            phase: 'upload',
+            progress: { completed: 1, total: 2 },
+          },
+        ],
+      });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000);
+      });
+      expect(screen.getByRole('progressbar')).toHaveAttribute('value', '1');
+      expect(screen.getByText('Uploading retained files')).toBeVisible();
+      current = SyncStatusSchema.parse({ ...signedIn, links: [link] });
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(500);
+      });
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+      expect(screen.getByText('Ready to sync')).toBeVisible();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('sends credentials only to the local server and clears the password while sign-in is pending', async () => {
     let current: SyncStatus = signedOut;
     let finish!: (value: unknown) => void;

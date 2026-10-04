@@ -42,6 +42,9 @@ def check_dtd(path):
     return data
 
 def prepare(path):
+    if path.exists():
+        check_dtd(path)
+        return
     with urlopen(URL, timeout=30) as response:
         page = response.read(2_000_001)
     if len(page) > 2_000_000:
