@@ -20,15 +20,10 @@ async function createLibrary(page: Page, name: string) {
   await dialog.getByRole('button', { name: 'Create', exact: true }).click();
   await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
 }
-async function createNamed(
-  page: Page,
-  trigger: string,
-  label: string,
-  name: string,
-) {
+async function createNamed(page: Page, trigger: string, name: string) {
   await page.getByRole('button', { name: trigger, exact: true }).click();
   const dialog = page.getByRole('dialog');
-  await dialog.getByLabel(label, { exact: true }).fill(name);
+  await dialog.getByLabel('Name', { exact: true }).fill(name);
   await dialog.getByRole('button', { name: 'Create', exact: true }).click();
   await expect(dialog).not.toBeVisible();
 }
@@ -59,30 +54,32 @@ test('local catalog imports, organizes, searches, batches and preserves workspac
   });
   await expect(terracotta).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('.asset-card')).toHaveCount(3);
-  await createNamed(page, 'New folder', 'Folder name', 'Campaign');
-  await createNamed(page, 'New tag group', 'Group name', 'Mood');
+  await createNamed(page, 'New folder', 'Campaign');
+  await createNamed(page, 'New tag group', 'Mood');
   await page.getByRole('button', { name: 'New tag', exact: true }).click();
   let dialog = page.getByRole('dialog');
-  await dialog.getByLabel('Tag name', { exact: true }).fill('Warm');
+  await dialog.getByLabel('Name', { exact: true }).fill('Warm');
   await dialog.getByLabel('Tag color', { exact: true }).fill('#e69b65');
   await dialog
-    .getByLabel('Tag group', { exact: true })
+    .getByRole('combobox', { name: 'Tag group', exact: true })
     .selectOption({ label: 'Mood' });
   await dialog.getByRole('button', { name: 'Create', exact: true }).click();
   await terracotta.click();
   const inspector = page.getByRole('complementary', { name: 'Asset details' });
   await inspector
-    .getByLabel('Prompt', { exact: true })
+    .getByRole('textbox', { name: 'Prompt', exact: true })
     .fill('Warm sculptural architecture in the desert');
-  await inspector.getByLabel('Negative prompt', { exact: true }).fill('blurry');
+  await inspector
+    .getByRole('textbox', { name: 'Negative prompt', exact: true })
+    .fill('blurry');
   await inspector.getByLabel('Model', { exact: true }).fill('Studio model');
   await inspector.getByLabel('Source', { exact: true }).fill('ComfyUI');
   await inspector.getByLabel('Seed', { exact: true }).fill('9007199254740993');
   await inspector
-    .getByLabel('Notes', { exact: true })
+    .getByRole('textbox', { name: 'Notes', exact: true })
     .fill('Opening scene reference');
   await inspector
-    .getByLabel('Folders', { exact: true })
+    .getByRole('combobox', { name: 'Folders', exact: true })
     .selectOption({ label: 'Campaign' });
   await inspector.getByLabel('Warm', { exact: true }).check();
   await inspector.getByRole('button', { name: '5 stars', exact: true }).click();
@@ -95,14 +92,11 @@ test('local catalog imports, organizes, searches, batches and preserves workspac
   await page.getByRole('button', { name: 'Filters', exact: true }).click();
   const filters = page.getByRole('region', { name: 'Filters' });
   await filters.getByLabel('Source', { exact: true }).fill('ComfyUI');
-  await filters.getByLabel('Rating', { exact: true }).selectOption('5');
+  await filters
+    .getByRole('combobox', { name: 'Rating', exact: true })
+    .selectOption('5');
   await expect(terracotta).toBeVisible();
-  await createNamed(
-    page,
-    'Save search',
-    'Smart folder name',
-    'Approved warm studies',
-  );
+  await createNamed(page, 'Save search', 'Approved warm studies');
   await page.getByRole('button', { name: 'All assets', exact: true }).click();
   await expect(page.locator('.asset-card')).toHaveCount(3);
   await page
@@ -133,7 +127,9 @@ test('local catalog imports, organizes, searches, batches and preserves workspac
   await page.getByRole('button', { name: 'List view', exact: true }).click();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   dialog = page.getByRole('dialog');
-  await dialog.getByLabel('Theme', { exact: true }).selectOption('light');
+  await dialog
+    .getByRole('combobox', { name: 'Theme', exact: true })
+    .selectOption('light');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await dialog
     .getByRole('button', { name: 'Close', exact: true })
@@ -145,9 +141,9 @@ test('local catalog imports, organizes, searches, batches and preserves workspac
   ).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await terracotta.click();
-  await expect(inspector.getByLabel('Notes', { exact: true })).toHaveValue(
-    'Opening scene reference',
-  );
+  await expect(
+    inspector.getByRole('textbox', { name: 'Notes', exact: true }),
+  ).toHaveValue('Opening scene reference');
   await expect(inspector.getByLabel('Seed', { exact: true })).toHaveValue(
     '9007199254740993',
   );
@@ -155,7 +151,7 @@ test('local catalog imports, organizes, searches, batches and preserves workspac
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page
     .getByRole('dialog')
-    .getByLabel('Theme', { exact: true })
+    .getByRole('combobox', { name: 'Theme', exact: true })
     .selectOption('dark');
   await page
     .getByRole('dialog')
@@ -229,9 +225,11 @@ test('directory registration, live updates, drop upload, shortcuts and bilingual
     await expect(page.locator('.asset-card')).toHaveCount(1);
     await reference.click();
     await page
-      .getByLabel('Notes', { exact: true })
+      .getByRole('textbox', { name: 'Notes', exact: true })
       .fill('Typing does not delete the asset');
-    await page.getByLabel('Notes', { exact: true }).press('Delete');
+    await page
+      .getByRole('textbox', { name: 'Notes', exact: true })
+      .press('Delete');
     await expect(reference).toBeVisible();
     await reference.click();
     await page.keyboard.press('Delete');
@@ -240,11 +238,15 @@ test('directory registration, live updates, drop upload, shortcuts and bilingual
     await expect(reference).toBeVisible();
     await page.getByRole('button', { name: 'Settings', exact: true }).click();
     dialog = page.getByRole('dialog');
-    await dialog.getByLabel('Language', { exact: true }).selectOption('zh-CN');
+    await dialog
+      .getByRole('combobox', { name: 'Language', exact: true })
+      .selectOption('zh-CN');
     await expect(
       dialog.getByRole('heading', { name: '设置', exact: true }),
     ).toBeVisible();
-    await dialog.getByLabel('语言', { exact: true }).selectOption('en');
+    await dialog
+      .getByRole('combobox', { name: '语言', exact: true })
+      .selectOption('en');
     await expect(
       dialog.getByRole('heading', { name: 'Settings', exact: true }),
     ).toBeVisible();

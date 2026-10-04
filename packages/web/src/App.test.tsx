@@ -317,6 +317,82 @@ describe('Cura catalog', () => {
     ).not.toBeInTheDocument();
   });
 
+  it('continues importing valid files after an individual failure and retains the failed filename', async () => {
+    const originalFetch = fetch;
+    const uploaded: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string, options?: RequestInit) => {
+        const url = new URL(path, 'http://localhost');
+        if (!url.pathname.endsWith('/upload'))
+          return originalFetch(path, options);
+        const name = url.searchParams.get('name') ?? '';
+        uploaded.push(name);
+        return name === 'invalid.png'
+          ? new Response(
+              JSON.stringify({
+                error: 'Invalid image',
+                code: 'INVALID_UPLOAD',
+              }),
+              { status: 400 },
+            )
+          : new Response('{}');
+      }),
+    );
+    render(<App />);
+    await screen.findByRole('button', { name: 'Select Forest.png' });
+    fireEvent.change(
+      screen.getByLabelText('Import files', { selector: 'input' }),
+      {
+        target: {
+          files: [
+            new File(['broken'], 'invalid.png'),
+            new File(['valid'], 'valid.png'),
+          ],
+        },
+      },
+    );
+    await waitFor(() => expect(uploaded).toEqual(['invalid.png', 'valid.png']));
+    expect(screen.getByRole('alert')).toHaveTextContent('invalid.png');
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 180));
+    });
+    expect(screen.getByRole('alert')).toHaveTextContent('invalid.png');
+  });
+
+  it('retains an operation error when an unrelated search refresh succeeds', async () => {
+    const originalFetch = fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string, options?: RequestInit) => {
+        if (path === `/api/assets/${assetId}`)
+          return new Response(
+            JSON.stringify({ error: 'File unavailable', code: 'EACCES' }),
+            { status: 403 },
+          );
+        return originalFetch(path, options);
+      }),
+    );
+    render(<App />);
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Select Forest.png' }),
+    );
+    fireEvent.change(screen.getByLabelText('Notes'), {
+      target: { value: 'Unsaved' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Full Disk Access',
+    );
+    fireEvent.change(screen.getByRole('searchbox'), {
+      target: { value: 'forest' },
+    });
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 180));
+    });
+    expect(screen.getByRole('alert')).toHaveTextContent('Full Disk Access');
+  });
+
   it('explains an unavailable server and retries without reloading the browser', async () => {
     vi.stubGlobal(
       'fetch',

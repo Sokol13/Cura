@@ -1143,3 +1143,13 @@ progress {
 .organization-dialog > form > .error-message {
   padding: 0 22px 16px;
 }
+
+.source-warning {
+  margin-top: 12px;
+  padding: 8px 10px;
+  border-left: 2px solid var(--accent);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent), transparent 94%);
+  font-size: 11px;
+  line-height: 1.65;
+}

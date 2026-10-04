@@ -2,6 +2,8 @@ import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 const en = {
+  originalUnavailable:
+    'Original unavailable; the retained version is still available.',
   scanStarted: 'Library scan started',
   allFolders: 'All folders',
   allTags: 'All tags',
@@ -189,6 +191,7 @@ const en = {
   importFailed: 'Import failed. Please retry the remaining files.',
 };
 const zh: Record<keyof typeof en, string> = {
+  originalUnavailable: '原文件不可用；保留的版本仍然可用。',
   scanStarted: '已开始扫描资产库',
   allFolders: '全部文件夹',
   allTags: '全部标签',

@@ -109,6 +109,11 @@ function InspectorForm({
       </button>
       <h3 className="asset-title">{asset.name}</h3>
       <p className="asset-path">{asset.relativePath}</p>
+      {'missing' in asset && asset.missing === true && (
+        <p className="source-warning" role="status">
+          {t('originalUnavailable')}
+        </p>
+      )}
       <div className="rating-stars" role="group" aria-label={t('rating')}>
         {[1, 2, 3, 4, 5].map((rating) => (
           <button

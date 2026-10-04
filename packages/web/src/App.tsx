@@ -209,7 +209,6 @@ export function App() {
                 ),
               ),
           );
-          setError(null);
         })
         .catch((failure: unknown) => {
           if (!(failure instanceof Error && failure.name === 'AbortError'))
@@ -375,18 +374,19 @@ export function App() {
   const importFiles = async (files: FileList | File[]) => {
     if (!libraryId || upload) return;
     const list = Array.from(files);
-    try {
-      for (let index = 0; index < list.length; index++) {
-        setUpload({ current: index + 1, total: list.length });
-        const file = list[index];
-        if (file) await uploadFile(libraryId, file);
+    const failures: string[] = [];
+    for (const [index, file] of list.entries()) {
+      setUpload({ current: index + 1, total: list.length });
+      try {
+        await uploadFile(libraryId, file);
+      } catch {
+        failures.push(file.name);
       }
-      refresh();
-    } catch (failure) {
-      reportError(failure);
-    } finally {
-      setUpload(null);
     }
+    setUpload(null);
+    refresh();
+    if (failures.length)
+      reportError(new ApiError('IMPORT_PARTIAL', failures.join(', ')));
   };
   const saveAsset = async (patch: UpdateAsset) => {
     if (!selectedAsset) return;
@@ -456,7 +456,9 @@ export function App() {
     error instanceof ApiError
       ? error.code === 'NETWORK'
         ? t('networkError')
-        : `${t('requestFailed')} ${error.message}`
+        : error.code === 'IMPORT_PARTIAL'
+          ? `${t('importFailed')} ${error.message}`
+          : `${t('requestFailed')} ${error.message}`
       : t('genericError');
   return (
     <main
@@ -588,13 +590,14 @@ export function App() {
           <div role="alert" className="error-banner">
             <div>
               {errorMessage}
-              {error instanceof ApiError && error.status === 403 && (
-                <p>{t('permissionHint')}</p>
-              )}
+              {error instanceof ApiError &&
+                (error.status === 403 ||
+                  ['EPERM', 'EACCES', 'EBUSY'].includes(error.code)) && (
+                  <p>{t('permissionHint')}</p>
+                )}
             </div>
             <button
               onClick={() => {
-                setError(null);
                 if (!libraries.length) void initialize();
                 else refresh();
               }}
