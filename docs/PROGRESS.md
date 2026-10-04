@@ -15,7 +15,8 @@ The user accepted phase 0 on 2026-10-04 and authorized continuous autonomous dev
 
 - Phase 1 documents integrated and independently reviewed: RESEARCH.md, PRD.md, ARCHITECTURE.md and TASKS.md. Final local gate passed (25 unit tests, 1 E2E). Pushed `56433f2`; [GitHub CI 37194418005](https://github.com/Sokol13/Cura/actions/runs/37194418005) succeeded and `gh run watch --exit-status` confirmed it.
 - Task 2 media primitives integrated as `37b0c54`; full local lint/typecheck/test/e2e passed (81 unit tests including 55 media tests, 1 real-server E2E). Publishing with this update.
-- Task 3 persistence finishing in feat-catalog-store (/tmp/cura-store); runtime APIs in feat-runtime (/tmp/cura-runtime); Task 5 UI in feat-web (/tmp/cura-web); preview in feat-preview; stress fixtures in feat-stress. Integration belongs to coordinator.
+- Task 3 persistence integrated at `fc69f20`; full local lint/typecheck/test/e2e passed (94 unit tests, 1 E2E), including metadata/path/media and persistence suites. Publishing now.
+- runtime APIs in feat-runtime (/tmp/cura-runtime); Task 5 UI in feat-web (/tmp/cura-web); preview in feat-preview; stress fixtures in feat-stress. Integration belongs to coordinator.
 - P0 dependency/startup preparation pushed as `3473fb4`; [CI 37194568281](https://github.com/Sokol13/Cura/actions/runs/37194568281) is green. It passed full local gate (25 unit tests, 1 E2E): audited npm licenses, pinned Sharp/exifr/chokidar/WebSocket/fflate/Zustand/Virtual; native Sharp encode/decode verified; start now builds before launch.
 - Mandatory setup succeeded with Node 22.23.3 / pnpm 10.34.6; the provisioned Chromium launch succeeded. Root-only Playwright OS-package installation used the documented fallback.
 - Baseline quality gate passed: lint, typecheck, 25 unit tests and 1 real-server E2E.
