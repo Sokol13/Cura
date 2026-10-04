@@ -110,6 +110,7 @@ export const AssetSchema = z.object({
   name: z.string(),
   ...fileFields,
   currentVersionId: IdSchema,
+  missing: z.boolean().optional(),
   rating: z.number().int().min(0).max(5),
   note: z.string(),
   folderId: IdSchema.nullable(),

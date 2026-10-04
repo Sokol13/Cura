@@ -495,3 +495,108 @@ describe('catalog preview cache recovery', () => {
     }
   });
 });
+
+describe('source availability', () => {
+  it('keeps one asset and its lineage when a source is renamed and then edited', async () => {
+    const f = await fixture();
+    const original = f.ingest('角色-é.png', 'a').asset;
+    expect(
+      f.store.markSourceMissing(f.root.id, '角色-é.png'.normalize('NFD')),
+    ).toMatchObject({ id: original.id, missing: true });
+    const renamed = f.ingest('renamed.png', 'a').asset;
+    expect(renamed).toMatchObject({
+      id: original.id,
+      relativePath: 'renamed.png',
+      name: 'renamed.png',
+      missing: false,
+    });
+    expect(f.store.listVersions(original.id)).toHaveLength(1);
+    expect(f.store.listVersions(original.id)[0]?.name).toBe('角色-é.png');
+    expect(f.ingest('renamed.png', 'b').asset.id).toBe(original.id);
+    expect(f.store.listAssets(f.library.id)).toMatchObject({
+      total: 1,
+      items: [{ id: original.id, missing: false }],
+    });
+    expect(
+      f.store.listVersions(original.id).map((version) => version.hash),
+    ).toEqual(['b', 'a']);
+    expect(f.store.getSource(f.root.id, '角色-é.png')?.available).toBe(false);
+  });
+
+  it('ignores deleted duplicate aliases when the remaining original changes', async () => {
+    const f = await fixture();
+    const original = f.ingest('first.png', 'a').asset;
+    f.ingest('duplicate.png', 'a');
+    expect(f.store.markSourceMissing(f.root.id, 'first.png')).toMatchObject({
+      id: original.id,
+      relativePath: 'duplicate.png',
+      missing: false,
+    });
+    expect(f.ingest('duplicate.png', 'b').asset.id).toBe(original.id);
+    expect(f.store.listAssets(f.library.id).total).toBe(1);
+    expect(f.store.getVersionFile(original.currentVersionId).snapshotPath).toBe(
+      '/snapshot/a',
+    );
+    expect(f.store.markSourceMissing(f.root.id, 'unknown.png')).toBeNull();
+    expect(f.store.markSourceMissing(f.root.id, 'first.png')).toBeNull();
+  });
+
+  it('reconciles missing sources transactionally and restores source availability on ingest', async () => {
+    const f = await fixture();
+    const first = f.ingest('first.png', 'a').asset;
+    const second = f.ingest('角色-é.png', 'b').asset;
+    expect(
+      f.store.reconcileSources(f.root.id, ['角色-é.png'.normalize('NFD')]),
+    ).toMatchObject([{ id: first.id, missing: true }]);
+    expect(f.store.getAsset(second.id).missing).toBe(false);
+    expect(
+      f.store
+        .listAssets(f.library.id)
+        .items.find((asset) => asset.id === first.id)?.missing,
+    ).toBe(true);
+    expect(f.store.listAllVersions()).toHaveLength(2);
+    expect(f.store.getVersionFile(first.currentVersionId).snapshotPath).toBe(
+      '/snapshot/a',
+    );
+    f.reopen();
+    expect(f.store.getAsset(first.id).missing).toBe(true);
+    expect(f.ingest('first.png', 'a')).toMatchObject({
+      changed: true,
+      asset: { id: first.id, missing: false },
+    });
+    expect(f.store.listVersions(first.id)).toHaveLength(1);
+    expect(() => f.store.reconcileSources(f.root.id, ['../invalid'])).toThrow();
+    expect(f.store.getAsset(first.id).missing).toBe(false);
+  });
+
+  it('marks unregistered roots unavailable while available aliases in another root retain the asset', async () => {
+    const f = await fixture();
+    const original = f.ingest('first.png', 'a').asset;
+    const otherRoot = f.store.addRoot(f.library.id, '/other-root');
+    f.store.ingest({
+      libraryId: f.library.id,
+      rootId: otherRoot.id,
+      relativePath: 'second.png',
+      actualRelativePath: 'second.png',
+      processed: file('a'),
+    });
+    f.store.deleteRoot(f.root.id);
+    expect(f.store.getSource(f.root.id, 'first.png')?.available).toBe(false);
+    expect(f.store.getAsset(original.id)).toMatchObject({
+      rootId: otherRoot.id,
+      relativePath: 'second.png',
+      missing: false,
+    });
+    const edited = f.store.ingest({
+      libraryId: f.library.id,
+      rootId: otherRoot.id,
+      relativePath: 'second.png',
+      actualRelativePath: 'second.png',
+      processed: file('b'),
+    }).asset;
+    expect(edited.id).toBe(original.id);
+    f.store.deleteRoot(otherRoot.id);
+    expect(f.store.getAsset(original.id).missing).toBe(true);
+    expect(f.store.listVersions(original.id)).toHaveLength(2);
+  });
+});

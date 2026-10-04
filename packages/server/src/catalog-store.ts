@@ -42,6 +42,7 @@ export interface AssetSource {
   relativePath: string;
   actualRelativePath: string;
   lastHash: string;
+  available: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -226,13 +227,26 @@ export class CatalogStore {
   }
   deleteRoot(id: string): void {
     this.getRoot(id);
-    const date = now();
-    this.run(
-      'UPDATE library_roots SET removed_at=?,updated_at=? WHERE id=?',
-      date,
-      date,
-      id,
-    );
+    this.sqlite.transaction(() => {
+      const date = now();
+      const assets = this.rows(
+        'SELECT DISTINCT asset_id FROM asset_sources WHERE root_id=?',
+        id,
+      );
+      this.run(
+        'UPDATE library_roots SET removed_at=?,updated_at=? WHERE id=?',
+        date,
+        date,
+        id,
+      );
+      this.run(
+        'UPDATE asset_sources SET available=0,updated_at=? WHERE root_id=?',
+        date,
+        id,
+      );
+      for (const asset of assets)
+        this.refreshSourceLocation(String(asset.asset_id));
+    })();
   }
   getSource(rootId: string, relativePath: string): AssetSource | undefined {
     const row = this.row(
@@ -240,9 +254,69 @@ export class CatalogStore {
       rootId,
       normalizeRelative(relativePath),
     );
-    return row ? (camel(row) as unknown as AssetSource) : undefined;
+    return row
+      ? ({
+          ...camel(row),
+          available: row.available === 1,
+        } as unknown as AssetSource)
+      : undefined;
   }
 
+  markSourceMissing(rootId: string, relativePath: string): C.Asset | null {
+    const source = this.getSource(rootId, relativePath);
+    if (!source?.available) return null;
+    return this.sqlite.transaction(() => {
+      this.run(
+        'UPDATE asset_sources SET available=0,updated_at=? WHERE id=?',
+        now(),
+        source.id,
+      );
+      return this.refreshSourceLocation(source.assetId);
+    })();
+  }
+  reconcileSources(rootId: string, presentRelativePaths: string[]): C.Asset[] {
+    this.getRoot(rootId);
+    const present = new Set(presentRelativePaths.map(normalizeRelative));
+    return this.sqlite.transaction(() => {
+      const changed = new Set<string>();
+      for (const row of this.rows(
+        'SELECT relative_path FROM asset_sources WHERE root_id=? AND available=1',
+        rootId,
+      )) {
+        const path = String(row.relative_path);
+        if (!present.has(path)) {
+          const asset = this.markSourceMissing(rootId, path);
+          if (asset) changed.add(asset.id);
+        }
+      }
+      return [...changed].map((id) => this.getAsset(id));
+    })();
+  }
+  private refreshSourceLocation(assetId: string): C.Asset {
+    const asset = this.getAsset(assetId);
+    const available = this.rows(
+      'SELECT s.* FROM asset_sources s JOIN library_roots r ON r.id=s.root_id WHERE s.asset_id=? AND s.available=1 AND r.removed_at IS NULL ORDER BY s.created_at,s.id',
+      assetId,
+    );
+    const primary = available.find(
+      (source) =>
+        source.root_id === asset.rootId &&
+        source.relative_path === asset.relativePath,
+    );
+    const replacement = primary ? undefined : available[0];
+    this.writeAsset({
+      ...asset,
+      ...(replacement
+        ? {
+            rootId: String(replacement.root_id),
+            relativePath: String(replacement.relative_path),
+            name: basename(String(replacement.relative_path)),
+          }
+        : {}),
+      updatedAt: now(),
+    });
+    return this.getAsset(assetId);
+  }
   getAsset(id: string): C.Asset {
     const row = this.require('assets', id);
     const payload: unknown = JSON.parse(String(row.payload));
@@ -250,7 +324,16 @@ export class CatalogStore {
       'SELECT t.* FROM tags t JOIN asset_tags at ON at.tag_id=t.id WHERE at.asset_id=? ORDER BY t.name,t.id',
       id,
     ).map((row) => C.TagSchema.parse(camel(row)));
-    return C.AssetSchema.parse({ ...Object(payload), ...camel(row), tags });
+    const missing = !this.row(
+      'SELECT 1 FROM asset_sources s JOIN library_roots r ON r.id=s.root_id WHERE s.asset_id=? AND s.available=1 AND r.removed_at IS NULL LIMIT 1',
+      id,
+    );
+    return C.AssetSchema.parse({
+      ...Object(payload),
+      ...camel(row),
+      tags,
+      missing,
+    });
   }
   listAssets(libraryId: string, query: C.AssetQuery = {}): C.AssetPage {
     this.getLibrary(libraryId);
@@ -595,21 +678,23 @@ export class CatalogStore {
           asset.hash === input.processed.hash
         ) {
           this.run(
-            'UPDATE asset_sources SET last_hash=?,actual_relative_path=?,updated_at=? WHERE id=?',
+            'UPDATE asset_sources SET available=1,last_hash=?,actual_relative_path=?,updated_at=? WHERE id=?',
             input.processed.hash,
             input.actualRelativePath,
             date,
             source.id,
           );
-          return { asset, changed: false };
+          if (!source.available) asset = this.refreshSourceLocation(asset.id);
+          return { asset: this.getAsset(asset.id), changed: !source.available };
         }
         const aliases = Number(
           this.row(
-            'SELECT count(*) AS count FROM asset_sources WHERE asset_id=?',
+            'SELECT count(*) AS count FROM asset_sources s JOIN library_roots r ON r.id=s.root_id WHERE s.asset_id=? AND s.id<>? AND s.available=1 AND r.removed_at IS NULL',
             asset.id,
+            source.id,
           )?.count,
         );
-        if (aliases > 1) {
+        if (aliases > 0) {
           const previous = asset;
           asset = this.insertAsset(
             input.libraryId,
@@ -619,24 +704,14 @@ export class CatalogStore {
             asset,
           );
           this.run(
-            'UPDATE asset_sources SET asset_id=?,last_hash=?,actual_relative_path=?,updated_at=? WHERE id=?',
+            'UPDATE asset_sources SET available=1,asset_id=?,last_hash=?,actual_relative_path=?,updated_at=? WHERE id=?',
             asset.id,
             input.processed.hash,
             input.actualRelativePath,
             date,
             source.id,
           );
-          const remaining = this.row(
-            'SELECT * FROM asset_sources WHERE asset_id=? ORDER BY created_at,id LIMIT 1',
-            previous.id,
-          )!;
-          this.writeAsset({
-            ...previous,
-            rootId: String(remaining.root_id),
-            relativePath: String(remaining.relative_path),
-            name: basename(String(remaining.relative_path)),
-            updatedAt: date,
-          });
+          this.refreshSourceLocation(previous.id);
         } else {
           asset = this.appendVersion(
             { ...asset, rootId: input.rootId, relativePath },
@@ -644,7 +719,7 @@ export class CatalogStore {
             basename(relativePath),
           );
           this.run(
-            'UPDATE asset_sources SET last_hash=?,actual_relative_path=?,updated_at=? WHERE id=?',
+            'UPDATE asset_sources SET available=1,last_hash=?,actual_relative_path=?,updated_at=? WHERE id=?',
             input.processed.hash,
             input.actualRelativePath,
             date,
@@ -666,7 +741,7 @@ export class CatalogStore {
               input.processed,
             );
         this.run(
-          'INSERT INTO asset_sources VALUES (?,?,?,?,?,?,?,?)',
+          'INSERT INTO asset_sources (id,asset_id,root_id,relative_path,actual_relative_path,last_hash,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)',
           randomUUID(),
           asset.id,
           input.rootId,
@@ -677,7 +752,7 @@ export class CatalogStore {
           date,
         );
       }
-      this.refreshSearch(asset.id);
+      this.refreshSourceLocation(asset.id);
       this.log(input.libraryId, asset.id, 'ingest', { relativePath });
       return { asset: this.getAsset(asset.id), changed: true };
     })();
