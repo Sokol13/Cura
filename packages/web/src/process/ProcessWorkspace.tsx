@@ -8,6 +8,7 @@ import {
   type ProcessTimeline,
 } from '@cura/shared';
 import { assetUrl, request } from '../catalog/api';
+import { ExportPanel } from './ExportPanel';
 import './i18n';
 import './process.css';
 
@@ -23,7 +24,9 @@ export function ProcessWorkspace({
   onBack: () => void;
 }) {
   const { t } = useTranslation('process');
-  const [tab, setTab] = useState<'timeline' | 'generator'>('timeline');
+  const [tab, setTab] = useState<'timeline' | 'generator' | 'export'>(
+    'timeline',
+  );
   const [statistics, setStatistics] = useState<ProcessStatistics>();
   const [assets, setAssets] = useState<Asset[]>([]);
   const [assetId, setAssetId] = useState('');
@@ -215,8 +218,26 @@ export function ProcessWorkspace({
         >
           {t('generator')}
         </button>
+        <button
+          aria-pressed={tab === 'export'}
+          onClick={() => setTab('export')}
+        >
+          {t('export')}
+        </button>
       </nav>
-      {tab === 'timeline' ? (
+      {tab === 'export' ? (
+        <>
+          <p>
+            {t('exportCurrentAsset', {
+              name: currentVersion?.version.name ?? t('noTimeline'),
+            })}
+          </p>
+          <ExportPanel
+            libraryId={libraryId}
+            assetIds={assetId ? [assetId] : []}
+          />
+        </>
+      ) : tab === 'timeline' ? (
         <section>
           <div className="process-controls">
             <label>

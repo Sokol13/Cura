@@ -1,7 +1,22 @@
 import { i18n } from '../i18n';
 const en = {
+  exportCurrentAsset:
+    'Selected from Timeline: {{name}}. Choose another asset in Timeline to change the selection.',
   cancelHint:
     'The mock includes a 1.5-second render stage so you can cancel. Cancellation stops remaining work; outputs already imported stay in your library.',
+  portableExport: 'Portable library export',
+  exportHint:
+    'Download a ZIP with all retained versions, a human-readable manifest, CSV, annotations and creative context. Files are verified by SHA-256 before the archive is ready.',
+  exportSelectionHint:
+    'Selected exports include your chosen assets, complete boards and brands, and all their historical pinned assets. Additional dependencies are listed in the manifest. Trash and unavailable originals retain their saved versions.',
+  exportLibrary: 'Export whole library',
+  exportSelected_one: 'Export {{count}} selected asset',
+  exportSelected_other: 'Export {{count}} selected assets',
+  wholeLibrary: 'Whole library',
+  selection: 'Selected assets',
+  exportJob: 'Export: {{scope}}',
+  archiveSize: '{{size}} MB · verified archive',
+  downloadArchive: 'Download ZIP',
   title: 'Creative process',
   back: 'Back to library',
   refresh: 'Refresh',
@@ -60,8 +75,22 @@ const en = {
   error: 'The operation could not be completed.',
 };
 const zh: Record<keyof typeof en, string> = {
+  exportCurrentAsset: '时间线已选资产：{{name}}。可返回时间线选择其他资产。',
   cancelHint:
     '模拟器包含 1.5 秒渲染阶段，便于取消任务。取消会停止后续工作；已导入的产出仍保留在资产库。',
+  portableExport: '可迁移的资产库导出',
+  exportHint:
+    '下载包含所有保留版本、易读清单、CSV、注释与创作上下文的 ZIP。归档完成前会校验每个文件的 SHA-256。',
+  exportSelectionHint:
+    '选定导出包含你选择的资产、完整看板和品牌，以及它们引用的全部历史版本资产。额外依赖列于清单中；回收站及原文件不可用时仍导出保留版本。',
+  exportLibrary: '导出整个资产库',
+  exportSelected_one: '导出 {{count}} 个选定资产',
+  exportSelected_other: '导出 {{count}} 个选定资产',
+  wholeLibrary: '整个资产库',
+  selection: '选定资产',
+  exportJob: '导出：{{scope}}',
+  archiveSize: '{{size}} MB · 已校验归档',
+  downloadArchive: '下载 ZIP',
   title: '创作过程',
   back: '返回资产库',
   refresh: '刷新',

@@ -1,0 +1,15 @@
+{
+  "whole": {
+    "assets": 205,
+    "versions": 206,
+    "verifiedFiles": 205,
+    "zipEntries": 208
+  },
+  "selection": {
+    "assets": 2,
+    "versions": 3,
+    "dependencies": ["e212017d-4c0e-4343-a543-fec1c68548bd"]
+  },
+  "independentReaders": "Python standard library zipfile/csv/hashlib",
+  "externalRequests": []
+}
