@@ -614,8 +614,6 @@ export class CatalogStore {
     patch: {
       state?: C.AssetVersion['previewState'];
       error?: string | null;
-      width?: number;
-      height?: number;
     } = {},
   ): void {
     this.sqlite.transaction(() => {
@@ -636,8 +634,6 @@ export class CatalogStore {
       const payload = {
         ...version,
         ...fields,
-        ...(patch.width ? { width: patch.width } : {}),
-        ...(patch.height ? { height: patch.height } : {}),
         updatedAt: date,
       };
       this.run(
@@ -653,8 +649,6 @@ export class CatalogStore {
           C.AssetSchema.parse({
             ...asset,
             ...fields,
-            ...(patch.width ? { width: patch.width } : {}),
-            ...(patch.height ? { height: patch.height } : {}),
             updatedAt: date,
           }),
         );

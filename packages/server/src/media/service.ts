@@ -607,7 +607,7 @@ export class MediaService {
   ): Promise<void> {
     return this.track(async () => {
       this.store.checkPreviewRevision(versionId, sourceHash, revision);
-      let result: { thumbnailPath: string; width: number; height: number };
+      let result: { thumbnailPath: string };
       try {
         result = await this.job({
           kind: 'preview',
@@ -622,8 +622,6 @@ export class MediaService {
       this.store.checkPreviewRevision(versionId, sourceHash, revision);
       this.store.updateVersionPreview(versionId, result.thumbnailPath, {
         state: 'ready',
-        width: result.width,
-        height: result.height,
       });
       const file = this.store.getVersionFile(versionId);
       this.emit({

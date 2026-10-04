@@ -1,6 +1,7 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 import Fastify from 'fastify';
 import sharp from 'sharp';
 import { afterEach, expect, it } from 'vitest';
@@ -169,4 +170,77 @@ it('persists an explicit unsupported state and retries only after cache rebuild'
   expect(await candidates()).toEqual([]);
   await media.rebuildCache();
   expect((await candidates())[0]?.id).toBe(first.id);
+});
+
+it('classifies original rich formats without passing documents through the raster decoder', async () => {
+  const { media, library } = await setup();
+  for (const [name, type] of [
+    ['orange-cube.glb', 'model/gltf-binary'],
+    ['orange-cube.obj', 'model/obj'],
+    ['quadrants-raw.psd', 'image/vnd.adobe.photoshop'],
+    ['two-pages.pdf', 'application/pdf'],
+    ['first-frame.mp4', 'video/mp4'],
+    ['first-frame.mov', 'video/quicktime'],
+  ]) {
+    const bytes = await readFile(
+      fileURLToPath(
+        new URL(`../../../e2e/fixtures/rich/${name}`, import.meta.url),
+      ),
+    );
+    expect((await media.upload(library.id, name!, bytes)).type, name).toBe(
+      type,
+    );
+  }
+});
+
+it('keeps 1920×1080 source dimensions after receiving a 1024×576 preview and never invents model dimensions', async () => {
+  const { media, library, store, candidates, submit } = await setup();
+  const source = Buffer.alloc(40 + 1920 * 1080 * 3);
+  source.write('8BPS');
+  source.writeUInt16BE(1, 4);
+  source.writeUInt16BE(3, 12);
+  source.writeUInt32BE(1080, 14);
+  source.writeUInt32BE(1920, 18);
+  source.writeUInt16BE(8, 22);
+  source.writeUInt16BE(3, 24);
+  const asset = await media.upload(library.id, 'full-size.psd', source);
+  expect([asset.width, asset.height]).toEqual([1920, 1080]);
+  const preview = await sharp({
+    create: { width: 1024, height: 576, channels: 3, background: 'red' },
+  })
+    .png()
+    .toBuffer();
+  const candidate = (await candidates()).find(
+    (item) => item.id === asset.currentVersionId,
+  )!;
+  expect(
+    (
+      await submit(
+        candidate.id,
+        candidate.sourceHash,
+        candidate.revision,
+        preview,
+      )
+    ).statusCode,
+  ).toBe(200);
+  const updated = store.getAsset(asset.id);
+  expect([updated.width, updated.height]).toEqual([1920, 1080]);
+  expect(store.listVersions(asset.id)[0]).toMatchObject({
+    width: 1920,
+    height: 1080,
+  });
+  const model = await media.upload(
+    library.id,
+    'cube.glb',
+    await readFile(
+      fileURLToPath(
+        new URL('../../../e2e/fixtures/rich/orange-cube.glb', import.meta.url),
+      ),
+    ),
+  );
+  const modelJob = (await candidates()).find(
+    (item) => item.id === model.currentVersionId,
+  )!;
+  await submit(modelJob.id, modelJob.sourceHash, modelJob.revision, preview);
+  expect(store.getAsset(model.id)).toMatchObject({ width: null, height: null });
 });

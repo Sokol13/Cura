@@ -14,7 +14,7 @@ const PREVIEW_UPLOAD_LIMIT = 4 * 1024 * 1024;
 export async function savePreview(
   cacheDir: string,
   bytes: Uint8Array,
-): Promise<{ thumbnailPath: string; width: number; height: number }> {
+): Promise<{ thumbnailPath: string }> {
   const invalid = () =>
     Object.assign(new Error('Upload a bounded PNG preview.'), {
       code: 'INVALID_PREVIEW',
@@ -69,5 +69,5 @@ export async function savePreview(
   } finally {
     await rm(temporary, { force: true });
   }
-  return { thumbnailPath, width: metadata.width, height: metadata.height };
+  return { thumbnailPath };
 }

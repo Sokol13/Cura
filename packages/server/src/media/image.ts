@@ -238,6 +238,38 @@ export async function processFile(input: {
     try {
       const header = Buffer.alloc(Math.min(4096, stored.size));
       await prefix.read(header, 0, header.length, 0);
+      const signature = header.toString('ascii', 0, 12);
+      const richType = signature.startsWith('glTF')
+        ? 'model/gltf-binary'
+        : signature.startsWith('8BPS')
+          ? 'image/vnd.adobe.photoshop'
+          : signature.startsWith('%PDF-')
+            ? 'application/pdf'
+            : signature.slice(4, 8) === 'ftyp' &&
+                /^(qt  |isom|iso2|mp41|mp42|avc1)$/.test(signature.slice(8, 12))
+              ? signature.slice(8, 12) === 'qt  '
+                ? 'video/quicktime'
+                : 'video/mp4'
+              : path.extname(input.filePath).toLowerCase() === '.obj' &&
+                  /^v\s+[-+\d.]/m.test(header.toString('utf8'))
+                ? 'model/obj'
+                : null;
+      if (richType) {
+        result.type = richType;
+        if (
+          richType === 'image/vnd.adobe.photoshop' &&
+          header.length >= 26 &&
+          header.readUInt16BE(4) === 1
+        ) {
+          const width = header.readUInt32BE(18),
+            height = header.readUInt32BE(14);
+          if (width > 0 && height > 0 && width <= 30000 && height <= 30000) {
+            result.width = width;
+            result.height = height;
+          }
+        }
+        return result;
+      }
       raster =
         header.subarray(0, 8).equals(PNG_SIGNATURE) ||
         header.subarray(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])) ||
