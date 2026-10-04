@@ -94,6 +94,7 @@ export class MediaService {
   private readonly reconcileRoots = new Map<string, LibraryRoot>();
   private readonly rootChanges = new Map<string, number>();
   private readonly operations = new Set<Promise<unknown>>();
+  private readonly recentErrors: CatalogEvent[] = [];
 
   constructor(
     private readonly store: CatalogStore,
@@ -203,13 +204,7 @@ export class MediaService {
       .catch((error: unknown) => {
         if ((error as NodeJS.ErrnoException).code === 'MEDIA_QUEUE_FULL')
           this.reconcileRoots.set(root.id, root);
-        else if (!this.closed)
-          this.emit({
-            type: 'error',
-            libraryId: root.libraryId,
-            rootId: root.id,
-            message: fileOperationMessage(error),
-          });
+        else if (!this.closed) this.reportError(root, error);
       })
       .finally(() => this.reconcile());
   }
@@ -234,19 +229,34 @@ export class MediaService {
           assetId: asset.id,
         });
     } catch (error) {
-      this.emit({
-        type: 'error',
-        libraryId: root.libraryId,
-        rootId: root.id,
-        message: fileOperationMessage(error),
-      });
+      this.reportError(root, error);
     }
   }
   private rootChanged(root: LibraryRoot) {
     this.rootChanges.set(root.id, (this.rootChanges.get(root.id) ?? 0) + 1);
     if (this.scans.has(root.id)) this.reconcileRoots.set(root.id, root);
   }
+  private reportError(root: LibraryRoot, error: unknown) {
+    const code = (error as NodeJS.ErrnoException | undefined)?.code;
+    this.emit({
+      type: 'error',
+      libraryId: root.libraryId,
+      rootId: root.id,
+      message: fileOperationMessage(error),
+      ...(typeof code === 'string' ? { code } : {}),
+    });
+  }
+  private clearRootErrors(rootId: string) {
+    for (let index = this.recentErrors.length - 1; index >= 0; index--) {
+      if (this.recentErrors[index]?.rootId === rootId)
+        this.recentErrors.splice(index, 1);
+    }
+  }
   private emit(event: CatalogEvent) {
+    if (event.type === 'error') {
+      this.recentErrors.push(event);
+      if (this.recentErrors.length > 100) this.recentErrors.shift();
+    }
     for (const listener of this.listeners) {
       try {
         listener(event);
@@ -257,6 +267,13 @@ export class MediaService {
   }
   subscribe(listener: (event: CatalogEvent) => void): () => void {
     this.listeners.add(listener);
+    for (const event of this.recentErrors) {
+      try {
+        listener(event);
+      } catch {
+        /* A failed subscriber cannot block recovery. */
+      }
+    }
     return () => this.listeners.delete(listener);
   }
 
@@ -267,12 +284,7 @@ export class MediaService {
           await this.watch(root);
           void this.scan(root);
         } catch (error) {
-          this.emit({
-            type: 'error',
-            libraryId: library.id,
-            rootId: root.id,
-            message: fileOperationMessage(error),
-          });
+          this.reportError(root, error);
         }
       }
   }
@@ -336,12 +348,7 @@ export class MediaService {
         .on('change', (file) => this.enqueue(root, file))
         .on('unlink', (file) => this.sourceMissing(root, file));
       watcher.on('error', (error) => {
-        this.emit({
-          type: 'error',
-          libraryId: root.libraryId,
-          rootId: root.id,
-          message: fileOperationMessage(error),
-        });
+        this.reportError(root, error);
         void remove().catch(() => undefined);
       });
       try {
@@ -390,13 +397,7 @@ export class MediaService {
           kind: 'scan',
           root: root.path,
         });
-        for (const failure of errors)
-          this.emit({
-            type: 'error',
-            libraryId: root.libraryId,
-            rootId: root.id,
-            message: fileOperationMessage(failure),
-          });
+        for (const failure of errors) this.reportError(root, failure);
         let completed = 0;
         let complete = errors.length === 0;
         this.emit({
@@ -412,12 +413,7 @@ export class MediaService {
             await this.ingest(root, file);
           } catch (error) {
             complete = false;
-            this.emit({
-              type: 'error',
-              libraryId: root.libraryId,
-              rootId: root.id,
-              message: fileOperationMessage(error),
-            });
+            this.reportError(root, error);
           }
           completed++;
           this.emit({
@@ -435,6 +431,7 @@ export class MediaService {
           this.watchers.has(root.id) &&
           revision === (this.rootChanges.get(root.id) ?? 0)
         ) {
+          this.clearRootErrors(root.id);
           const assets = this.store.reconcileSources(
             root.id,
             files.map((file) =>
@@ -450,12 +447,7 @@ export class MediaService {
             });
         }
       } catch (error) {
-        this.emit({
-          type: 'error',
-          libraryId: root.libraryId,
-          rootId: root.id,
-          message: fileOperationMessage(error),
-        });
+        this.reportError(root, error);
       } finally {
         this.scans.delete(root.id);
         this.reconcile();
@@ -592,6 +584,7 @@ export class MediaService {
     this.watchers.delete(id);
     this.reconcileRoots.delete(id);
     this.rootChanges.delete(id);
+    this.clearRootErrors(id);
     await watcher?.close();
     await this.scans.get(id);
     await Promise.allSettled(
@@ -600,6 +593,27 @@ export class MediaService {
         .map(([, state]) => state.promise),
     );
     this.store.deleteRoot(id);
+  }
+  cacheInfo(): Promise<{ files: number; bytes: number }> {
+    return this.track(() =>
+      this.job({ kind: 'cache-info', cacheDir: this.paths.cache }),
+    );
+  }
+  clearCache(): Promise<void> {
+    return this.track(async () => {
+      await this.job({ kind: 'cache-clear', cacheDir: this.paths.cache });
+      const changed = new Map<string, { libraryId: string; assetId: string }>();
+      for (const version of this.store.listAllVersions()) {
+        this.store.updateVersionPreview(version.id, null);
+        changed.set(version.assetId, version);
+      }
+      for (const asset of changed.values())
+        this.emit({
+          type: 'thumbnail',
+          libraryId: asset.libraryId,
+          assetId: asset.assetId,
+        });
+    });
   }
   rebuildCache(): Promise<void> {
     return this.track(async () => {

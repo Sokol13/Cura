@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import chokidar, { type FSWatcher } from 'chokidar';
+import type { CatalogEvent } from '@cura/shared';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { CatalogStore } from '../src/catalog-store.js';
 import { openDatabase } from '../src/database.js';
@@ -561,4 +562,116 @@ it('does not mark a newly watched file missing using an older scan enumeration',
     .items.find((asset) => asset.name === 'new.bin');
   expect(added).toBeDefined();
   expect(added?.missing).toBe(false);
+});
+
+it('replays bounded startup errors with codes and clears repaired root errors', async () => {
+  const { media, originals, library, store } = await setup();
+  const root = store.addRoot(library.id, originals, 'reference');
+  await rm(originals, { recursive: true });
+  for (let index = 0; index < 105; index++) await media.resume();
+  const errors: CatalogEvent[] = [];
+  const stop = media.subscribe((event) => {
+    if (event.type === 'error') errors.push(event);
+  });
+  expect(errors).toHaveLength(100);
+  expect(errors[0]).toMatchObject({ rootId: root.id, code: 'ENOENT' });
+  stop();
+  await mkdir(originals);
+  await media.rescan(library.id);
+  await expect
+    .poll(() => {
+      const replayed: CatalogEvent[] = [];
+      media.subscribe((event) => {
+        if (event.type === 'error') replayed.push(event);
+      })();
+      return replayed.length;
+    })
+    .toBe(0);
+});
+
+async function realTransport() {
+  const { Worker } = await vi.importActual<
+    typeof import('node:worker_threads')
+  >('node:worker_threads');
+  const workerFile = fileURLToPath(
+    new URL('../src/media/worker.ts', import.meta.url),
+  );
+  const worker = new Worker(
+    `require('tsx/cjs'); require(${JSON.stringify(workerFile)});`,
+    { eval: true },
+  );
+  cleanup.push(() => worker.terminate());
+  transport.dispatch = (job) =>
+    new Promise((resolve, reject) => {
+      worker.once(
+        'message',
+        (message: {
+          result?: unknown;
+          error?: { message: string; code?: string };
+        }) => {
+          if (message.error)
+            reject(
+              Object.assign(new Error(message.error.message), {
+                code: message.error.code,
+              }),
+            );
+          else resolve(message.result);
+        },
+      );
+      worker.postMessage(job);
+    });
+}
+
+it('reports and clears only cached previews while retaining originals and archived snapshots', async () => {
+  const { media, paths, library, store } = await setup();
+  await realTransport();
+  const svg = (color: string) =>
+    Buffer.from(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="4" height="3"><rect width="4" height="3" fill="${color}"/></svg>`,
+    );
+  const original = await media.upload(library.id, 'image.svg', svg('red'));
+  await media.replace(original.id, 'next.svg', svg('blue'));
+  const versions = store
+    .listVersions(original.id)
+    .map((version) => store.getVersionFile(version.id));
+  const root = store.getRoot(original.rootId!);
+  const usage = await media.cacheInfo();
+  expect(usage.files).toBe(2);
+  expect(usage.bytes).toBeGreaterThan(0);
+  await media.clearCache();
+  expect(await media.cacheInfo()).toEqual({ files: 0, bytes: 0 });
+  expect(await readFile(join(root.path, original.relativePath))).toEqual(
+    svg('red'),
+  );
+  expect(await readFile(versions[0]!.snapshotPath)).toEqual(svg('blue'));
+  expect(await readFile(versions[1]!.snapshotPath)).toEqual(svg('red'));
+  expect(
+    store.listAllVersions().every((version) => version.thumbnailPath === null),
+  ).toBe(true);
+  await media.rebuildCache();
+  expect((await media.cacheInfo()).files).toBe(2);
+  expect((await readdir(join(paths.data, 'objects'))).length).toBe(2);
+});
+
+it('refuses cache cleanup through a thumbnail-directory symlink to snapshots', async () => {
+  const { media, paths, library, store } = await setup();
+  await realTransport();
+  const asset = await media.upload(
+    library.id,
+    'preserved.bin',
+    Buffer.from('private original'),
+  );
+  await mkdir(paths.cache, { recursive: true });
+  await symlink(
+    join(paths.data, 'objects'),
+    join(paths.cache, 'thumbnails'),
+    process.platform === 'win32' ? 'junction' : 'dir',
+  );
+  await expect(media.clearCache()).rejects.toThrow(/symlink|cache/i);
+  expect(
+    await readFile(
+      store.getVersionFile(asset.currentVersionId).snapshotPath,
+      'utf8',
+    ),
+  ).toBe('private original');
 });

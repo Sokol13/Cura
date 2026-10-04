@@ -1,12 +1,12 @@
 import { parentPort } from 'node:worker_threads';
-import { lstat, readdir, realpath } from 'node:fs/promises';
+import { lstat, readdir, realpath, unlink } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
 import { processFile } from './image.js';
 import { resolveContained } from './path-utils.js';
 
 interface Job {
   id: number;
-  kind: 'scan' | 'process' | 'shutdown';
+  kind: 'scan' | 'process' | 'shutdown' | 'cache-info' | 'cache-clear';
   root: string;
   relativePath: string;
   dataDir: string;
@@ -96,6 +96,62 @@ async function process(job: Job) {
   }
   return result;
 }
+
+async function cache(
+  cacheDir: string,
+  clear: boolean,
+): Promise<{ files: number; bytes: number }> {
+  let root: string;
+  let thumbnails: string;
+  try {
+    root = await realpath(cacheDir);
+    thumbnails = join(root, 'thumbnails');
+    const directory = await lstat(thumbnails);
+    if (directory.isSymbolicLink() || !directory.isDirectory())
+      throw Object.assign(
+        new Error('Unsafe cache directory: symbolic links are not allowed.'),
+        { code: 'UNSAFE_CACHE' },
+      );
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT')
+      return { files: 0, bytes: 0 };
+    throw error;
+  }
+  const pending = [thumbnails];
+  const files: { path: string; size: number }[] = [];
+  while (pending.length) {
+    const directory = pending.pop()!;
+    await resolveContained(root, relative(root, directory));
+    for (const entry of await readdir(directory, { withFileTypes: true })) {
+      if (entry.isSymbolicLink())
+        throw Object.assign(
+          new Error('Unsafe cache entry: symbolic links are not allowed.'),
+          { code: 'UNSAFE_CACHE' },
+        );
+      const file = join(directory, entry.name);
+      if (entry.isDirectory()) pending.push(file);
+      else if (entry.isFile()) {
+        const safe = await resolveContained(
+          thumbnails,
+          relative(thumbnails, file),
+        );
+        const info = await lstat(safe);
+        if (!info.isFile())
+          throw new Error('Cache entry changed while checking it.');
+        files.push({ path: safe, size: info.size });
+      }
+    }
+  }
+  if (clear)
+    for (const file of files) {
+      await resolveContained(thumbnails, relative(thumbnails, file.path));
+      await unlink(file.path);
+    }
+  return {
+    files: files.length,
+    bytes: files.reduce((total, file) => total + file.size, 0),
+  };
+}
 port.on('message', (job: Job) => {
   if (job.kind === 'shutdown') {
     stopping = true;
@@ -117,7 +173,12 @@ port.on('message', (job: Job) => {
     try {
       port.postMessage({
         id: job.id,
-        result: job.kind === 'scan' ? await scan(job.root) : await process(job),
+        result:
+          job.kind === 'scan'
+            ? await scan(job.root)
+            : job.kind === 'cache-info' || job.kind === 'cache-clear'
+              ? await cache(job.cacheDir, job.kind === 'cache-clear')
+              : await process(job),
       });
     } catch (error) {
       port.postMessage({ id: job.id, error: failure(error) });
