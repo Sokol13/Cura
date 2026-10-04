@@ -1,30 +1,31 @@
 # Progress
 
-This task is limited to AGENTS.md section 4, phase 0. No business functionality is included.
+## Active scope
+
+The user accepted phase 0 on 2026-10-04 and authorized continuous autonomous development through AGENTS.md phases 1–4. Do not stop at v0.1.0; continue to v0.2.0 and v0.3.0 until an explicit section-1 stopping condition applies. Incoming macOS/Windows smoke-test bugs take priority. Decisions are recorded in DECISIONS.md.
 
 ## Completed
 
-- Read the complete AGENTS.md from origin/main commit af345fc and reconciled the implementation with it.
-- Implemented the three-package Node 22/pnpm workspace, strict typing, shared health contract, local HTTP protections, SQLite prebuilt installation and first timestamped Drizzle migration.
-- Implemented the minimal bilingual page, concurrent development commands, production static hosting, browser startup and graceful shutdown.
-- Added repeatable setup, macOS/Windows guides, environment instructions, decisions, testing/smoke documentation, MIT license, and CI/release workflows.
-- Passed lint, typecheck, production build, 23 server unit tests, 2 web tests and 1 real-server Chromium E2E. Captured the phase-0 screenshot.
-- Verified setup twice and the full cloud bootstrap once; GitHub authentication now succeeds.
-- Verified React and server hot reload, completed independent review and added LF checkout enforcement for Windows.
-- Verified a clean HTTPS clone with Windows-style core.autocrlf=true: fresh install, build/start, health/homepage 200, 25 unit tests and 1 E2E all passed; the checkout remained clean.
-- Confirmed [initial GitHub CI](https://github.com/Sokol13/Cura/actions/runs/37030932058) is green with gh run watch --exit-status, including Playwright-pinned Chromium installation.
-- Saved the tested cloud installation/startup instructions, Node 22 and browser settings, and required network domains to the environment draft.
-
-- Pushed annotated tag [v0.0.1](https://github.com/Sokol13/Cura/releases/tag/v0.0.1) at `cef0f4b26030d0cd6e10f8c278f0afa2ad5e0957`.
-- Confirmed [tag CI](https://github.com/Sokol13/Cura/actions/runs/37031628248) and [Release workflow](https://github.com/Sokol13/Cura/actions/runs/37031628150) both succeeded using `gh run watch --exit-status`.
-- Verified the automatically generated public Release exists, is neither draft nor prerelease, and includes generated changelog notes.
+- Phase 0 and published v0.0.1 remain complete; see REPORT-v0.0.1.md.
+- Read complete AGENTS.md, prior progress and decisions; fetched origin and resumed main at `68c38ee`.
+- Confirmed GitHub authentication and repository fetch work.
+- Selected the retained Node 22/pnpm 10 toolchain after the default shell exposed Node 24/pnpm 11.
 
 ## In progress
 
-None. Phase 0 is complete. Development processes started for verification have been stopped.
+- Phase 1 documents integrated and independently reviewed: RESEARCH.md, PRD.md, ARCHITECTURE.md and TASKS.md. Final local gate passed (25 unit tests, 1 E2E); this commit is being pushed for remote CI.
+- Task 2 media primitives started in feat-media worktree; shared contracts and catalog persistence next.
+- Mandatory setup succeeded with Node 22.23.3 / pnpm 10.34.6; the provisioned Chromium launch succeeded. Root-only Playwright OS-package installation used the documented fallback.
+- Baseline quality gate passed: lint, typecheck, 25 unit tests and 1 real-server E2E.
+- Independent architecture review findings were incorporated: alias divergence, stable snapshots, active-file response headers, CJK substring search, organization mutation contracts, full offline workflow and platform error cases.
+- No milestone claims or new tags have been made.
 
 ## Next
 
-Stop here and wait for the next user instruction. Subsequent authorized work begins at AGENTS.md section 4, phase 1: research, PRD, architecture and independently deliverable tasks. Do not start that phase in this task.
+1. Integrate phase-1 documents; self-check feature coverage; run lint, typecheck, tests and real-server E2E; commit and push main, observe CI.
+2. Execute TASKS.md P0 tasks with shared API contracts and independent module worktrees.
+3. Check all nine v0.1.0 completion definitions before reports, tag and release; continue P1 immediately afterward.
 
-See BLOCKERS.md for current-container limitations and TESTING.md for the exact browser used. Local success is not a claim of remote CI or publication.
+## Resume instructions
+
+Read AGENTS.md, this file and TASKS.md. Run scripts/codex-setup.sh using docs/CODEX_ENV.md toolchain exports. Inspect git status/log and active worktrees before editing. `.tmp/env.sh` is untracked convenience for the current container only. Preserve user changes and integrate only completed, tested agent commits.

@@ -67,3 +67,63 @@
 **Reason:** Git Bash must receive valid LF shell scripts even when Windows Git has core.autocrlf=true. The implementation should not rewrite its governing document for cosmetic reasons.
 
 **Alternatives rejected:** Requiring every Windows user to change global Git settings, or modifying the supplied project specification only to satisfy Prettier.
+
+## Continuous development authorization (2026-10-04)
+
+**Decision:** The new user request supersedes the phase-0-only scope above. Continue phase 1 through v0.1.0, v0.2.0 and available v0.3.0 work, stopping only under AGENTS.md section 1. Do not ask questions. Record unresolved choices here and prioritize incoming real-machine bug reports.
+
+**Reason:** The user explicitly accepted phase 0 and authorized autonomous implementation, main pushes and milestone tags gated by evidence.
+
+**Alternatives rejected:** Waiting for separate design/plan approval under Superpowers, opening unnecessary pull requests, or stopping after the first report. Use brainstorming self-answers, written plans and verified execution with parallel isolated worktrees and coordinator integration.
+
+## Catalog ownership and version safety
+
+**Decision:** Libraries are logical catalogs with referenced roots and a managed data-directory Inbox. Keep immutable content-addressed snapshots for all versions, including referenced files, and preserve source aliases for duplicate bytes.
+
+**Reason:** An external overwrite destroys old source bytes. Archiving only when notified would be too late. Snapshots make version history, offline use and neutral export reliable while originals remain untouched. Disk usage is the cost and will be visible in documentation.
+
+**Alternatives rejected:** Moving originals, storing caches inside roots, or promising recoverable versions without retaining bytes. Content-addressed snapshots avoid storing identical versions repeatedly.
+
+## Runtime and licensing reconciliation
+
+**Decision:** Use the existing verified Node 22 and pnpm 10.34.6 tool locations for this cloud shell; the fresh shell initially resolves Node 24/pnpm 11 despite the applied environment configuration. Preserve inherited proxy/TLS settings.
+
+**Reason:** Actual runtime observations override configuration intent. The repository installer correctly rejected incompatible versions; no product change is necessary to bypass its checks.
+
+**Alternatives rejected:** Relaxing Node constraints or claiming the configured environment proves the running shell is correct.
+
+**Decision:** Follow the permissive runtime-license requirement over the conflicting P1 suggestion to install GPL-3.0 ffmpeg-static. Investigate browser video extraction and permissively licensed PSD/PDF/3D libraries, documenting exact supported formats and any unmet milestone criterion.
+
+**Reason:** Installing the named package would violate AGENTS.md section 4. Research records upstream license evidence.
+
+**Alternatives rejected:** Copying copyleft code, bundling unreviewed ffmpeg binaries, or describing unsupported video codecs as supported.
+
+## PNG text and native library interpretation
+
+**Decision:** Parse PNG tEXt, compressed zTXt and UTF-8 iTXt with size bounds. Preserve generation seeds as exact strings, including ComfyUI's unsigned 64-bit values; trace graph connections from output/sampler nodes.
+
+**Reason:** Chinese prompts can use iTXt and JSON numbers can exceed JavaScript's safe integer range. Choosing the first text node yields the wrong prompt in common workflows.
+
+**Alternatives rejected:** tEXt-only support, lossy Number conversion, or arbitrary node ordering.
+
+**Decision:** Use the expressly mandated Sharp package (Apache-2.0), retaining/documenting its native libvips LGPL-2.1 notice. Interpret the generic permissive dependency list as the npm package selection rule where it conflicts with this explicit native stack requirement. Do not extend this exception to optional GPL packages such as ffmpeg-static.
+
+**Reason:** The same specification mandates Sharp and prebuilt native image support. Replacing Sharp or claiming all bundled native components are MIT/Apache/BSD/ISC would misrepresent that specification. Dependency licensing evidence must distinguish the wrapper from native code.
+
+**Alternatives rejected:** Silently labeling libvips permissive, removing required Sharp, or broadening the exception to unrelated dependencies. This is an explicit technical reconciliation, not a claim of legal review.
+
+## Duplicate-source divergence and stable bytes
+
+**Decision:** When one of several duplicate source aliases changes, fork its asset with inherited history before appending the new version. Hash, metadata and thumbnail all derive from one immutable temporary snapshot, verified against stable source stats.
+
+**Reason:** Sharing one mutable version chain between divergent source files causes old copies to revert the latest version on rescans. Reading hash and thumbnail separately during a write can pair different bytes.
+
+**Alternatives rejected:** Oscillating shared histories, losing old versions on divergence, or assuming a watcher event guarantees stable bytes. Active original formats download with sandbox headers; only rasterized previews render inline.
+
+## Chinese search and persisted preferences
+
+**Decision:** Combine FTS5 with a bounded CJK substring path for unsegmented Chinese queries, tested with one- and two-character input at 1,000 assets. Store theme/language/layout in the user-data database and mirror them in Zustand.
+
+**Reason:** Default unicode61 token boundaries miss common short Chinese searches, and browser-only preferences would not meet the settings-location requirement.
+
+**Alternatives rejected:** English-only token assumptions, tests with only space-separated Chinese, and localStorage as the sole settings store. The small-library substring path must pass measured latency rather than assume an index solves every script.
