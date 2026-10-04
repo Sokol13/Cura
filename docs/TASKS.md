@@ -129,4 +129,4 @@
 
 ## Task ledger
 
-Tasks 1–5: delivered to main with full local gates and observed green CI. Task 6: all nine P0 definitions are verified; 168 unit tests and 9 real-server E2Es pass locally and in CI 37197744558 at c4f6597. Final documentation CI and tag/release publication are the remaining operational steps. The nine-item acceptance ledger is in REPORT-v0.1.0.md. Tasks 7–10 follow immediately; v0.1.0 is not a stopping condition. Per-task evidence and rulings remain in PROGRESS.md and DECISIONS.md.
+Tasks 1–5: delivered to main with full local gates and observed green CI. Task 6: all nine P0 definitions are verified; 170 unit tests and 9 real-server E2Es pass locally and in CI 37198719712 at 8cec733. Final documentation CI and tag/release publication are the remaining operational steps. The nine-item acceptance ledger is in REPORT-v0.1.0.md. Tasks 7–10 follow immediately; v0.1.0 is not a stopping condition. Per-task evidence and rulings remain in PROGRESS.md and DECISIONS.md.
