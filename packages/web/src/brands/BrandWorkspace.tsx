@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   BrandPackageSchema,
@@ -106,16 +106,20 @@ function ColorEditor({
 }) {
   const { t } = useTranslation('brands');
   const [mode, setMode] = useState('HEX'),
-    [value, setValue] = useState(hex);
+    [edit, setEdit] = useState({ hex, mode: 'HEX', value: hex });
+  const input = useRef<HTMLInputElement>(null);
   const display = useCallback((format: string, color: string) => {
     const values = colorValues(color);
     return format === 'HEX'
       ? values.hex
       : (format === 'RGB' ? values.rgb : values.cmyk).join(', ');
   }, []);
+  if (edit.hex !== hex || edit.mode !== mode) {
+    setEdit({ hex, mode, value: display(mode, hex) });
+  }
   useEffect(() => {
-    setValue(display(mode, hex));
-  }, [hex, mode, display]);
+    input.current?.setCustomValidity('');
+  }, [hex, mode]);
   return (
     <div className="brand-color-editor">
       <input
@@ -135,9 +139,10 @@ function ColorEditor({
       <label>
         {t('colorValue')}
         <input
-          value={value}
+          ref={input}
+          value={edit.value}
           onChange={(event) => {
-            setValue(event.target.value);
+            setEdit({ hex, mode, value: event.target.value });
             try {
               const channels = event.target.value
                 .split(',')
@@ -215,6 +220,7 @@ export function BrandWorkspace({
   onBack: () => void;
 }) {
   const { t } = useTranslation('brands');
+  const mutationPending = useRef(false);
   const [tab, setTab] = useState<'brands' | 'cmf'>('brands'),
     [brands, setBrands] = useState<Brand[]>([]),
     [boards, setBoards] = useState<CmfBoard[]>([]),
@@ -300,6 +306,8 @@ export function BrandWorkspace({
     };
   }, [load, choose, fail]);
   async function act(operation: () => Promise<void>) {
+    if (mutationPending.current) return;
+    mutationPending.current = true;
     setBusy(true);
     setError('');
     setStatus('');
@@ -308,6 +316,7 @@ export function BrandWorkspace({
     } catch (failure) {
       fail(failure);
     } finally {
+      mutationPending.current = false;
       setBusy(false);
     }
   }
@@ -416,6 +425,8 @@ export function BrandWorkspace({
     setPicker(null);
   }
   const savedBrand = brands.find((item) => item.id === selected),
+    navigationLocked =
+      busy || loading || creating || deleting || Boolean(picker),
     dirty =
       tab === 'brands' && draft && savedBrand
         ? JSON.stringify(draft) !== JSON.stringify(brandDraft(savedBrand))
@@ -423,11 +434,14 @@ export function BrandWorkspace({
   return (
     <main className="brand-workspace">
       <header className="brand-header">
-        <button onClick={onBack}>← {t('back')}</button>
+        <button disabled={navigationLocked} onClick={onBack}>
+          ← {t('back')}
+        </button>
         <h1>{t('title')}</h1>
         <div role="tablist">
           <button
             role="tab"
+            disabled={navigationLocked}
             aria-selected={tab === 'brands'}
             onClick={() => {
               setTab('brands');
@@ -438,6 +452,7 @@ export function BrandWorkspace({
           </button>
           <button
             role="tab"
+            disabled={navigationLocked}
             aria-selected={tab === 'cmf'}
             onClick={() => {
               setTab('cmf');
@@ -452,6 +467,7 @@ export function BrandWorkspace({
         <aside className="brand-sidebar">
           <button
             className="button-primary"
+            disabled={navigationLocked}
             onClick={() => {
               setCreating(true);
               setNewName('');
@@ -462,6 +478,7 @@ export function BrandWorkspace({
           {(tab === 'brands' ? brands : boards).map((item) => (
             <button
               className={selected === item.id ? 'active' : ''}
+              disabled={navigationLocked}
               key={item.id}
               onClick={() => choose(item.id, brands, boards, tab)}
             >
@@ -474,6 +491,7 @@ export function BrandWorkspace({
             <div role="alert" className="error-banner">
               {error}
               <button
+                disabled={navigationLocked}
                 onClick={() =>
                   void act(async () => {
                     const { allBrands, allBoards } = await load();
@@ -498,7 +516,7 @@ export function BrandWorkspace({
                 void save();
               }}
             >
-              <fieldset disabled={busy} className="brand-form">
+              <fieldset disabled={navigationLocked} className="brand-form">
                 <div className="brand-title-row">
                   <label>
                     {t('name')}
@@ -903,12 +921,17 @@ export function BrandWorkspace({
                 required
                 maxLength={200}
                 autoFocus
+                disabled={busy}
                 value={newName}
                 onChange={(event) => setNewName(event.target.value)}
               />
             </label>
             <footer>
-              <button type="button" onClick={() => setCreating(false)}>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setCreating(false)}
+              >
                 {t('cancel')}
               </button>
               <button disabled={busy} type="submit" className="button-primary">
@@ -928,7 +951,9 @@ export function BrandWorkspace({
           >
             <p>{t('confirmDelete')}</p>
             <footer>
-              <button onClick={() => setDeleting(false)}>{t('cancel')}</button>
+              <button disabled={busy} onClick={() => setDeleting(false)}>
+                {t('cancel')}
+              </button>
               <button disabled={busy} onClick={() => void remove()}>
                 {t('delete')}
               </button>
