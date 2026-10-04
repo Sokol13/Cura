@@ -13,8 +13,9 @@ The user accepted phase 0 on 2026-10-04 and authorized continuous autonomous dev
 
 ## In progress
 
-- Phase 1 documents integrated and independently reviewed: RESEARCH.md, PRD.md, ARCHITECTURE.md and TASKS.md. Final local gate passed (25 unit tests, 1 E2E); this commit is being pushed for remote CI.
-- Task 2 media primitives started in feat-media worktree; shared contracts and catalog persistence next.
+- Phase 1 documents integrated and independently reviewed: RESEARCH.md, PRD.md, ARCHITECTURE.md and TASKS.md. Final local gate passed (25 unit tests, 1 E2E). Pushed `56433f2`; [GitHub CI 37194418005](https://github.com/Sokol13/Cura/actions/runs/37194418005) succeeded and `gh run watch --exit-status` confirmed it.
+- Task 2 media primitives: feat-media (/tmp/cura-media); Task 3 contracts/store: feat-catalog-store (/tmp/cura-store); Task 5 UI: feat-web (/tmp/cura-web). Integration belongs to coordinator.
+- P0 dependency/startup preparation passed full local gate (25 unit tests, 1 E2E): audited npm licenses, pinned Sharp/exifr/chokidar/WebSocket/fflate/Zustand/Virtual; native Sharp encode/decode verified; start now builds before launch.
 - Mandatory setup succeeded with Node 22.23.3 / pnpm 10.34.6; the provisioned Chromium launch succeeded. Root-only Playwright OS-package installation used the documented fallback.
 - Baseline quality gate passed: lint, typecheck, 25 unit tests and 1 real-server E2E.
 - Independent architecture review findings were incorporated: alias divergence, stable snapshots, active-file response headers, CJK substring search, organization mutation contracts, full offline workflow and platform error cases.

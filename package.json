@@ -10,10 +10,10 @@
     "pnpm": "10.34.6"
   },
   "scripts": {
-    "postinstall": "node scripts/ensure-sqlite-prebuilt.mjs",
+    "postinstall": "node scripts/ensure-sqlite-prebuilt.mjs && node scripts/ensure-sharp-prebuilt.mjs",
     "dev": "pnpm --filter @cura/shared build && concurrently -k -n shared,server,web \"pnpm --filter @cura/shared dev\" \"pnpm --filter @cura/server dev\" \"pnpm --filter @cura/web dev\"",
     "build": "pnpm --filter @cura/shared build && pnpm --filter @cura/server build && pnpm --filter @cura/web build",
-    "start": "node packages/server/dist/index.js",
+    "start": "pnpm build && node packages/server/dist/index.js",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "pnpm --filter @cura/shared build && pnpm -r typecheck && tsc --noEmit -p tsconfig.tools.json",

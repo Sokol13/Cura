@@ -127,3 +127,11 @@
 **Reason:** Default unicode61 token boundaries miss common short Chinese searches, and browser-only preferences would not meet the settings-location requirement.
 
 **Alternatives rejected:** English-only token assumptions, tests with only space-separated Chinese, and localStorage as the sole settings store. The small-library substring path must pass measured latency rather than assume an index solves every script.
+
+## Native image verification and zero-build startup
+
+**Decision:** Disable Sharp lifecycle builds and verify its packaged platform binary by encoding/decoding an image during root postinstall. `pnpm start` builds before launching the local server.
+
+**Reason:** The milestone requires a clean clone/install/start without a separate build command. Rebuilding on start is simple, guarantees current source and works identically on macOS/Windows; the startup cost is acceptable for v0.1. Native module smoke checks fail visibly when a platform binary is unavailable without invoking a compiler.
+
+**Alternatives rejected:** A complex timestamp-based build cache, requiring undocumented build steps, or letting native install scripts fall back to node-gyp.

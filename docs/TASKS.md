@@ -36,7 +36,7 @@
 - [x] Inspect scaffold and read governing requirements.
 - [x] Research upstream architecture/licenses/metadata; write PRD and architecture; self-check every P0/P1/P2 feature has an owner below.
 - [x] Run full quality command. Expected: lint/types/tests/real-server Chromium E2E all pass.
-- [ ] Commit `docs: define product architecture and milestone delivery plan`, push main, verify Actions.
+- [x] Commit documentation, push main, verify Actions (`56433f2`, run 37194418005 green).
 
 ## Task 2: Media metadata and processing primitives (parallel A)
 
@@ -127,4 +127,4 @@
 
 ## Task ledger
 
-Task 1: in progress. Parallel worktrees: research-phase1 and docs-prd. Phase 0 remains the runnable baseline. Per-task test evidence, commit ranges and rulings are recorded in PROGRESS.md and DECISIONS.md, the user-selected durable ledger locations.
+Task 1: complete (commits 68c38ee..56433f2; lint/typecheck/test/e2e passed, 25 unit tests and 1 E2E; GitHub CI 37194418005 green). Tasks 2, 3 and 5 started in isolated worktrees. Per-task test evidence, commit ranges and rulings are recorded in PROGRESS.md and DECISIONS.md, the user-selected durable ledger locations.
