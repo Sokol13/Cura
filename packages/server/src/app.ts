@@ -1,7 +1,6 @@
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { HealthResponseJsonSchema, HealthResponseSchema } from '@cura/shared';
-import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyBaseLogger } from 'fastify';
 import type { AppDatabase } from './database.js';
 import type { UserPaths } from './paths.js';
@@ -9,6 +8,7 @@ import { CatalogStore } from './catalog-store.js';
 import { MediaService } from './media/service.js';
 import { registerCatalogRoutes } from './catalog-routes.js';
 import { isAllowedLocalRequest } from './security.js';
+import { registerStaticFiles } from './static-files.js';
 
 export const DEFAULT_WEB_ROOT = fileURLToPath(
   new URL('../../web/dist/', import.meta.url),
@@ -79,7 +79,7 @@ export async function createApp(options: AppOptions = {}) {
 
   const staticRoot = options.staticRoot ?? DEFAULT_WEB_ROOT;
   if (staticRoot && existsSync(staticRoot)) {
-    await app.register(fastifyStatic, { root: staticRoot });
+    registerStaticFiles(app, staticRoot);
   }
 
   return app;
