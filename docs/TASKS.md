@@ -95,7 +95,7 @@
 
 - [x] Integrate ordered process/boards/brand migrations, shared contracts, exact-version final ownership, stable generation identity, brand persistence, board APIs/live invalidation, local mock jobs and bounded preview uploads.
 - [x] Independent foundation/board review; fix source-dimension overwrite with actual PSD regression; drain generation before media/database on shutdown.
-- [x] Integrated lint/typecheck and 202 unit tests; all nine P0 E2Es passed across full functional run plus isolated unchanged stress rerun. Main checkpoint CI follows. Full P1 browser slices/export remain below.
+- [x] Integrated lint/typecheck and 202 unit tests; all nine P0 E2Es passed across full functional run plus isolated unchanged stress rerun. Main checkpoint fd850d6 passed CI 37200089559 including all nine P0 E2Es together. Full P1 browser slices/export remain below.
 
 ## Task 7: P1 boards, slots and matrices
 
