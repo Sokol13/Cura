@@ -216,6 +216,13 @@ export const BoardsExportSchema = z.object({
   revisions: z.array(SlotRevisionSchema),
 });
 
+export const BoardEventSchema = z.object({
+  type: z.literal('board'),
+  libraryId: IdSchema,
+  boardId: IdSchema.optional(),
+});
+export type BoardEvent = z.infer<typeof BoardEventSchema>;
+
 export type BoardPin = z.infer<typeof BoardPinSchema>;
 export type BoardViewport = z.infer<typeof BoardViewportSchema>;
 export type BoardAxis = z.infer<typeof BoardAxisSchema>;
