@@ -130,3 +130,42 @@ it('renames a matrix row using its stable ID and the current board revision', as
     await screen.findByRole('button', { name: 'Rename Maya' }),
   ).toBeVisible();
 });
+
+it('shows a stale revision failure inside the open editor so it cannot be silently reapplied', async () => {
+  let reads = 0;
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (path: string, init?: RequestInit) => {
+      if (init?.method === 'PATCH')
+        return new Response(
+          JSON.stringify({ code: 'REVISION_CONFLICT', error: 'Conflict' }),
+          { status: 409 },
+        );
+      return new Response(
+        JSON.stringify(
+          path.endsWith('/slot-templates')
+            ? []
+            : path.endsWith('/boards')
+              ? [board]
+              : path.includes('/assets?')
+                ? { items: [], total: 0 }
+                : reads++ === 0
+                  ? document
+                  : { ...document, board: { ...board, revision: 1 } },
+        ),
+      );
+    }),
+  );
+  render(<BoardsWorkspace libraryId={libraryId} onBack={vi.fn()} />);
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Rename Character 1' }),
+  );
+  const dialog = screen.getByRole('dialog');
+  fireEvent.change(within(dialog).getByRole('textbox', { name: 'Row name' }), {
+    target: { value: 'Maya' },
+  });
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+  expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+    'This change was not saved',
+  );
+});

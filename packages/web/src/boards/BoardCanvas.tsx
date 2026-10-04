@@ -178,6 +178,7 @@ function CanvasContent({
           return {
             ...position,
             type: 'curaItem',
+            ariaLabel: item.label,
             data: { item, slot: null },
             style: { width: item.width, height: item.height },
             selected: selected.has(item.id),
@@ -188,6 +189,7 @@ function CanvasContent({
           (slot): CuraNode => ({
             id: slot.id,
             type: 'curaSlot',
+            ariaLabel: slot.label,
             position: { x: slot.x, y: slot.y },
             data: { item: null, slot },
             style: { width: slot.width, height: slot.height },
@@ -341,10 +343,10 @@ function CanvasContent({
     <div className="board-canvas-workspace">
       <div className="board-toolbar">
         <button disabled={busy} onClick={() => setEditing('new')}>
-          ＋ {t('addText')}
+          <span aria-hidden="true">＋</span> {t('addText')}
         </button>
         <button disabled={busy} onClick={onAddSlot}>
-          ▧ {t('addSlot')}
+          <span aria-hidden="true">▧</span> {t('addSlot')}
         </button>
         <span className="board-toolbar-divider" />
         <button
@@ -398,6 +400,16 @@ function CanvasContent({
             setError(t('unsupportedDrop'));
           }
         }}
+        onKeyUp={(event) => {
+          if (
+            ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(
+              event.key,
+            ) &&
+            event.target instanceof Element &&
+            event.target.classList.contains('react-flow__node')
+          )
+            persist();
+        }}
         onKeyDown={(event) => {
           if (
             (event.key === 'Delete' || event.key === 'Backspace') &&
@@ -420,6 +432,24 @@ function CanvasContent({
             nodes={nodes}
             edges={edges}
             nodeTypes={nodeTypes}
+            ariaLabelConfig={{
+              'node.a11yDescription.default': t('nodeHelp'),
+              'node.a11yDescription.keyboardDisabled': t('nodeStaticHelp'),
+              'node.a11yDescription.ariaLiveMessage': ({ direction, x, y }) =>
+                t('nodeMoved', {
+                  direction: t(`direction_${direction}`),
+                  x: Math.round(x),
+                  y: Math.round(y),
+                }),
+              'edge.a11yDescription.default': t('edgeHelp'),
+              'controls.ariaLabel': t('canvas'),
+              'controls.zoomIn.ariaLabel': t('zoomIn'),
+              'controls.zoomOut.ariaLabel': t('zoomOut'),
+              'controls.fitView.ariaLabel': t('fit'),
+              'controls.interactive.ariaLabel': t('interactive'),
+              'minimap.ariaLabel': t('minimap'),
+              'handle.ariaLabel': t('connectionHandle'),
+            }}
             defaultViewport={document.board.viewport}
             minZoom={0.05}
             maxZoom={8}
@@ -537,6 +567,7 @@ function CanvasContent({
               })
             )
               setEditing(null);
+            else throw new Error(t('changeNotSaved'));
           }}
         />
       )}
@@ -556,6 +587,7 @@ function CanvasContent({
               })
             )
               setEdgeEditing(null);
+            else throw new Error(t('changeNotSaved'));
           }}
         />
       )}

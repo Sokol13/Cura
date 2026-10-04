@@ -94,13 +94,13 @@ export function BoardMatrix({
           disabled={busy || board.rows.length >= 50}
           onClick={() => setAction({ axis: 'rows' })}
         >
-          ＋ {t('addRow')}
+          <span aria-hidden="true">＋</span> {t('addRow')}
         </button>
         <button
           disabled={busy || board.columns.length >= 50}
           onClick={() => setAction({ axis: 'columns' })}
         >
-          ＋ {t('addColumn')}
+          <span aria-hidden="true">＋</span> {t('addColumn')}
         </button>
       </div>
       <div className="board-matrix-scroll">
@@ -164,6 +164,7 @@ export function BoardMatrix({
                 )
               )
                 setAction(null);
+              else throw new Error(t('changeNotSaved'));
             }}
           />
         ) : (
@@ -183,6 +184,7 @@ export function BoardMatrix({
                   )
                 : [...board[action.axis], { id: crypto.randomUUID(), label }];
               if (await onAxes(action.axis, items)) setAction(null);
+              else throw new Error(t('changeNotSaved'));
             }}
           />
         ))}

@@ -1,6 +1,20 @@
 import { i18n } from '../i18n';
 
 const en = {
+  changeNotSaved:
+    'This change was not saved. Close this dialog to review the latest board, then try again.',
+  nodeHelp:
+    'Press Enter or Space to select an item. Use arrow keys to move it, or Delete to remove it.',
+  nodeStaticHelp: 'Press Enter or Space to select this item.',
+  edgeHelp:
+    'Press Enter or Space to select a connection. Press Delete to remove it.',
+  nodeMoved: 'Moved {{direction}} to {{x}}, {{y}}.',
+  direction_left: 'left',
+  direction_right: 'right',
+  direction_up: 'up',
+  direction_down: 'down',
+  connectionHandle: 'Connection handle',
+  interactive: 'Toggle canvas interaction',
   title: 'Boards',
   subtitle: 'Build the structure around your ideas.',
   back: 'Back to library',
@@ -140,6 +154,17 @@ const en = {
   libraryUnavailable: 'Choose a library to use boards.',
 };
 const zh: Record<keyof typeof en, string> = {
+  changeNotSaved: '此更改尚未保存。请关闭对话框，检查最新看板后再重试。',
+  nodeHelp: '按回车或空格选择项目，使用方向键移动，按 Delete 删除。',
+  nodeStaticHelp: '按回车或空格选择此项目。',
+  edgeHelp: '按回车或空格选择连线，按 Delete 删除。',
+  nodeMoved: '向{{direction}}移动至 {{x}}，{{y}}。',
+  direction_left: '左',
+  direction_right: '右',
+  direction_up: '上',
+  direction_down: '下',
+  connectionHandle: '连线控制点',
+  interactive: '切换画布交互',
   title: '画布与看板',
   subtitle: '为每一个创意，建立清晰的结构。',
   back: '返回资产库',

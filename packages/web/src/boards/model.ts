@@ -47,8 +47,19 @@ export function groupItems(
   id: string,
   label: string,
 ): BoardItemInput[] {
+  const byId = new Map(items.map((item) => [item.id, item]));
+  const hasSelectedAncestor = (item: BoardItemInput) => {
+    let ancestor = item.groupId;
+    const visited = new Set<string>();
+    while (ancestor && !visited.has(ancestor)) {
+      if (selected.has(ancestor)) return true;
+      visited.add(ancestor);
+      ancestor = byId.get(ancestor)?.groupId ?? null;
+    }
+    return false;
+  };
   const roots = items.filter(
-    (item) => selected.has(item.id) && !selected.has(item.groupId ?? ''),
+    (item) => selected.has(item.id) && !hasSelectedAncestor(item),
   );
   if (!roots.length) return items;
   const x = Math.min(...roots.map((item) => item.x)) - 24;

@@ -25,6 +25,21 @@ const item = (
   versionId: null,
 });
 describe('board coordinate model', () => {
+  it('keeps a selected descendant inside its selected ancestor when regrouping', () => {
+    const items = [
+      { ...item('outer', 100, 50), kind: 'group' as const },
+      { ...item('inner', 120, 80, 'outer'), kind: 'group' as const },
+      item('note', 145, 110, 'inner'),
+      item('other', 350, 200),
+    ];
+    const result = groupItems(
+      items,
+      new Set(['outer', 'note', 'other']),
+      'new',
+      'Group',
+    );
+    expect(result.find((entry) => entry.id === 'note')?.groupId).toBe('inner');
+  });
   it('round-trips nested absolute storage coordinates through relative canvas positions', () => {
     const nodes = toFlowNodes([
       { ...item('outer', 100, 50), kind: 'group' },

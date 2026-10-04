@@ -148,7 +148,7 @@ export function BoardsWorkspace({
     <main className="boards-workspace" aria-label={t('title')}>
       <header className="boards-header">
         <button className="board-back" onClick={onBack}>
-          ← {t('back')}
+          <span aria-hidden="true">←</span> {t('back')}
         </button>
         <div>
           <h1>{t('title')}</h1>
@@ -167,7 +167,7 @@ export function BoardsWorkspace({
           disabled={loading || busy}
           onClick={() => setDialog('create')}
         >
-          ＋ {t('newBoard')}
+          <span aria-hidden="true">＋</span> {t('newBoard')}
         </button>
       </header>
       {failure && (
@@ -224,7 +224,7 @@ export function BoardsWorkspace({
             className="board-template-button"
             onClick={() => setDialog('templates')}
           >
-            ▧ {t('templates')}
+            <span aria-hidden="true">▧</span> {t('templates')}
           </button>
         </nav>
         <div className="board-main">
@@ -324,7 +324,7 @@ export function BoardsWorkspace({
                 disabled={loadError}
                 onClick={() => setDialog('create')}
               >
-                ＋ {t('noBoard')}
+                <span aria-hidden="true">＋</span> {t('noBoard')}
               </button>
             </div>
           )}
@@ -370,6 +370,7 @@ export function BoardsWorkspace({
               }))
             )
               setDialog(null);
+            else throw new Error(t('changeNotSaved'));
           }}
         />
       )}
@@ -426,6 +427,7 @@ export function BoardsWorkspace({
               )
             )
               setDialog(null);
+            else throw new Error(t('changeNotSaved'));
           }}
         />
       )}
@@ -448,7 +450,7 @@ export function BoardsWorkspace({
             ) {
               setSelectedSlotId(null);
               setDialog(null);
-            }
+            } else throw new Error(t('changeNotSaved'));
           }}
         />
       )}

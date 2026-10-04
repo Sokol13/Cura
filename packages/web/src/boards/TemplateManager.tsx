@@ -99,7 +99,7 @@ export function TemplateManager({
         className="primary"
         onClick={() => setEditing('new')}
       >
-        ＋ {t('newTemplate')}
+        <span aria-hidden="true">＋</span> {t('newTemplate')}
       </button>
     </OrganizationDialog>
   );
