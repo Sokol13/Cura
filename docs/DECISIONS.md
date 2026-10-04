@@ -179,3 +179,11 @@
 **Reason:** These tests answer different capacity questions, and the container cannot stand in for macOS/Windows desktop behavior.
 
 **Alternatives rejected:** Claiming synthetic rows prove 10,000-file ingestion or claiming Linux browser checks validate physical desktop permissions.
+
+## Directory navigation while typing
+
+**Decision:** A directory listing may normalize its requested path only if the user has not edited the path since that request started. Later typing remains authoritative while outstanding browse responses settle.
+
+**Reason:** Delayed initial home-directory listings could overwrite a chosen folder and cause the wrong directory to be registered. Two controlled deferred-response regressions reproduced initial and explicit-browse races before the fix.
+
+**Alternatives rejected:** Disabling manual path entry, assuming local requests always finish before typing, or weakening watcher timing tests to hide unrelated scan work.
