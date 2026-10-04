@@ -1,9 +1,10 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+import { pdfCMapAssets } from './pdf-assets';
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), pdfCMapAssets()],
   worker: { format: 'es' },
   server: {
     host: '127.0.0.1',

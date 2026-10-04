@@ -102,8 +102,8 @@
 **Files:** shared board contracts; server board store/routes/migration; web boards; tests and e2e/boards.spec.ts.
 **Interfaces:** Persisted Board/BoardItem/SlotTemplate/Slot reference asset IDs. Slot assignment records finalized version; replacing assignment increments slot revision without overwriting asset history.
 
-- [ ] Write failing persistence and E2E tests for infinite canvas pan/zoom, positions/groups/edges/text, templates, drag/drop finalization, replacement revision and character-angle/scene-option matrices.
-- [ ] Implement React Flow view and local APIs with per-library validation, persist reload state and reusable templates.
+- [x] Write failing persistence and E2E tests for infinite canvas pan/zoom, positions/groups/edges/text, templates, drag/drop finalization, replacement revision and character-angle/scene-option matrices.
+- [x] Implement React Flow view and local APIs with per-library validation, persist reload state and reusable templates.
 - [ ] Full gate, docs/progress, commit/push/CI.
 
 ## Task 8: P1 brands, CMF, rich previews and creative process (parallel C/D)
@@ -111,8 +111,8 @@
 **Files:** shared brand/process contracts; server brands/process modules; web brands/cmf/preview adapters; tests/e2e.
 **Interfaces:** Brand/Color/Font/Logo and CMFBoard reference same catalog; colors include named HEX/RGB/CMYK. Portable brand outputs HTML/PDF and JSON/ASE. Preview adapters return local image blobs, never execute document scripts. Process timeline uses AssetVersion generation metadata and finalized flag; provider interface includes deterministic mock.
 
-- [ ] Write failing tests for brand CRUD/font registration/logo guidelines and every export, CMF composition, GLB/OBJ/PSD/PDF/video supported previews, timeline/model-source hit rates.
-- [ ] Audit dependency licenses and install permitted readers/renderers; implement browser-first 3D/video capture and bounded document parsing. Unsupported codecs yield explicit generic preview and cannot silently pass a capability gate.
+- [x] Write failing tests for brand CRUD/font registration/logo guidelines and every export, CMF composition, GLB/OBJ/PSD/PDF/video supported previews, timeline/model-source hit rates.
+- [x] Audit dependency licenses and install permitted readers/renderers; implement browser-first 3D/video capture and bounded document parsing. Unsupported codecs yield explicit generic preview and cannot silently pass a capability gate.
 - [ ] Full gate with E2E for each P1 feature, docs/progress, commit/push/CI.
 
 ## Task 9: P1 neutral export and v0.2.0 gate
@@ -120,8 +120,8 @@
 **Files:** server exports module; shared export schema; web export controls; e2e/export.spec.ts; milestone documents.
 **Interfaces:** Export folder contains original files, all versions, readable manifest.json and CSV. Manifest includes library/roots, metadata, folders/tags, annotations, boards/slots, brands/CMF and timestamps. Source paths are informative; portable paths are relative and cannot escape export root.
 
-- [ ] Write failing tests exporting selected assets and entire populated library, inspecting bytes and validating all metadata/CSV quoting/filename collisions.
-- [ ] Implement streaming ZIP download that expands to the required portable folder; make export self-contained and offline-readable.
+- [x] Write failing tests exporting selected assets and entire populated library, inspecting bytes and validating all metadata/CSV quoting/filename collisions.
+- [x] Implement streaming ZIP download that expands to the required portable folder; make export self-contained and offline-readable.
 - [ ] Independent review; v0.1 regression + all P1 E2E; every v0.2 criterion checked. Full gate, main push/CI, docs/report/smoke/changelog, tag/release verification, chat report; continue P2.
 
 ## Task 10: P2 complete capabilities and final gate

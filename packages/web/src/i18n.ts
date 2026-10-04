@@ -3,6 +3,8 @@ import { initReactI18next } from 'react-i18next';
 
 const en = {
   workspaces: 'Workspaces',
+  neutralExport: 'Neutral export',
+  exportSelection: 'Export selected assets',
   workspace_boards: 'Boards',
   workspace_brands: 'Brands & CMF',
   workspace_process: 'Creative process',
@@ -200,6 +202,8 @@ const en = {
 };
 const zh: Record<keyof typeof en, string> = {
   workspaces: '工作区',
+  neutralExport: '中立导出',
+  exportSelection: '导出所选资产',
   workspace_boards: '画布',
   workspace_brands: '品牌与 CMF',
   workspace_process: '创作过程',

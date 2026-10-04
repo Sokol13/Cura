@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
+import { CacheUsageSchema } from '../packages/shared/dist/index.js';
 
 function artwork(name: string, color: string, detail: string) {
   return {
@@ -155,6 +156,11 @@ test('local catalog imports, organizes, searches, batches and preserves workspac
     .selectOption('dark');
   dialog = page.getByRole('dialog');
   await expect(dialog.getByText(/files ·/)).toBeVisible();
+  // Cache maintenance is global, including libraries from earlier scenarios.
+  const cacheBefore = CacheUsageSchema.parse(
+    await (await page.request.get('/api/cache')).json(),
+  );
+  expect(cacheBefore.files).toBeGreaterThanOrEqual(3);
   await dialog
     .getByRole('button', { name: 'Clear thumbnails', exact: true })
     .click();
@@ -167,7 +173,9 @@ test('local catalog imports, organizes, searches, batches and preserves workspac
   await expect(dialog.getByRole('status')).toHaveText(
     'Thumbnail rebuild started',
   );
-  await expect(dialog.getByText(/3 files ·/)).toBeVisible();
+  await expect(
+    dialog.getByText(new RegExp(`^${cacheBefore.files} files ·`)),
+  ).toBeVisible();
   const downloadPromise = page.waitForEvent('download');
   await dialog
     .getByRole('link', { name: 'Export diagnostic logs', exact: true })
@@ -181,9 +189,26 @@ test('local catalog imports, organizes, searches, batches and preserves workspac
     .getByRole('button', { name: 'Close', exact: true })
     .last()
     .click();
+  // Wait for the event-driven catalog refresh and real rebuilt rasters, not
+  // the 320px generic placeholder returned while the cache was empty.
+  await expect
+    .poll(() =>
+      page
+        .locator('.asset-card img')
+        .evaluateAll((images) =>
+          images.every(
+            (image) =>
+              image instanceof HTMLImageElement &&
+              image.complete &&
+              image.naturalWidth === 512 &&
+              getComputedStyle(image).display !== 'none',
+          ),
+        ),
+    )
+    .toBe(true);
   await mkdir('docs/screenshots', { recursive: true });
   await page.screenshot({
-    path: 'docs/screenshots/v0.1.0.png',
+    path: 'docs/screenshots/v0.2.0.png',
     fullPage: true,
   });
 });

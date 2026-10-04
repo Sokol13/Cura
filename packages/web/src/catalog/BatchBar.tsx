@@ -9,6 +9,7 @@ export function BatchBar({
   onBatch,
   onClear,
   onSelectAll,
+  onExport,
 }: {
   count: number;
   folders: Folder[];
@@ -17,6 +18,7 @@ export function BatchBar({
   onBatch: (patch: Omit<BatchAssets, 'assetIds'>) => void;
   onClear: () => void;
   onSelectAll: () => void;
+  onExport: () => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -78,6 +80,7 @@ export function BatchBar({
           ))}
         </select>
       ))}
+      <button onClick={onExport}>{t('exportSelection')}</button>
       <button
         className={trash ? '' : 'danger-text'}
         onClick={() => onBatch({ action: trash ? 'restore' : 'trash' })}

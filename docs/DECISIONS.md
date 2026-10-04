@@ -223,3 +223,27 @@
 **Reason:** Chinese output must not depend on redistributing a new font, and an export must preserve the structure needed to leave Cura. Selected exports include referenced dependencies or explicitly identify external references.
 
 **Alternatives rejected:** ASCII-only PDF text, undocumented missing metadata, public paginated asset queries as the export source, and calling a ZIP of current files a complete library export.
+
+## P1 review corrections and export bounds
+
+**Decision:** Brand/CMF mutations lock target navigation until completion. Board asynchronous additions must retain the originating board/revision and cannot apply captured stale layouts. Timeline finalization atomically checks the displayed version and previous manual selection.
+
+**Reason:** Deferred-response reproductions showed wrong-record draft replacement, lost concurrent canvas additions and finalization of unseen source replacements. A successful HTTP response alone does not establish that the current screen still owns the result.
+
+**Alternatives rejected:** Attaching the newest revision to old layout content, silently applying responses to whichever record is currently selected, or finalizing by asset ID alone.
+
+**Decision:** Preserve completed outputs when cancelling a mock job; the UI labels this behavior and its simulated 1.5-second stage. Treat preview transport/queue saturation as retryable while retaining explicit terminal decoder errors. Supply local Adobe BSD CMaps for Chinese PDF text and normalize OBJ grammar before allocation bounds.
+
+**Reason:** Cancellation must not destroy already retained work; transient connectivity must not label valid bytes corrupt. Valid CJK PDFs and indented OBJ files reproduced silent or incorrect preview outcomes without these corrections.
+
+**Alternatives rejected:** Rolling back imported output files, hiding timing races through retries, permanently failing temporary transport errors, or calling a blank PDF render successful.
+
+**Decision:** Export ZIP STORE with streamed, verified bytes and explicit classic-ZIP bounds: 3.5 GB including JSON/CSV/README and at most 65,532 distinct file payloads plus three metadata entries. Preserve all recorded metadata, historical dependencies, trash and unavailable sources; operational errors must not expose private managed paths.
+
+**Reason:** Images/videos are already compressed, and bounded streaming avoids whole-library buffers. Explicit limits prevent ZIP32 truncation; the UI reports oversized exports and supports smaller selected subsets. Original files remain untouched.
+
+**Alternatives rejected:** Silent truncation, unbounded compression buffers, incomplete paginated exports and silently omitting missing/corrupt snapshots. ZIP64 can be added as a separately validated format extension.
+
+## P1 inherited E2E assertions
+
+Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate correctly; update the two legacy URL assertions to verify the explicit integer revision query. Cache maintenance is global across all libraries, so its round-trip E2E compares the observed pre-clear count with the rebuilt count rather than assuming only its own three files exist. Earlier P1 scenarios legitimately create other libraries. The clear-to-zero assertion remains exact. Performance limits and actual image decoding checks remain unchanged.

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-10-04
+
+- Add persisted infinite canvases with assets, groups, edges, text, viewport controls, four slot templates and stable character/scene matrices.
+- Pin exact asset versions in slots; retain slot replacement history and independent manual/slot final selections.
+- Add bilingual brand and CMF workspaces, named HEX/RGB/CMYK colors, registered font files, pinned logo variants and guidelines; export self-contained HTML, raster-page PDF, JSON and ASE.
+- Render bounded GLB/OBJ, RGB8 raw/RLE PSD, first-page PDF including CJK text, and supported H.264 MP4/MOV frames locally. Preserve originals/source dimensions, retry temporary failures and expose unsupported encodings explicitly.
+- Add prompt/version timelines, distinct recorded-output selection rates and deterministic local mock generation with cancellation and retained partial results.
+- Export selected assets or complete libraries as hash-verified portable ZIP folders with all versions, readable manifest/CSV, organization, history, boards, brands and process metadata.
+- Add stale-operation/revision guards for record saves, board additions and timeline selections; validate exported filenames and omit private operational paths.
+- Retain all P0 checks, add real-server P1 E2Es, migration/bundle-license evidence and updated desktop smoke guidance. Final publication gates are recorded in REPORT-v0.2.0.md.
+
 ## 0.1.0 — 2026-10-04
 
 - Add local libraries, watched reference folders, managed Inbox uploads, SHA-256 deduplication and immutable version snapshots without changing registered originals.

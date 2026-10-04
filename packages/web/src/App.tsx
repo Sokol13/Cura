@@ -60,6 +60,11 @@ const RichPreviewQueue = lazy(() =>
     default: module.RichPreviewQueue,
   })),
 );
+const ExportDialog = lazy(() =>
+  import('./catalog/ExportDialog').then((module) => ({
+    default: module.ExportDialog,
+  })),
+);
 type Workspace = 'catalog' | 'boards' | 'brands' | 'process';
 const readWorkspace = (): Workspace => {
   const value = new URLSearchParams(window.location.search).get('workspace');
@@ -85,6 +90,7 @@ export function App() {
   const [filters, setFilters] = useState<Filters>({});
   const [showFilters, setShowFilters] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [exportSelection, setExportSelection] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [booting, setBooting] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -117,6 +123,7 @@ export function App() {
       setWorkspace(next);
       setPreview(null);
       setShowSettings(false);
+      setExportSelection(null);
       refresh();
     },
     [refresh],
@@ -126,6 +133,7 @@ export function App() {
       setWorkspace(readWorkspace());
       setPreview(null);
       setShowSettings(false);
+      setExportSelection(null);
     };
     window.addEventListener('popstate', restore);
     return () => window.removeEventListener('popstate', restore);
@@ -356,6 +364,7 @@ export function App() {
   }, [previewId, revision, reportError]);
 
   const changeLibrary = (id: string) => {
+    setExportSelection(null);
     setLibraryId(id);
     setAssets([]);
     setTotal(0);
@@ -396,7 +405,7 @@ export function App() {
       if (
         target instanceof HTMLElement &&
         (target.closest(
-          'input, textarea, select, [contenteditable="true"], [role="dialog"]',
+          'input, textarea, select, [contenteditable="true"], [role="dialog"], dialog',
         ) ||
           target.isContentEditable)
       )
@@ -409,9 +418,10 @@ export function App() {
       if (event.key === 'Escape') {
         setPreview(null);
         setShowSettings(false);
+        setExportSelection(null);
         return;
       }
-      if (showSettings || preview) return;
+      if (showSettings || preview || exportSelection) return;
       if (
         target instanceof HTMLElement &&
         target.closest('button, a, summary') &&
@@ -450,6 +460,7 @@ export function App() {
     batch,
     filters.trash,
     showSettings,
+    exportSelection,
     preview,
     workspace,
   ]);
@@ -762,6 +773,7 @@ export function App() {
             {selected.size > 0 && (
               <BatchBar
                 count={selected.size}
+                onExport={() => setExportSelection([...selected])}
                 folders={folders}
                 tags={tags}
                 trash={Boolean(filters.trash)}
@@ -881,6 +893,15 @@ export function App() {
             }
             onColor={(color) => changeFilters({ color })}
           />
+          {exportSelection && libraryId && (
+            <Suspense fallback={null}>
+              <ExportDialog
+                libraryId={libraryId}
+                assetIds={exportSelection}
+                onClose={() => setExportSelection(null)}
+              />
+            </Suspense>
+          )}
           {showSettings && (
             <SettingsDialog
               settings={settings}

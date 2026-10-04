@@ -1165,3 +1165,30 @@ progress {
   font-size: 12px;
   padding: 6px 12px;
 }
+
+.export-dialog {
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  width: min(720px, calc(100vw - 40px));
+  max-height: 88dvh;
+  padding: 0;
+  box-shadow: 0 30px 90px #0006;
+}
+.export-dialog::backdrop {
+  background: #08090dbd;
+  backdrop-filter: blur(5px);
+}
+.export-dialog .process-export {
+  padding: 20px;
+}
+.export-dialog .process-export > h2 {
+  display: none;
+}
+.export-dialog .process-controls {
+  flex-wrap: wrap;
+}
+.export-dialog [role='alert'] {
+  color: var(--danger);
+}

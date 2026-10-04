@@ -2,9 +2,9 @@
 
 Cura is a local-first visual asset manager for AI creators, brand designers, and product designers. Run a local server, open your browser, and organize images without an account. Your files and their creative context stay on your computer.
 
-The current v0.1 workflow includes watched folders and uploads, metadata extraction, folders and colored tags, search and filters, image previews, annotations, retained versions, and diagnostics. [PROGRESS.md](docs/PROGRESS.md) records integration and validation status; a feature description here is not a claim that a milestone has been released.
+The current workflow includes watched folders and uploads, metadata extraction, folders and colored tags, search and filters, previews, annotations, retained versions, and diagnostics. The v0.2 workflow adds canvas/slot/matrix workflows, brands and CMF, rich previews, creative-process statistics and portable exports. [PROGRESS.md](docs/PROGRESS.md) records integration and validation status; a feature description here is not a claim that a milestone has been released.
 
-![Cura image library captured with the real server and Chromium](docs/screenshots/v0.1.0.png)
+![Cura image library captured with the real server and Chromium](docs/screenshots/v0.2.0.png)
 
 ## Start on macOS or Windows
 
@@ -45,7 +45,7 @@ The default interface is Simplified Chinese with a dark theme and orange accents
 
 Registering a folder leaves original files in place. Cura also retains one immutable snapshot per distinct file content so an external overwrite cannot destroy an older version. **This uses additional disk space**: plan for the retained unique versions plus thumbnails; uploads also have Inbox copies. Logical folders, tags, manual replacement, and Trash do not rewrite registered originals. Missing sources are marked without discarding their saved previews/history; a renamed source keeps its asset identity when its content matches. See [storage and backup](docs/SETUP.md#data-directories-and-backup).
 
-PNG, JPEG, WebP, GIF, SVG, and AVIF receive image previews; other files remain manageable with generic icons. GIF thumbnails use the first frame, and SVG previews are rasterized. Flat-color artwork can have fewer than five palette colors. Browser uploads/replacements are limited to 100 MiB per file; oversized or unsupported image decoding falls back to a manageable asset.
+PNG, JPEG, WebP, GIF, SVG, and AVIF receive image previews. GLB/OBJ, supported RGB8 PSD composites, PDF first pages and browser-decodable H.264 MP4/MOV receive bounded browser-generated thumbnails while their library is open. Unsupported encodings remain manageable with an explicit preview state; [PREVIEWS.md](docs/PREVIEWS.md) lists the precise limits. GIF thumbnails use the first frame, and SVG previews are rasterized. Flat-color artwork can have fewer than five palette colors. Browser uploads/replacements are limited to 100 MiB per file; oversized or unsupported image decoding falls back to a manageable asset.
 
 Generation metadata is read from data actually embedded in PNGs:
 
@@ -55,7 +55,16 @@ Generation metadata is read from data actually embedded in PNGs:
 
 The inspector exposes raw parameters and parser warnings. You can correct missing fields manually; those corrections stay with the current version when it is later archived. Notes and ratings belong to the asset across versions. Cura does not embed edits back into originals. Similarity is available only for images with a valid perceptual hash; other files display an explanatory hint.
 
-Canvas/slot/matrix workflows, brand and CMF kits, PSD/PDF/video/3D thumbnails, and whole-library neutral export are **P1 work**, not part of v0.1. Agent automation, Supabase/team synchronization, and FCPXML are P2. [PRD.md](docs/PRD.md) defines the roadmap.
+## Design and creative workspaces
+
+- **Boards:** Place assets, text and groups on a pannable canvas; connect items and save layouts. Character, scene, product and brand templates provide slots. Dragging an exact asset version into a slot finalizes that version; replacing the slot appends its own revision history. Character-angle and scene-option matrices retain assignments when axes change. [Board guide](docs/BOARDS.md).
+- **Brands & CMF:** Build named HEX/RGB/CMYK palettes, register font files, pin logo variants, write guidelines and compose material/color/finish entries. Export self-contained HTML, paginated PDF, JSON and ASE. PDF text is rasterized to preserve the browser's Chinese/font appearance; HTML/JSON retain editable text. CMYK values are unprofiled arithmetic conversions. [Brand guide](docs/BRANDS.md).
+- **Creative process:** Inspect prompt/version history and selection rates by model/source. Counts measure distinct recorded outputs, not unknown past attempts. The clearly labeled local mock produces real deterministic images without an external generation service. Selection actions validate the displayed version. [Process and export guide](docs/PROCESS-EXPORT.md).
+- **Neutral export:** Export a whole library from Creative process, or selected assets from the catalog's selection toolbar. The ZIP extracts into a readable folder containing original/version bytes, `manifest.json`, `assets.csv` and a README. It retains trash, unavailable-source history, organization, annotations, boards, brands and process metadata; selected exports include referenced dependencies. Every byte is hash-verified. Classic ZIP bounds are explicit: 3.5 GB including metadata and 65,532 distinct payload files. Oversized or missing/corrupt-byte exports fail visibly; split the selection when needed.
+
+![Cura board with retained slot revisions](docs/screenshots/v0.2-boards.png)
+
+Agent automation, Supabase/team synchronization and FCPXML follow in P2. [PRD.md](docs/PRD.md) and [PROGRESS.md](docs/PROGRESS.md) distinguish released features from work in progress.
 
 ## Development and verification
 
