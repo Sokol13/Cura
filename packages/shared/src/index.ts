@@ -8,3 +8,4 @@ export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
 export * from './catalog.js';
 export * from './brands.js';
+export * from './boards.js';
