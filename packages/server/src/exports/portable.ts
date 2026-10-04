@@ -13,7 +13,7 @@ export function portableName(value: string): string {
     safe = Array.from(safe).slice(0, -1).join('');
   safe = safe.replace(/[. ]+$/, '');
   return !safe ||
-    /^(?:\.|\.\.|con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(safe)
+    /^(?:\.|\.\.|con|prn|aux|nul|com[1-9¹²³]|lpt[1-9¹²³])(?:\.|$)/i.test(safe)
     ? `_${safe || 'untitled'}`
     : safe;
 }

@@ -1,6 +1,7 @@
 import type { GenerateRequest, GenerationJob } from '@cura/shared';
 import type { CatalogStore } from '../catalog-store.js';
 import type { MediaService } from '../media/service.js';
+import { publicGenerationError } from './errors.js';
 import { ProcessStore, ProcessError } from './store.js';
 import { MockGenerationProvider, type GenerationProvider } from './provider.js';
 
@@ -82,9 +83,7 @@ export class GenerationService {
             status: controller.signal.aborted ? 'cancelled' : 'failed',
             error: controller.signal.aborted
               ? null
-              : error instanceof Error
-                ? error.message
-                : String(error),
+              : publicGenerationError(error),
           });
         }
       })

@@ -20,6 +20,8 @@ import { MediaService } from '../src/media/service.js';
 import { BoardStore } from '../src/boards/store.js';
 import { BrandStore } from '../src/brands/store.js';
 import { writeArchive, ArchiveLimitError } from '../src/exports/archive.js';
+import { ProcessStore } from '../src/process/store.js';
+import { GenerationService } from '../src/process/service.js';
 import { ExportService } from '../src/exports/service.js';
 import { readExportSnapshot } from '../src/exports/snapshot.js';
 import { csvCell, portableName } from '../src/exports/portable.js';
@@ -141,6 +143,8 @@ async function fixture() {
 test('portable names preserve Unicode and reject reserved names, separators and malformed surrogate endings', () => {
   expect(portableName('../CON?.png')).not.toMatch(/[\\/<>:?*]/);
   expect(portableName('CON')).toBe('_CON');
+  for (const name of ['COM¹.png', 'LPT².txt', 'com³'])
+    expect(portableName(name)).toBe('_' + name);
   expect(portableName('画'.repeat(100))).toMatch(/^画+$/);
   expect(
     Buffer.byteLength(portableName('画'.repeat(100)), 'utf8'),
@@ -320,4 +324,47 @@ test('archives exceeding classic ZIP entry or size bounds fail explicitly before
       () => undefined,
     ),
   ).rejects.toBeInstanceOf(ArchiveLimitError);
+});
+
+test('filesystem generation failures export useful errors without private managed paths, including legacy persisted jobs', async () => {
+  const f = await fixture();
+  const library = f.catalog.createLibrary({ name: 'Operational errors' });
+  await writeFile(
+    join(f.paths.data, 'libraries', library.id),
+    'directory obstruction',
+  );
+  const store = new ProcessStore(f.database),
+    generation = new GenerationService(store, f.catalog, f.media);
+  cleanup.push(() => generation.close());
+  const job = generation.start(library.id, {
+    prompt: 'Original authored request',
+    width: 64,
+    height: 64,
+  });
+  await vi.waitFor(() => expect(store.job(job.id).status).toBe('failed'), {
+    timeout: 5000,
+  });
+  const failedManifest = readExportSnapshot(f.database, library.id, {
+    scope: 'library',
+  }).manifest;
+  expect(failedManifest.process.jobs[0]?.error).not.toContain(f.paths.data);
+  expect(store.job(job.id).error).not.toContain(f.paths.data);
+  const authored = 'Use /author/reference exactly';
+  const legacy = store.createJob(library.id, { prompt: authored });
+  store.updateJob(legacy.id, {
+    status: 'failed',
+    error: `ENOTDIR: not a directory, mkdir '${join(f.paths.data, 'libraries', library.id, 'Inbox')}'`,
+  });
+  const exported = readExportSnapshot(f.database, library.id, {
+    scope: 'library',
+  }).manifest;
+  expect(JSON.stringify(exported)).not.toContain(f.paths.data);
+  expect(
+    exported.process.jobs.find((item) => item.id === legacy.id)?.request.prompt,
+  ).toBe(authored);
+  expect(
+    exported.process.jobs.every((item) =>
+      item.error?.includes('library directory'),
+    ),
+  ).toBe(true);
 });

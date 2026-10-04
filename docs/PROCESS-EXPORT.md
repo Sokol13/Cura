@@ -15,7 +15,7 @@ The **Export** tab creates a whole-library ZIP or exports the asset selected in 
 - `files/<sha256>/<portable-name>`: every distinct retained file, including historical versions, trash, unavailable originals, and pinned resources. Equal hashes share a file and list all corresponding version IDs in the manifest.
 - `README.txt`: interpretation and selection-dependency rules.
 
-The export reads one consistent private SQLite transaction, without public query pagination. Whole-library exports include removed roots and every asset version. Original reference paths are informative metadata; managed Inbox roots use the label `Inbox`. Private snapshot, cache and archive paths are excluded.
+The export reads one consistent private SQLite transaction, without public query pagination. Whole-library exports include removed roots and every asset version. Original reference paths are informative metadata; managed Inbox roots use the label `Inbox`. Private snapshot, cache and archive paths are excluded. Operational generation errors use safe, actionable messages, including errors persisted by older versions; authored prompts and raw provenance are preserved.
 
 Selected exports preserve complete board and brand structures and all current/historical pinned assets. They also include linked generation-job outputs and similarity references used by saved searches. The explicit `includedDependencyAssetIds` list distinguishes those assets from the requested selection. Library organization remains context for the included assets.
 

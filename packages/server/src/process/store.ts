@@ -1,5 +1,6 @@
 import * as C from '@cura/shared';
 import { randomUUID } from 'node:crypto';
+import { publicGenerationError } from './errors.js';
 import { setFinalSelection } from './final-selections.js';
 import type { AppDatabase } from '../database.js';
 
@@ -250,6 +251,13 @@ export function readProcessExport(database: AppDatabase, libraryId: string) {
           'SELECT payload FROM generation_jobs WHERE library_id=? ORDER BY created_at,id',
         )
         .all(libraryId) as { payload: string }[]
-    ).map((row) => C.GenerationJobSchema.parse(JSON.parse(row.payload))),
+    ).map((row) => {
+      const job = C.GenerationJobSchema.parse(JSON.parse(row.payload));
+      // Sanitize historical operational errors too; request/provenance fields remain exact.
+      return {
+        ...job,
+        error: job.error === null ? null : publicGenerationError(job.error),
+      };
+    }),
   };
 }
