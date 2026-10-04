@@ -1,15 +1,16 @@
 {
   "milestone": "v0.2.0",
   "status": "passed",
-  "verifiedAt": "2026-10-04T12:36:16.443812+00:00",
-  "implementationCommit": "6a6010c2067073e6ba2c5ab55575b9736f815331",
+  "verifiedAt": "2026-10-04T13:06:18.746846+00:00",
+  "implementationCommit": "179ec28f810733245919e08e42568f62fb3f91c6",
   "environment": {
     "os": "Linux x64",
     "node": "22.23.3",
     "pnpm": "10.34.6",
     "chromium": "151.0.7922.173",
     "startupNodePath": "",
-    "browserVerificationNodePath": ""
+    "browserVerificationNodePath": "",
+    "installNodePath": ""
   },
   "clone": {
     "method": "git clone --no-local from the local canonical repository; independent Git objects",
@@ -21,7 +22,7 @@
       "packages/web/package.json": "0.2.0"
     },
     "frozenLockfile": true,
-    "installSeconds": 4.7,
+    "installSeconds": 1.9,
     "lockfileSha256": "594e1601385e7e35d088dcddc373bc95b3e7d23770459c99470475eead9d1157"
   },
   "dependencies": {
@@ -70,6 +71,24 @@
     "physicalMacOSVerified": false,
     "physicalWindowsVerified": false,
     "fullUnitSuiteIncluded": false,
-    "notes": "This evidence covers clean install and actual startup/browser persistence. CI and complete test-suite evidence are recorded separately."
-  }
+    "notes": "Renewed clean install and actual startup/browser persistence after the directory-input race fix. Full unit and E2E suites are recorded separately; they were not repeated in this fresh clone."
+  },
+  "sourceTrees": {
+    "packages/web/src": "4272aab3b64ed4a1db90bda01d7882e3bd03d577",
+    "packages/server/src": "90c4c667ff3eb2d6b067537e8734f3e35d712dc1",
+    "packages/shared/src": "a2a84810245fe21e0c4ef8135bf285f68af07a20"
+  },
+  "verifiedArtifacts": {
+    "packages/web/src/catalog/OrganizationDialog.tsx": "2d67842c17bc2b3f04ef6ecc61e6dc5f2b8daee859be890e1a4e55e66292fac6",
+    "packages/server/dist/index.js": "c137f82e517d09ec499368fcd2dbd9e620bef932f4a516452768035668d00bdc",
+    "packages/web/dist/assets/index-CgRd7t0t.js": "2bf55eb1f3d9e173e1748414a1aeb74a705be34808de0232f27cde7f944009ca",
+    "packages/web/dist/assets/index-DiV89SIb.js": "e8ef6969146cc5ce01bd846288e651f044a8b4ab2159b8aa47848a38915b0b0b"
+  },
+  "renewal": {
+    "previousProductionBaseline": "6a6010c2067073e6ba2c5ab55575b9736f815331",
+    "reason": "Directory input now waits for pending browse responses before native editing.",
+    "newIndependentClone": true,
+    "freshDataAndBrowserProfile": true
+  },
+  "screenshotSha256": "2aa0aa7a747afc2ea7e62a924277758ccf9ebce989f711b977de5e10d6cafd87"
 }

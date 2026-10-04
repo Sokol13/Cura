@@ -9,7 +9,6 @@
   ],
   "freshCloneVerificationCommit": "ae422592165a8bf0c0b0555ac27ece39d8df97d9",
   "productionFilesChangedSinceStartup": false,
-  "sameFrozenInstallAs": "clean-start.json",
   "command": "NODE_PATH= pnpm test",
   "node": "22.23.3",
   "pnpm": "10.34.6",
@@ -30,5 +29,12 @@
     "totalFiles": 44,
     "totalTests": 261
   },
-  "scope": "Full unit suites in the independent clean clone with global package lookup disabled. Browser PDF decoding is covered by the separate real Chromium E2E suite; no optional native canvas is needed by the unit harness."
+  "scope": "Full unit suites in the independent clean clone with global package lookup disabled. Browser PDF decoding is covered by the separate real Chromium E2E suite; no optional native canvas is needed by the unit harness.",
+  "historicalFrozenInstall": {
+    "productionBaseline": "6a6010c2067073e6ba2c5ab55575b9736f815331",
+    "evidenceCommit": "bbad065169a00429107e718b79538e9ed17a797c",
+    "evidencePath": "docs/evidence/v0.2.0/clean-start.json",
+    "frozenLockfileSha256": "594e1601385e7e35d088dcddc373bc95b3e7d23770459c99470475eead9d1157",
+    "description": "The earlier independent fresh clone used for this 261-test run. This is not the renewed clean-start clone at 179ec28."
+  }
 }
