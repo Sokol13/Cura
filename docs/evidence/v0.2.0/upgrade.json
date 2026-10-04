@@ -1,0 +1,121 @@
+{
+  "status": "passed",
+  "verifiedAt": "2026-10-04T12:16:51.071Z",
+  "runtime": {
+    "node": "v22.23.3",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "scope": "Real released v0.1.0 services and SQL migrations, then P1 services and SQL migrations; synthetic private temporary data only.",
+  "source": {
+    "release": "v0.1.0",
+    "packageVersion": "0.1.0",
+    "migrations": [
+      {
+        "tag": "0000_infrastructure",
+        "sha256": "940c3048b9cb98eab1d7cefad7a9534e1a29a2a7feddc6dfa9cc6bd8c33af9a1"
+      },
+      {
+        "tag": "0001_catalog",
+        "sha256": "ff7d6444145872385399a4f89884158f7df38cc51b4536cd84472487a3fd0aea"
+      },
+      {
+        "tag": "0002_source_availability",
+        "sha256": "2da02fcf56a08015c3539b4130abb5672b11c285a67d6f2aeea5f9b41e95bb27"
+      }
+    ]
+  },
+  "target": {
+    "milestone": "v0.2.0 candidate",
+    "migrations": [
+      {
+        "tag": "0000_infrastructure",
+        "sha256": "940c3048b9cb98eab1d7cefad7a9534e1a29a2a7feddc6dfa9cc6bd8c33af9a1"
+      },
+      {
+        "tag": "0001_catalog",
+        "sha256": "ff7d6444145872385399a4f89884158f7df38cc51b4536cd84472487a3fd0aea"
+      },
+      {
+        "tag": "0002_source_availability",
+        "sha256": "2da02fcf56a08015c3539b4130abb5672b11c285a67d6f2aeea5f9b41e95bb27"
+      },
+      {
+        "tag": "0003_process",
+        "sha256": "621b989e0c97b352891a1a85e70d5e99042d904b93bdf777e61e38931f9a8875"
+      },
+      {
+        "tag": "0004_boards",
+        "sha256": "4f7e3c64ba56fdf535b10314e89c3ce16f0ec12c91a01f3f47947f55086d11af"
+      },
+      {
+        "tag": "0005_brands",
+        "sha256": "9c3072a04385e150de9bfab9355fa5039a697e1c1cec6a7670edb36b969d4c4c"
+      }
+    ]
+  },
+  "fixture": {
+    "libraryName": "升级验证 · 设计资料",
+    "relativeOriginal": "方案 α/角色 初稿.png",
+    "assetId": "99c29834-8037-4b82-9b78-94aa96f847bc",
+    "libraryId": "fe156f1a-dc8d-482f-86a2-8fc48347b86e",
+    "rootId": "9c2ed281-924a-484f-bc86-9d167522b3d3",
+    "currentVersionId": "9aefe8bb-280a-400f-8f4b-2284b6423264",
+    "versionCount": 2,
+    "annotationCount": 2,
+    "folderCount": 2,
+    "tagCount": 1,
+    "exactSeed": "18446744073709551615",
+    "manualFinalized": true,
+    "originalSha256": "7ac773eb0af9537b1e59afb0a0ab67776a7ddcc14b93396eb531fe516188a255",
+    "versions": [
+      {
+        "id": "9aefe8bb-280a-400f-8f4b-2284b6423264",
+        "ordinal": 2,
+        "sha256": "c57927bd3c838e3e053e6e433eb2dd4c80c55bf2a448ae849ff8b327108b73ef"
+      },
+      {
+        "id": "406c002b-bf74-4ce6-b8e6-ab7aa2cac802",
+        "ordinal": 1,
+        "sha256": "7ac773eb0af9537b1e59afb0a0ab67776a7ddcc14b93396eb531fe516188a255"
+      }
+    ]
+  },
+  "upgrade": {
+    "migrationCounts": {
+      "before": 3,
+      "after": 6,
+      "afterReopen": 6
+    },
+    "generationCount": 2,
+    "generationOrigins": ["legacy-backfill"],
+    "finalOwnersAfterNewSlot": ["manual", "slot"],
+    "newBoard": {
+      "id": "3ef02031-de1f-4d42-ab96-888701105d7c",
+      "kind": "matrix",
+      "rows": 2,
+      "columns": 4,
+      "slots": 8
+    },
+    "newBrand": {
+      "id": "67bfb28b-7456-4d32-b6be-34c3810c44f9",
+      "colorCount": 1,
+      "logoCount": 1
+    },
+    "idempotentReopens": 2,
+    "logicalDigestAfterDomainWrites": "5b81af27996c26114724b42978bac0a04db4825277fa860c781db271d29d52b5"
+  },
+  "checks": {
+    "releasedServicesCreatedFixture": true,
+    "closedDatabaseBackupCreated": true,
+    "originalIdentitiesTimestampsMetadataAndRelationsPreserved": true,
+    "uint64SeedPreservedAsString": true,
+    "legacyGenerationsBackfilled": true,
+    "manualFinalSelectionMigrated": true,
+    "newBoardAndBrandUseRetainedVersions": true,
+    "slotAndManualFinalOwnersRemainIndependent": true,
+    "twoReopensIdempotentWithoutDuplicateBackfill": true,
+    "originalAndRetainedVersionBytesUnchanged": true,
+    "sqliteIntegrityAndForeignKeys": true
+  }
+}
