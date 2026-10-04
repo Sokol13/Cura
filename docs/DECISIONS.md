@@ -165,3 +165,17 @@
 **Reason:** Editing a prompt must not silently lose the correction when the next version arrives. A renamed file is one continuing asset, not an active duplicate of its vanished old path. Retained snapshots remain usable even when sources disappear.
 
 **Alternatives rejected:** Deleting catalog history with source files, counting stale aliases as live duplicates, or retaining corrections only on the mutable current-asset record.
+
+## Search latency and verification scope
+
+**Decision:** Use a 60 ms search-input debounce while keeping request cancellation and stale-result guards. Measure both HTTP responses and browser input-to-painted-result timing against the 200 ms acceptance bound.
+
+**Reason:** A real-browser measurement with the former 120 ms debounce reached 200.7 ms even when the server query was fast. The corrected implementation passed at 93.5–105.6 ms without relaxing the threshold.
+
+**Alternatives rejected:** Measuring only database calls, excluding debounce from user-visible latency, or weakening the acceptance target.
+
+**Decision:** Validate 1,000 real generated images through the actual server/database and separately validate 10,000 synthetic paginated records for browser virtualization. Keep these evidence scopes explicit. Clean-start browser launch uses an isolated Linux default-browser association pointing to headless Chromium.
+
+**Reason:** These tests answer different capacity questions, and the container cannot stand in for macOS/Windows desktop behavior.
+
+**Alternatives rejected:** Claiming synthetic rows prove 10,000-file ingestion or claiming Linux browser checks validate physical desktop permissions.

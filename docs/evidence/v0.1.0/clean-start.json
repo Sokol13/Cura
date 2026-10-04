@@ -1,0 +1,12 @@
+{
+  "environment": "Linux x64, Node22.23.3, pnpm10.34.6, Chromium151",
+  "clone": "git clone --no-local --branch feat-runtime /workspace/Cura /tmp/cura-clean-v010",
+  "commit": "68f835f",
+  "install": "pnpm install --frozen-lockfile",
+  "start": "pnpm start",
+  "nativeCompilation": false,
+  "browserLaunch": "OS default-browser association in isolated XDG configuration launches headless Chromium; no manual page.goto",
+  "libraryCreated": true,
+  "persistedAfterReload": true,
+  "physicalMacWindowsVerified": false
+}

@@ -1,0 +1,108 @@
+{
+  "environment": "Linux headless Chromium",
+  "results": [
+    {
+      "format": "image/png",
+      "originalBytes": 2717,
+      "thumbnail": {
+        "width": 256,
+        "height": 192
+      },
+      "preview": {
+        "width": 256,
+        "height": 192,
+        "samples": [
+          [179, 53, 82],
+          [175, 205, 95],
+          [44, 116, 194]
+        ]
+      }
+    },
+    {
+      "format": "image/jpeg",
+      "originalBytes": 1962,
+      "thumbnail": {
+        "width": 256,
+        "height": 192
+      },
+      "preview": {
+        "width": 256,
+        "height": 192,
+        "samples": [
+          [180, 53, 82],
+          [175, 204, 94],
+          [44, 115, 193]
+        ]
+      }
+    },
+    {
+      "format": "image/webp",
+      "originalBytes": 880,
+      "thumbnail": {
+        "width": 256,
+        "height": 192
+      },
+      "preview": {
+        "width": 256,
+        "height": 192,
+        "samples": [
+          [179, 54, 82],
+          [176, 205, 95],
+          [45, 116, 194]
+        ]
+      }
+    },
+    {
+      "format": "image/gif",
+      "originalBytes": 1525,
+      "thumbnail": {
+        "width": 256,
+        "height": 192
+      },
+      "preview": {
+        "width": 256,
+        "height": 192,
+        "samples": [
+          [179, 53, 82],
+          [175, 205, 95],
+          [44, 116, 194]
+        ]
+      }
+    },
+    {
+      "format": "image/avif",
+      "originalBytes": 770,
+      "thumbnail": {
+        "width": 256,
+        "height": 192
+      },
+      "preview": {
+        "width": 256,
+        "height": 192,
+        "samples": [
+          [180, 53, 82],
+          [175, 204, 95],
+          [44, 116, 193]
+        ]
+      }
+    },
+    {
+      "format": "image/svg+xml",
+      "originalBytes": 226,
+      "thumbnail": {
+        "width": 256,
+        "height": 192
+      },
+      "preview": {
+        "width": 256,
+        "height": 192,
+        "samples": [
+          [179, 54, 82],
+          [176, 205, 95],
+          [45, 116, 194]
+        ]
+      }
+    }
+  ],
+  "attemptedExternalRequests": []
+}
