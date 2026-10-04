@@ -363,25 +363,31 @@ describe('catalog organization and search', () => {
     f.store.deleteAnnotation(annotation.id);
     expect(f.store.listAnnotations(a.id)).toEqual([]);
   });
-  it('searches one thousand assets under 200ms including one-character CJK', async () => {
-    const f = await fixture();
-    f.db.sqlite.transaction(() => {
-      for (let i = 0; i < 1000; i++) f.ingest(`森林-${i}.png`, String(i));
-    })();
-    for (const query of [
-      { q: '林' },
-      { q: '森林' },
-      { q: 'forest', rating: 0 },
-      { color: '#ff0000' },
-    ]) {
-      const start = performance.now();
-      const result = f.store.listAssets(f.library.id, query);
-      const elapsed = performance.now() - start;
-      expect(result.total).toBe(1000);
-      expect(result.items.length).toBe(100);
-      expect(elapsed).toBeLessThan(200);
-    }
-  });
+  it(
+    'searches one thousand assets under 200ms including one-character CJK',
+    { timeout: 15_000 },
+    async () => {
+      const f = await fixture();
+      // Fixture construction can exceed Vitest's default five seconds on CI.
+      // Every measured query below still has its independent 200 ms limit.
+      f.db.sqlite.transaction(() => {
+        for (let i = 0; i < 1000; i++) f.ingest(`森林-${i}.png`, String(i));
+      })();
+      for (const query of [
+        { q: '林' },
+        { q: '森林' },
+        { q: 'forest', rating: 0 },
+        { color: '#ff0000' },
+      ]) {
+        const start = performance.now();
+        const result = f.store.listAssets(f.library.id, query);
+        const elapsed = performance.now() - start;
+        expect(result.total).toBe(1000);
+        expect(result.items.length).toBe(100);
+        expect(elapsed).toBeLessThan(200);
+      }
+    },
+  );
 });
 
 describe('catalog preview cache recovery', () => {
