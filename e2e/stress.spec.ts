@@ -249,6 +249,99 @@ test('1000 distinct assets stay responsive and usable with only loopback network
         page.getByText('1000 assets', { exact: true }),
       ).toBeVisible();
     });
+    await test.step('browser input reaches the correct painted search result within 200 ms', async () => {
+      const browserSearch: {
+        query: string;
+        inputToPaintMs: number;
+        inputToRequestMs: number;
+        inputToResponseMs: number;
+      }[] = [];
+      evidence.browserSearch = browserSearch;
+      const search = page.getByRole('searchbox', { name: 'Search assets' });
+      for (let index = 2; index < 7; index++) {
+        const query = fixtureName(index);
+        await search.evaluate((node, expectedName) => {
+          Reflect.deleteProperty(window, '__curaSearchEvidence');
+          node.addEventListener(
+            'input',
+            () => {
+              const started = performance.now();
+              let scheduled = false;
+              const correct = () => {
+                const cards = document.querySelectorAll('.asset-card');
+                return (
+                  cards.length === 1 &&
+                  cards[0]?.getAttribute('aria-label') ===
+                    `Select ${expectedName}`
+                );
+              };
+              const observer = new MutationObserver(() => {
+                if (scheduled || !correct()) return;
+                scheduled = true;
+                // The second frame is after the browser has painted the matching DOM.
+                requestAnimationFrame(() =>
+                  requestAnimationFrame(() => {
+                    if (!correct()) {
+                      scheduled = false;
+                      return;
+                    }
+                    const inputToPaintMs = performance.now() - started;
+                    const response = performance
+                      .getEntriesByType('resource')
+                      .filter(
+                        (entry) =>
+                          entry.startTime >= started &&
+                          new URL(entry.name).searchParams.get('q') ===
+                            expectedName,
+                      )
+                      .at(-1) as PerformanceResourceTiming | undefined;
+                    Reflect.set(window, '__curaSearchEvidence', {
+                      query: expectedName,
+                      inputToPaintMs,
+                      inputToRequestMs: response
+                        ? response.startTime - started
+                        : -1,
+                      inputToResponseMs: response
+                        ? response.responseEnd - started
+                        : -1,
+                    });
+                    observer.disconnect();
+                  }),
+                );
+              });
+              observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+              });
+            },
+            { once: true },
+          );
+        }, query);
+        await search.fill(query);
+        await expect
+          .poll(() =>
+            page.evaluate(() => Reflect.has(window, '__curaSearchEvidence')),
+          )
+          .toBe(true);
+        const sample = (await page.evaluate(() =>
+          Reflect.get(window, '__curaSearchEvidence'),
+        )) as (typeof browserSearch)[number];
+        browserSearch.push(sample);
+        expect(sample.inputToRequestMs).toBeGreaterThanOrEqual(0);
+        expect(sample.inputToResponseMs).toBeGreaterThanOrEqual(
+          sample.inputToRequestMs,
+        );
+        expect(
+          sample.inputToPaintMs,
+          `${query}: browser input event through correct result paint`,
+        ).toBeLessThan(200);
+      }
+      await search.clear();
+      await expect(
+        page.getByText('1000 assets', { exact: true }),
+      ).toBeVisible();
+    });
     await test.step('fetch every thumbnail over HTTP and decode every result in Chromium', async () => {
       const thumbnails = await page.evaluate(
         async (ids) => {
