@@ -1,0 +1,34 @@
+{
+  "milestone": "v0.2.0",
+  "status": "passed",
+  "verifiedAt": "2026-10-04T12:40:21.333209+00:00",
+  "productionBaseline": "6a6010c2067073e6ba2c5ab55575b9736f815331",
+  "canonicalTestFixCommits": [
+    "789c459453d2fbb83b4e9fca24d3ea22db5c6484",
+    "28ac4f026b7021b06424bf9d6787b22f6b26d34d"
+  ],
+  "freshCloneVerificationCommit": "ae422592165a8bf0c0b0555ac27ece39d8df97d9",
+  "productionFilesChangedSinceStartup": false,
+  "sameFrozenInstallAs": "clean-start.json",
+  "command": "NODE_PATH= pnpm test",
+  "node": "22.23.3",
+  "pnpm": "10.34.6",
+  "nodePath": "",
+  "optionalCanvasInstalled": false,
+  "result": {
+    "exitCode": 0,
+    "server": {
+      "files": 27,
+      "tests": 167,
+      "durationSeconds": 21.0
+    },
+    "web": {
+      "files": 17,
+      "tests": 94,
+      "durationSeconds": 16.67
+    },
+    "totalFiles": 44,
+    "totalTests": 261
+  },
+  "scope": "Full unit suites in the independent clean clone with global package lookup disabled. Browser PDF decoding is covered by the separate real Chromium E2E suite; no optional native canvas is needed by the unit harness."
+}
