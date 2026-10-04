@@ -246,6 +246,7 @@ function AssetPreviewDialog({
   const closeButton = useRef<HTMLButtonElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const textInput = useRef<HTMLTextAreaElement>(null);
+  const addNoteButton = useRef<HTMLButtonElement>(null);
   const [versions, setVersions] = useState<AssetVersion[]>([]);
   const [annotations, setAnnotations] = useState<Annotation[]>([]);
   const [selectedId, setSelectedId] = useState(asset.currentVersionId);
@@ -390,6 +391,7 @@ function AssetPreviewDialog({
       setText('');
       setPlacing(false);
       setStatus(t('saved'));
+      addNoteButton.current?.focus();
       onChanged();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : t('requestError'));
@@ -407,6 +409,7 @@ function AssetPreviewDialog({
       });
       setAnnotations((existing) => existing.filter((note) => note.id !== id));
       setStatus(t('removed'));
+      addNoteButton.current?.focus();
       onChanged();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : t('requestError'));
@@ -681,6 +684,7 @@ function AssetPreviewDialog({
                   <button
                     type="button"
                     className="preview-add"
+                    ref={addNoteButton}
                     aria-pressed={placing}
                     onClick={() => {
                       setPlacing(!placing);
@@ -736,6 +740,7 @@ function AssetPreviewDialog({
                           setDraft(null);
                           setPlacing(false);
                           setText('');
+                          addNoteButton.current?.focus();
                         }}
                       >
                         {t('cancel')}

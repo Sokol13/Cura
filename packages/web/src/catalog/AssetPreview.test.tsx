@@ -270,6 +270,30 @@ describe('asset preview', () => {
     );
   });
 
+  it('keeps focus inside the dialog after saving or deleting an annotation', async () => {
+    mount();
+    await ready();
+    fireEvent.click(screen.getByRole('button', { name: 'Add annotation' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Place at center' }));
+    const textbox = screen.getByRole('textbox', { name: 'Annotation text' });
+    textbox.focus();
+    fireEvent.change(textbox, { target: { value: 'Focusable note' } });
+    fireEvent.submit(textbox.closest('form')!);
+    await screen.findByText('Focusable note', { selector: 'p' });
+    expect(screen.getByRole('dialog')).toContainElement(
+      document.activeElement as HTMLElement,
+    );
+    const remove = screen.getByRole('button', { name: 'Delete annotation 1' });
+    remove.focus();
+    fireEvent.click(remove);
+    await waitFor(() =>
+      expect(screen.queryByText('Focusable note')).not.toBeInTheDocument(),
+    );
+    expect(screen.getByRole('dialog')).toContainElement(
+      document.activeElement as HTMLElement,
+    );
+  });
+
   it('uploads replacement bytes and retains both previous versions', async () => {
     const { onChanged } = mount();
     await ready();
