@@ -1,0 +1,738 @@
+{
+  "schemaVersion": 1,
+  "auditedAt": "2026-10-04T11:58:52.700396+00:00",
+  "scope": "Exact integrated Vite browser output, plus installed browser production dependency metadata. Not a server/native binary audit.",
+  "repositoryHeadAtAudit": "ca01771690ecb715389126333ea8fb366f466dd7",
+  "buildEvidence": "Coordinator confirmed successful integrated pnpm build (session 63904); inventory taken before subsequent rebuilds.",
+  "artifactRoot": "packages/web/dist",
+  "artifactCount": 19,
+  "artifactBytes": 3053238,
+  "artifactInventorySha256": "0f300cd9fca1d5a05727c6e52043365c6f1589f2b8cde8937d4d147b8bf0ff04",
+  "artifacts": [
+    {
+      "path": "assets/BoardsWorkspace-CVPjVAv_.css",
+      "bytes": 26027,
+      "sha256": "967b8bacea559496653990efa92563e01c3edc60b9ddb55d87f4316d0dfdb633",
+      "role": "Cura/Tailwind styles; React Flow styles in board CSS; no font files"
+    },
+    {
+      "path": "assets/BoardsWorkspace-CXdt8qp-.js",
+      "bytes": 220516,
+      "sha256": "3549b0561cfcad7fd9ed9237ca3df233978cbae5e32b35fa74d6aa2557298c03",
+      "role": "Cura UI/application code and permitted dependency code"
+    },
+    {
+      "path": "assets/BrandWorkspace-B-Thh5ii.js",
+      "bytes": 31454,
+      "sha256": "7933f346cd416bbaaba06400b57fbfb40cbfebd1237224e3da0ace448b6a990f",
+      "role": "Cura UI/application code and permitted dependency code"
+    },
+    {
+      "path": "assets/BrandWorkspace-Cg-Sl1eJ.css",
+      "bytes": 3259,
+      "sha256": "c70967f2d7941296e12bde68de05fa23882dc58f0cd3599f7d5ddc906c36dd5d",
+      "role": "Cura/Tailwind styles; React Flow styles in board CSS; no font files"
+    },
+    {
+      "path": "assets/GLTFLoader-B6tTIk4t.js",
+      "bytes": 45678,
+      "sha256": "7169e0e71c95c4006933717eb0b6273cb7c96714abbbd9d77354424dce64bf1b",
+      "role": "MIT Three.js model loader"
+    },
+    {
+      "path": "assets/OBJLoader-Dj3xjgAK.js",
+      "bytes": 8892,
+      "sha256": "bda2071962aacd59dbf093a168a580fee8499a5f69901f3796e9ea13fbcefd6e",
+      "role": "MIT Three.js model loader"
+    },
+    {
+      "path": "assets/ProcessWorkspace-CoUE_ZhW.js",
+      "bytes": 10269,
+      "sha256": "eba35dbc55190f97a37e29ecd4d7918fc73f90b3a451ffd4fade0b6214a6a22d",
+      "role": "Cura UI/application code and permitted dependency code"
+    },
+    {
+      "path": "assets/ProcessWorkspace-WNi-JFPl.css",
+      "bytes": 3034,
+      "sha256": "4ad36182625035519bc02d8e7d359cfb37be9057c91e4b27062ea3eff160892c",
+      "role": "Cura/Tailwind styles; React Flow styles in board CSS; no font files"
+    },
+    {
+      "path": "assets/RichPreviewQueue-Czy6mJ_0.js",
+      "bytes": 1643,
+      "sha256": "bffea94ec45a0c1f589b6d00c9bce5d1b0b963af5ec7a7f9f4ba4d693770ad8f",
+      "role": "Cura lazy background queue"
+    },
+    {
+      "path": "assets/index-DiV89SIb.js",
+      "bytes": 102800,
+      "sha256": "e8ef6969146cc5ce01bd846288e651f044a8b4ab2159b8aa47848a38915b0b0b",
+      "role": "MIT ag-psd and base64-js reader chunk"
+    },
+    {
+      "path": "assets/index-DxYN1zJC.css",
+      "bytes": 30437,
+      "sha256": "3655208e54eadfbf0e99296fd0afc9bad36db10ccf25f67247bffcc74c077065",
+      "role": "Cura/Tailwind styles; React Flow styles in board CSS; no font files"
+    },
+    {
+      "path": "assets/index-_aIxMdkz.js",
+      "bytes": 406751,
+      "sha256": "07af0eaec5e4a1b0232ca1cbf549afdc575be32f502a0cc3599438d726066416",
+      "role": "Cura UI/application code and permitted dependency code"
+    },
+    {
+      "path": "assets/pdf-XPNgkKDZ.js",
+      "bytes": 400192,
+      "sha256": "dc837e617ab8499966fe0a1f9ac323a72ad69a6fc50239d7933440ad8a4769d3",
+      "role": "Apache-2.0 PDF.js browser API"
+    },
+    {
+      "path": "assets/pdf.worker.min-8-jK-tn1.js",
+      "bytes": 66,
+      "sha256": "a5b9a7b92b1942e4e6cfe8bc5ac8d9428e49c8411dd5f60ff81e33ffd5ff351f",
+      "role": "Vite local PDF worker URL module"
+    },
+    {
+      "path": "assets/pdf.worker.min-qwK7q_zL.mjs",
+      "bytes": 1046214,
+      "sha256": "dbcae78a691b3c501508f74b774c6066a57a14a76cefdc9e25ad86b651bb75d5",
+      "role": "Unmodified Apache-2.0 PDF.js 5.4.296 parser worker"
+    },
+    {
+      "path": "assets/render-C0C2LjGE.js",
+      "bytes": 2379,
+      "sha256": "a34c92e81f525c622a4d09820e9a6b9d4eb9acb3d3f8b2136ae1e89bba456486",
+      "role": "Cura bounded fetch/native-video/worker adapter"
+    },
+    {
+      "path": "assets/render.worker-B8iM-WmH.js",
+      "bytes": 8265,
+      "sha256": "9428813c080405677d253bfe78224763a6db447f7408fd8465276fadb2645aaf",
+      "role": "Cura bounded render worker; dynamic local renderer imports"
+    },
+    {
+      "path": "assets/three.module-BT1pP-6r.js",
+      "bytes": 704889,
+      "sha256": "2b5ed6a7c5657b657faef993bb417a8a7cbb572167eeddba33bfa78a3f8274f5",
+      "role": "MIT Three.js renderer"
+    },
+    {
+      "path": "index.html",
+      "bytes": 473,
+      "sha256": "37b074607bc894d3f5b8173e18332f066a653271806403045949eb6e083ae2ef",
+      "role": "Cura HTML entry"
+    }
+  ],
+  "dependencyMetadataMethod": "pnpm --filter @cura/web list --prod --depth Infinity --json, recursively deduplicated by name/version; installed package.json license fields and license-file hashes read directly. This graph is an upper bound, not a claim that all listed packages or types are emitted.",
+  "allowedBrowserLicenseIdentifiers": [
+    "MIT",
+    "ISC",
+    "Apache-2.0",
+    "BSD-3-Clause"
+  ],
+  "dependencyMetadata": [
+    {
+      "name": "@babel/runtime",
+      "version": "7.29.7",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "117da2af0d4ce0fe1c8e19b5cff9dcd806adf973d328d27b11d4448c4ff24f76"
+        }
+      ]
+    },
+    {
+      "name": "@cura/shared",
+      "version": "0.1.0",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": []
+    },
+    {
+      "name": "@tanstack/react-virtual",
+      "version": "3.13.12",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "a405ee70c632bb938acb7ac5f210e814409b3760ea9d2329d8ed8ffcfd11a0e7"
+        }
+      ]
+    },
+    {
+      "name": "@tanstack/virtual-core",
+      "version": "3.13.12",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "a405ee70c632bb938acb7ac5f210e814409b3760ea9d2329d8ed8ffcfd11a0e7"
+        }
+      ]
+    },
+    {
+      "name": "@types/base64-js",
+      "version": "1.5.0",
+      "license": "MIT",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "name": "@types/d3-color",
+      "version": "3.1.3",
+      "license": "MIT",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "name": "@types/d3-drag",
+      "version": "3.0.7",
+      "license": "MIT",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "name": "@types/d3-interpolate",
+      "version": "3.0.4",
+      "license": "MIT",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "name": "@types/d3-selection",
+      "version": "3.0.12",
+      "license": "MIT",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "name": "@types/d3-transition",
+      "version": "3.0.9",
+      "license": "MIT",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "name": "@types/d3-zoom",
+      "version": "3.0.9",
+      "license": "MIT",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "name": "@types/react",
+      "version": "19.1.16",
+      "license": "MIT",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "name": "@types/react-dom",
+      "version": "19.1.9",
+      "license": "MIT",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c2cfccb812fe482101a8f04597dfc5a9991a6b2748266c47ac91b6a5aae15383"
+        }
+      ]
+    },
+    {
+      "name": "@xyflow/react",
+      "version": "12.12.0",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "023119ac20fb1c8c9930abe0bcd196989a1960388529a96fc43cebf96f07c9ff"
+        }
+      ]
+    },
+    {
+      "name": "@xyflow/system",
+      "version": "0.0.83",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "023119ac20fb1c8c9930abe0bcd196989a1960388529a96fc43cebf96f07c9ff"
+        }
+      ]
+    },
+    {
+      "name": "ag-psd",
+      "version": "14.3.1",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "035430250509b801de02201d2f9bc9388a1220198f9276d38f4059df882e585c"
+        }
+      ]
+    },
+    {
+      "name": "base64-js",
+      "version": "1.5.1",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "5b37224c080cdcc97c871ada971c224e9926370fe74f11b539aa1cf9f3b1aca1"
+        }
+      ]
+    },
+    {
+      "name": "classcat",
+      "version": "5.0.5",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE.md",
+          "sha256": "f101c761d255d0dddc77dd8a9327733b03d381798ec54a1bb718367207b48a8e"
+        }
+      ]
+    },
+    {
+      "name": "csstype",
+      "version": "3.2.3",
+      "license": "MIT",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "11d55bd4541c75ee7879547ac49089c489163dae49551389713c3d026cab383e"
+        }
+      ]
+    },
+    {
+      "name": "d3-color",
+      "version": "3.1.0",
+      "license": "ISC",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "faa682e3e430941f958d26180458f5934a62f58dac4d70ccdd15608c15d0f884"
+        }
+      ]
+    },
+    {
+      "name": "d3-dispatch",
+      "version": "3.0.1",
+      "license": "ISC",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee"
+        }
+      ]
+    },
+    {
+      "name": "d3-drag",
+      "version": "3.0.0",
+      "license": "ISC",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee"
+        }
+      ]
+    },
+    {
+      "name": "d3-ease",
+      "version": "3.0.1",
+      "license": "BSD-3-Clause",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "b989d9085148d21ff64a75e14462aefa06b2589a55553b07b1460c70081c7d08"
+        }
+      ]
+    },
+    {
+      "name": "d3-interpolate",
+      "version": "3.0.1",
+      "license": "ISC",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee"
+        }
+      ]
+    },
+    {
+      "name": "d3-selection",
+      "version": "3.0.0",
+      "license": "ISC",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee"
+        }
+      ]
+    },
+    {
+      "name": "d3-timer",
+      "version": "3.0.1",
+      "license": "ISC",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee"
+        }
+      ]
+    },
+    {
+      "name": "d3-transition",
+      "version": "3.0.1",
+      "license": "ISC",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee"
+        }
+      ]
+    },
+    {
+      "name": "d3-zoom",
+      "version": "3.0.0",
+      "license": "ISC",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "e008c5e25a6be382593089c29bfabbc553c6378eee02895aec46ce396cc404ee"
+        }
+      ]
+    },
+    {
+      "name": "html-parse-stringify",
+      "version": "3.1.0",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "f51aa7a410f3d3ff9352a5422b76c072588ac76b63861f59447502caeacacc16"
+        }
+      ]
+    },
+    {
+      "name": "i18next",
+      "version": "25.5.2",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "def56080ea8d5d30d11771d221d1c9e98f3942afb8c61dd6136be5e806c926d6"
+        }
+      ]
+    },
+    {
+      "name": "pdfjs-dist",
+      "version": "5.4.296",
+      "license": "Apache-2.0",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        }
+      ]
+    },
+    {
+      "name": "react",
+      "version": "19.1.1",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+        }
+      ]
+    },
+    {
+      "name": "react-dom",
+      "version": "19.1.1",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+        }
+      ]
+    },
+    {
+      "name": "react-i18next",
+      "version": "16.0.0",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "95bdba2cfae72e5337ecc7ccc33154492e33a533549628e385d32d98d1642859"
+        }
+      ]
+    },
+    {
+      "name": "scheduler",
+      "version": "0.26.0",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+        }
+      ]
+    },
+    {
+      "name": "three",
+      "version": "0.180.0",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
+        }
+      ]
+    },
+    {
+      "name": "typescript",
+      "version": "5.9.3",
+      "license": "Apache-2.0",
+      "classification": "type-only or tooling metadata; not claimed as bundled runtime code",
+      "licenseFiles": [
+        {
+          "path": "LICENSE.txt",
+          "sha256": "a7d00bfd54525bc694b6e32f64c7ebcf5e6b7ae3657be5cc12767bce74654a47"
+        }
+      ]
+    },
+    {
+      "name": "use-sync-external-store",
+      "version": "1.7.0",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93"
+        }
+      ]
+    },
+    {
+      "name": "void-elements",
+      "version": "3.1.0",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "405a272eaef556691ad7dda96db3237c9544afe18725842a1a5b3ec308960222"
+        }
+      ]
+    },
+    {
+      "name": "zod",
+      "version": "4.1.12",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "3f1189b28e3866e0d979968d466b78f813f76827cfdca1fbb124cc0a5c8841f8"
+        }
+      ]
+    },
+    {
+      "name": "zustand",
+      "version": "5.0.8",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c1e6e266563517467b1bf874817d23e426f3149252bd7d42758cd697514b8417"
+        }
+      ]
+    },
+    {
+      "name": "zustand",
+      "version": "4.5.7",
+      "license": "MIT",
+      "classification": "browser production dependency graph",
+      "licenseFiles": [
+        {
+          "path": "LICENSE",
+          "sha256": "c1e6e266563517467b1bf874817d23e426f3149252bd7d42758cd697514b8417"
+        }
+      ]
+    }
+  ],
+  "previewEntrypoints": [
+    {
+      "package": "three",
+      "version": "0.180.0",
+      "license": "MIT",
+      "imports": [
+        "three",
+        "three/addons/loaders/GLTFLoader.js",
+        "three/addons/loaders/OBJLoader.js"
+      ]
+    },
+    {
+      "package": "ag-psd",
+      "version": "14.3.1",
+      "license": "MIT",
+      "imports": ["ag-psd"],
+      "runtimeDependency": "base64-js@1.5.1 (MIT)"
+    },
+    {
+      "package": "pdfjs-dist",
+      "version": "5.4.296",
+      "license": "Apache-2.0",
+      "imports": ["pdfjs-dist", "pdfjs-dist/build/pdf.worker.min.mjs?url"]
+    }
+  ],
+  "checks": {
+    "onlyHtmlCssJsMjsOutput": true,
+    "fontProfileWasmNativeOutputFiles": [],
+    "pdfWorkerExactlyMatchesPinnedPackage": true,
+    "pdfWorkerApacheNoticeRetained": true,
+    "pdfOptionalAssetsRawAndBase64Scan": [
+      {
+        "directory": "standard_fonts",
+        "files": 14,
+        "bytes": 774339,
+        "inventorySha256": "692dec4ec0a35a276c1d75173949fe33f81066da93f47e008b9bf43d77e5b80f",
+        "rawOrBase64ContentMatches": []
+      },
+      {
+        "directory": "iccs",
+        "files": 1,
+        "bytes": 8464,
+        "inventorySha256": "d44a4e0113b2801f365816dfd5f0b4532cd084aff47943766492827b5352a9c9",
+        "rawOrBase64ContentMatches": []
+      },
+      {
+        "directory": "cmaps",
+        "files": 168,
+        "bytes": 1165667,
+        "inventorySha256": "c0db61c088d0adf92e7a9af5f8c5a80073901e26e55f133ef48938691c14b87a",
+        "rawOrBase64ContentMatches": []
+      },
+      {
+        "directory": "wasm",
+        "files": 3,
+        "bytes": 796305,
+        "inventorySha256": "5e9e1b1965bfd586b2b0f62b13c4b8e6f4a8d0b02c29640259a9b82ee640cfc5",
+        "rawOrBase64ContentMatches": []
+      }
+    ],
+    "bundledNodeCanvasImplementationOrNativeBinary": false,
+    "nodeCanvasNote": "PDF.js JavaScript retains an upstream Node-only require literal. That is not a bundled canvas implementation. No canvas package is reachable in the current pnpm browser production dependency listing; ignoredOptionalDependencies excludes it. The existing audit workspace still has a stale resolvable PDF.js-to-canvas link/package from an earlier install. Clean-install absence must be verified separately; this audit does not claim the old node_modules is free of canvas.",
+    "externalFontOrCdnConfiguredForPreviews": false,
+    "runtimeFfmpegDependency": false
+  },
+  "excludedSeparatelyLicensedPdfAssets": [
+    {
+      "path": "standard_fonts/LiberationSans-Bold.ttf",
+      "license": "OFL-1.1",
+      "sha256": "361c61b82d575c5c35fd9157fda8b0194bcfcd0d88ea8521a4fb5dd53d33dddc",
+      "includedInBrowserOutput": false
+    },
+    {
+      "path": "standard_fonts/LiberationSans-BoldItalic.ttf",
+      "license": "OFL-1.1",
+      "sha256": "a224075ac17495ad0a3af3bc0a419ac0704a8b3fd1095456201fb9b095fc281d",
+      "includedInBrowserOutput": false
+    },
+    {
+      "path": "standard_fonts/LiberationSans-Italic.ttf",
+      "license": "OFL-1.1",
+      "sha256": "832b4406dbef23628800d3aaad21048534ac84d7e3ad955be83b8172ed8ef512",
+      "includedInBrowserOutput": false
+    },
+    {
+      "path": "standard_fonts/LiberationSans-Regular.ttf",
+      "license": "OFL-1.1",
+      "sha256": "f8ace1f892b2bd9dc1792ba7f097fa7588f84fed48321480e04de5390828221f",
+      "includedInBrowserOutput": false
+    },
+    {
+      "path": "iccs/CGATS001Compat-v2-micro.icc",
+      "license": "CC0-1.0",
+      "sha256": "73e1ba37d2bad5bab2a964f40a9eed96209666efc067c3322626214bbef234a0",
+      "includedInBrowserOutput": false
+    }
+  ],
+  "knownLimits": [
+    "The PDF.js npm archive itself contains OFL fonts and a CC0 profile. They remain in node_modules package contents but are absent from the browser output; do not redistribute that archive as an unrestricted asset bundle.",
+    "Artifact hashes identify this integrated build snapshot. Subsequent source changes/builds need a refreshed inventory.",
+    "All 19 artifacts are inventoried. Package licenses are checked via metadata and license files; minified output does not provide an exact module-level provenance map.",
+    "The separate runtime license gate and documented Sharp native exception apply to the server, which is outside this browser audit."
+  ]
+}
