@@ -53,8 +53,17 @@ export async function writeArchive(
     entry.push(strToU8(value), true);
   };
   try {
+    if (snapshot.files.length + 3 > 65_535)
+      throw new ArchiveLimitError(
+        'This export exceeds the portable ZIP limit of 65,532 distinct files. Export a smaller selection.',
+      );
+    const manifestText = JSON.stringify(snapshot.manifest, null, 2) + '\n';
+    const csvText = assetsCsv(snapshot.manifest);
     if (
-      snapshot.files.reduce((sum, file) => sum + file.size, 0) > 3_500_000_000
+      snapshot.files.reduce((sum, file) => sum + file.size, 0) +
+        Buffer.byteLength(manifestText) +
+        Buffer.byteLength(csvText) >
+      3_500_000_000
     )
       throw new ArchiveLimitError(
         'This export exceeds the 3.5 GB portable ZIP limit. Export a smaller selection.',
@@ -105,11 +114,8 @@ export async function writeArchive(
       }
       onProgress(((index + 1) / Math.max(snapshot.files.length, 1)) * 0.95);
     }
-    textFile(
-      'manifest.json',
-      JSON.stringify(snapshot.manifest, null, 2) + '\n',
-    );
-    textFile('assets.csv', assetsCsv(snapshot.manifest));
+    textFile('manifest.json', manifestText);
+    textFile('assets.csv', csvText);
     textFile(
       'README.txt',
       'Cura portable export — cura-export/1\n\nmanifest.json contains complete metadata and relative file paths. assets.csv uses UTF-8 and quotes every cell; formula-like values are prefixed with an apostrophe for spreadsheet safety. Exact values remain in JSON.\n\nAll retained versions are included, including trash and unavailable originals. Files are deduplicated by SHA-256 and verified before completion. Original reference roots are informative; managed Inbox paths are replaced with “Inbox”.\n\nSelection exports retain complete board and brand structures plus their historical pinned assets, related generation job outputs, and similarity references in saved searches. Additional assets are listed in includedDependencyAssetIds. Other library organization is retained as context.\n',

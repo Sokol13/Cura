@@ -19,6 +19,7 @@ import { CatalogStore } from '../src/catalog-store.js';
 import { MediaService } from '../src/media/service.js';
 import { BoardStore } from '../src/boards/store.js';
 import { BrandStore } from '../src/brands/store.js';
+import { writeArchive, ArchiveLimitError } from '../src/exports/archive.js';
 import { ExportService } from '../src/exports/service.js';
 import { readExportSnapshot } from '../src/exports/snapshot.js';
 import { csvCell, portableName } from '../src/exports/portable.js';
@@ -288,4 +289,35 @@ test('whole export verifies every retained version including trash and removed r
   expect(f.service.get(missing.id).exceptions[0]?.versionId).toBe(
     retained.currentVersionId,
   );
+});
+
+test('archives exceeding classic ZIP entry or size bounds fail explicitly before writing files', async () => {
+  const f = await fixture();
+  const snapshot = readExportSnapshot(f.database, f.library.id, {
+    scope: 'library',
+  });
+  const oversized = {
+    ...snapshot,
+    files: Array.from({ length: 65533 }, () => snapshot.files[0]!),
+  };
+  await expect(
+    writeArchive(
+      oversized,
+      join(f.directory, 'too-many.zip'),
+      f.paths.data,
+      () => undefined,
+    ),
+  ).rejects.toBeInstanceOf(ArchiveLimitError);
+  const tooLarge = {
+    ...snapshot,
+    files: [{ ...snapshot.files[0]!, size: 3_500_000_001 }],
+  };
+  await expect(
+    writeArchive(
+      tooLarge,
+      join(f.directory, 'too-large.zip'),
+      f.paths.data,
+      () => undefined,
+    ),
+  ).rejects.toBeInstanceOf(ArchiveLimitError);
 });

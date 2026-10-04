@@ -19,7 +19,7 @@ The export reads one consistent private SQLite transaction, without public query
 
 Selected exports preserve complete board and brand structures and all current/historical pinned assets. They also include linked generation-job outputs and similarity references used by saved searches. The explicit `includedDependencyAssetIds` list distinguishes those assets from the requested selection. Library organization remains context for the included assets.
 
-File bytes are streamed in a worker in 256 KiB chunks with backpressure. Archives use ZIP STORE because media is already compressed. Each included file's size and SHA-256 are checked before completion. Missing or changed retained bytes fail the job visibly; a failed archive cannot be downloaded. Jobs survive reload; an interrupted job is marked failed at startup and can be recreated. Two exports may run concurrently. The current portable ZIP writer accepts up to 3.5 GB of source bytes per export; larger libraries can be exported as smaller selections.
+File bytes are streamed in a worker in 256 KiB chunks with backpressure. Archives use ZIP STORE because media is already compressed. Each included file's size and SHA-256 are checked before completion. Missing or changed retained bytes fail the job visibly; a failed archive cannot be downloaded. Jobs survive reload; an interrupted job is marked failed at startup and can be recreated. Two exports may run concurrently. The current portable ZIP writer accepts up to 3.5 GB of file and metadata bytes and 65,532 distinct files per export; larger libraries can be exported as smaller selections.
 
 ## API and verification
 
