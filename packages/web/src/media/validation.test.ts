@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { validatePsd, validateModel } from './validation';
+import { validatePsd, validateModel, validateObj } from './validation';
 function psd(width: number, height: number, depth = 8) {
   const bytes = new Uint8Array(40);
   const view = new DataView(bytes.buffer);
@@ -40,4 +40,20 @@ it('rejects oversized embedded model textures before bitmap decoding', () => {
   view.setUint32(20, 100000);
   const uri = `data:image/png;base64,${btoa(String.fromCharCode(...header))}`;
   expect(() => validateModel({ images: [{ uri }] })).toThrow('PIXEL_LIMIT');
+});
+
+it('counts indented OBJ faces and joined lines before parsing or triangulation', () => {
+  const vertices = '  v 0 0 0\n\tv 1 0 0\n v 0 1 0\n';
+  expect(() => validateObj(`${vertices}  f 1 2 3\n`)).not.toThrow();
+  expect(() =>
+    validateObj(`${vertices}  f ${Array(120).fill('1').join(' ')}\n`),
+  ).toThrow('MODEL_LIMIT');
+  const continuation = '1 '.repeat(20) + '\\\n' + '1 '.repeat(20);
+  expect(() => validateObj(`${vertices}\tf ${continuation}\n`)).toThrow(
+    'MODEL_LIMIT',
+  );
+  const face = ' \tf ' + Array(32).fill('1').join(' ') + '\n';
+  expect(() => validateObj(vertices + face.repeat(8334))).toThrow(
+    'MODEL_LIMIT',
+  );
 });

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import {
   PREVIEW_RENDERER,
+  PREVIEW_UPLOAD_LIMIT,
   PreviewCandidatesSchema,
   PreviewFailureSchema,
 } from '@cura/shared';
@@ -26,9 +27,12 @@ export function RichPreviewQueue({ libraryId }: { libraryId: string }) {
           const path = `/api/versions/${encodeURIComponent(item.id)}/preview`;
           const deadline = AbortSignal.timeout(30000);
           const signal = AbortSignal.any([controller.signal, deadline]);
+          let rendering = true;
           try {
             const { renderPreview } = await import('./render');
             const blob = await renderPreview(item, signal);
+            if (blob.size > PREVIEW_UPLOAD_LIMIT) throw new Error('SIZE_LIMIT');
+            rendering = false;
             const query = new URLSearchParams({
               sourceHash: item.sourceHash,
               revision: String(item.revision),
@@ -44,6 +48,16 @@ export function RichPreviewQueue({ libraryId }: { libraryId: string }) {
               throw new Error('RENDER_FAILED');
           } catch (error) {
             if (controller.signal.aborted) break;
+            // Transport/save failures leave the version pending for the next poll.
+            if (
+              !rendering ||
+              deadline.aborted ||
+              error instanceof TypeError ||
+              (error instanceof Error &&
+                (error.message === 'SOURCE_UNAVAILABLE' ||
+                  ['AbortError', 'TimeoutError'].includes(error.name)))
+            )
+              continue;
             const code = deadline.aborted
               ? 'TIMEOUT'
               : error instanceof Error

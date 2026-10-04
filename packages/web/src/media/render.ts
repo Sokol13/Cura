@@ -8,17 +8,20 @@ export async function sourceBytes(
     ? 100 * 1024 * 1024
     : 50 * 1024 * 1024;
   if (candidate.size > limit) throw new Error('SIZE_LIMIT');
+  function unavailable(): never {
+    throw new Error('SOURCE_UNAVAILABLE');
+  }
   const response = await fetch(
     `/api/versions/${encodeURIComponent(candidate.id)}/file`,
     { signal },
-  );
-  if (!response.ok || !response.body) throw new Error('INVALID_FILE');
+  ).catch(unavailable);
+  if (!response.ok || !response.body) unavailable();
   const reader = response.body.getReader(),
     chunks: Uint8Array[] = [];
   let size = 0;
   try {
     while (true) {
-      const { done, value } = await reader.read();
+      const { done, value } = await reader.read().catch(unavailable);
       if (done) break;
       size += value.byteLength;
       if (size > limit || size > candidate.size) throw new Error('SIZE_LIMIT');
@@ -27,7 +30,7 @@ export async function sourceBytes(
   } finally {
     await reader.cancel().catch(() => undefined);
   }
-  if (size !== candidate.size) throw new Error('INVALID_FILE');
+  if (size !== candidate.size) unavailable();
   const data = new Uint8Array(size);
   let offset = 0;
   for (const chunk of chunks) {

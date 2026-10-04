@@ -1,4 +1,29 @@
 export const PIXEL_LIMIT = 16_000_000;
+export function validateObj(text: string): void {
+  let vertices = 0,
+    faces = 0,
+    renderedVertices = 0;
+  // Match OBJLoader's CRLF, continuation and leading-whitespace handling.
+  for (const raw of text
+    .replace(/\r\n/g, '\n')
+    .replace(/\\\n/g, '')
+    .split('\n')) {
+    const line = raw.trimStart();
+    if (/^(?:mtllib|map_\w+)\s/.test(line))
+      throw new Error('EXTERNAL_RESOURCE');
+    if (/^v\s/.test(line)) vertices++;
+    if (line.startsWith('f')) {
+      const count = line.slice(1).trim().split(/\s+/).length;
+      if (count > 32) throw new Error('MODEL_LIMIT');
+      if (count < 3) throw new Error('INVALID_FILE');
+      faces++;
+      renderedVertices += (count - 2) * 3;
+    }
+    if (vertices > 250000 || faces > 250000 || renderedVertices > 750000)
+      throw new Error('MODEL_LIMIT');
+  }
+  if (!vertices || !faces) throw new Error('INVALID_FILE');
+}
 export function validatePsd(bytes: Uint8Array): {
   width: number;
   height: number;

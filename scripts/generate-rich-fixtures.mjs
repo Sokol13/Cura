@@ -233,3 +233,32 @@ if (process.argv.includes('--video'))
       join(target, `first-frame.${extension}`),
     ]);
 console.log(`Generated original rich fixtures in ${target}`);
+
+// Original CJK Type0 text fixture; Adobe GB1 CMap required.
+{
+  const content = 'BT /F1 24 Tf 30 100 Td <4E2D6587> Tj ET';
+  const objects = [
+    '<< /Type /Catalog /Pages 2 0 R >>',
+    '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+    '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 200] /Resources << /Font << /F1 4 0 R >> >> /Contents 6 0 R >>',
+    '<< /Type /Font /Subtype /Type0 /BaseFont /STSong-Light /Encoding /UniGB-UCS2-H /DescendantFonts [5 0 R] >>',
+    '<< /Type /Font /Subtype /CIDFontType0 /BaseFont /STSong-Light /CIDSystemInfo << /Registry (Adobe) /Ordering (GB1) /Supplement 4 >> /DW 1000 /FontDescriptor 7 0 R >>',
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
+    '<< /Type /FontDescriptor /FontName /STSong-Light /Flags 4 /FontBBox [0 -200 1000 900] /ItalicAngle 0 /Ascent 880 /Descent -120 /CapHeight 880 /StemV 80 >>',
+  ];
+  let document = '%PDF-1.4\n';
+  const offsets = [0];
+  objects.forEach((object, i) => {
+    offsets.push(document.length);
+    document += `${i + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xref = document.length;
+  document +=
+    `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n` +
+    offsets
+      .slice(1)
+      .map((n) => `${String(n).padStart(10, '0')} 00000 n \n`)
+      .join('') +
+    `trailer\n<< /Root 1 0 R /Size ${objects.length + 1} >>\nstartxref\n${xref}\n%%EOF`;
+  await save('cjk-first-page.pdf', document);
+}

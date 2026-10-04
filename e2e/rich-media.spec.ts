@@ -250,3 +250,100 @@ test('external models and corrupt video receive explicit states without fetching
     .toEqual(['EXTERNAL_RESOURCE', 'VIDEO_CODEC']);
   expect(attempted).toEqual([]);
 });
+
+test('CJK first-page text and indented OBJ geometry produce meaningful previews', async ({
+  page,
+  context,
+  request,
+}) => {
+  const external: string[] = [];
+  await context.route('**/*', (route) => {
+    if (new URL(route.request().url()).hostname === '127.0.0.1')
+      return route.continue();
+    external.push(route.request().url());
+    return route.abort();
+  });
+  const library = LibrarySchema.parse(
+    await (
+      await request.post('/api/libraries', {
+        data: { name: 'CJK and OBJ grammar' },
+      })
+    ).json(),
+  );
+  await request.patch('/api/settings', {
+    data: { activeLibraryId: library.id },
+  });
+  const obj = (await readFile(fixture('orange-cube.obj'), 'utf8'))
+    .split('\n')
+    .map((line) => `  \t${line}`)
+    .join('\n');
+  for (const [name, data] of [
+    ['cjk-first-page.pdf', await readFile(fixture('cjk-first-page.pdf'))],
+    ['indented.obj', Buffer.from(obj)],
+  ] as const) {
+    expect(
+      (
+        await request.post(`/api/libraries/${library.id}/upload?name=${name}`, {
+          headers: { 'content-type': 'application/octet-stream' },
+          data,
+        })
+      ).status(),
+    ).toBe(201);
+  }
+  await page.goto('/');
+  const assets = async () =>
+    AssetPageSchema.parse(
+      await (await request.get(`/api/libraries/${library.id}/assets`)).json(),
+    ).items;
+  await expect
+    .poll(
+      async () =>
+        (await assets()).map((a) => ({
+          name: a.name,
+          state: a.previewState,
+          error: a.previewError,
+        })),
+      { timeout: 15000 },
+    )
+    .toEqual(
+      expect.arrayContaining([
+        { name: 'cjk-first-page.pdf', state: 'ready', error: null },
+        { name: 'indented.obj', state: 'ready', error: null },
+      ]),
+    );
+  for (const asset of await assets()) {
+    const pixels = await page.evaluate(async (id) => {
+      const bitmap = await createImageBitmap(
+        await (await fetch(`/api/versions/${id}/thumbnail`)).blob(),
+      );
+      const canvas = document.createElement('canvas');
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      const ctx = canvas.getContext('2d')!;
+      ctx.drawImage(bitmap, 0, 0);
+      bitmap.close();
+      const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let dark = 0,
+        colored = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        if (
+          data[i]! < 100 &&
+          data[i + 1]! < 100 &&
+          data[i + 2]! < 100 &&
+          data[i + 3]! > 200
+        )
+          dark++;
+        if (data[i]! > 150 && data[i]! - data[i + 2]! > 75) colored++;
+      }
+      return { dark, colored };
+    }, asset.currentVersionId);
+    expect(
+      asset.name.endsWith('.pdf') ? pixels.dark : pixels.colored,
+      asset.name,
+    ).toBeGreaterThan(100);
+  }
+  expect(
+    (await request.get('/assets/pdf-cmaps/UniGB-UCS2-H.bcmap')).status(),
+  ).toBe(200);
+  expect(external).toEqual([]);
+});

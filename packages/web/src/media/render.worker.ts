@@ -1,6 +1,11 @@
 /// <reference lib="webworker" />
 import type { RichFormat } from '@cura/shared';
-import { PIXEL_LIMIT, validateModel, validatePsd } from './validation';
+import {
+  PIXEL_LIMIT,
+  validateModel,
+  validateObj,
+  validatePsd,
+} from './validation';
 
 async function psd(bytes: Uint8Array): Promise<Blob> {
   const { width, height } = validatePsd(bytes);
@@ -61,6 +66,9 @@ async function pdf(bytes: Uint8Array): Promise<Blob> {
   }
   const loading = pdfjs.getDocument({
     data: bytes,
+    cMapUrl: new URL('/assets/pdf-cmaps/', self.location.origin).href,
+    cMapPacked: true,
+    useWorkerFetch: true,
     worker: pdfWorker,
     CanvasFactory,
     disableFontFace: true,
@@ -157,20 +165,7 @@ async function model(bytes: Uint8Array, format: 'glb' | 'obj'): Promise<Blob> {
   } else {
     if (bytes.length > 16 * 1024 * 1024) throw new Error('SIZE_LIMIT');
     const text = new TextDecoder().decode(bytes);
-    if (/^\s*(?:mtllib|map_\w+)\s/m.test(text))
-      throw new Error('EXTERNAL_RESOURCE');
-    let vertices = 0,
-      faces = 0;
-    for (const line of text.split('\n')) {
-      if (/^v\s/.test(line)) vertices++;
-      if (/^f\s/.test(line)) {
-        faces++;
-        if (line.trim().split(/\s+/).length > 33)
-          throw new Error('MODEL_LIMIT');
-      }
-    }
-    if (vertices > 250000 || faces > 250000) throw new Error('MODEL_LIMIT');
-    if (!vertices || !faces) throw new Error('INVALID_FILE');
+    validateObj(text);
     const { OBJLoader } = await import('three/addons/loaders/OBJLoader.js');
     object = new OBJLoader(manager).parse(text);
     object.traverse((node) => {
