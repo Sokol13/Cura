@@ -1,0 +1,225 @@
+.brand-workspace {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg, #131519);
+  color: var(--text, #e7e8ec);
+}
+.brand-header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border, #333);
+}
+.brand-header h1 {
+  font-size: 22px;
+  margin: 0;
+  flex: 1;
+}
+.brand-header [role='tablist'] {
+  display: flex;
+  gap: 8px;
+}
+.brand-header [aria-selected='true'],
+.brand-sidebar .active {
+  border-color: #ed874e;
+  color: #ef995f;
+}
+.brand-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  min-height: 0;
+  flex: 1;
+}
+.brand-sidebar {
+  padding: 20px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-right: 1px solid var(--border, #333);
+  overflow: auto;
+}
+.brand-sidebar button {
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.brand-content {
+  overflow: auto;
+  padding: 28px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+.brand-form {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.brand-title-row,
+.brand-section-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.brand-title-row > label {
+  flex: 1;
+}
+.brand-section-title {
+  justify-content: space-between;
+}
+.brand-content label,
+.brand-dialog label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.brand-content input,
+.brand-content textarea,
+.brand-content select,
+.brand-dialog input,
+.brand-dialog select {
+  box-sizing: border-box;
+  padding: 9px;
+  width: 100%;
+  background: var(--panel, #202329);
+  color: inherit;
+  border: 1px solid var(--border, #424650);
+  border-radius: 6px;
+}
+.brand-content section {
+  margin: 28px 0;
+}
+.brand-content h2 {
+  font-size: 18px;
+}
+.brand-content p,
+.brand-content small {
+  color: var(--muted, #a1a8b5);
+  font-size: 13px;
+}
+.brand-card {
+  border: 1px solid var(--border, #343943);
+  border-radius: 10px;
+  background: var(--panel, #1b1e24);
+  margin: 12px 0;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.brand-color-editor {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.brand-color-editor > input[type='color'] {
+  width: 70px;
+  height: 42px;
+  padding: 3px;
+}
+.brand-color-editor label {
+  min-width: 130px;
+}
+.brand-color-editor > small {
+  align-self: center;
+}
+.brand-row-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.brand-pin {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.brand-pin img {
+  width: 120px;
+  height: 84px;
+  object-fit: contain;
+  background: #2b2e35;
+  border-radius: 5px;
+}
+.brand-pin p {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.brand-pin a {
+  color: #df8f59;
+}
+.brand-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: #0009;
+  display: grid;
+  place-items: center;
+}
+.brand-dialog {
+  background: var(--panel, #202329);
+  color: var(--text, #e7e8ec);
+  width: min(560px, calc(100vw - 40px));
+  max-height: 90vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 28px;
+  border: 1px solid #555;
+  border-radius: 12px;
+}
+.brand-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.brand-picker-preview {
+  height: 110px;
+  object-fit: contain;
+}
+.brand-export-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.brand-guidelines {
+  padding: 18px;
+  border: 1px solid var(--border, #333);
+  overflow-wrap: anywhere;
+}
+.brand-guidelines .bullet {
+  margin-left: 12px;
+}
+.brand-content textarea {
+  resize: vertical;
+}
+[data-theme='light'] .brand-workspace {
+  background: #f5f6f8;
+  color: #20242a;
+  --panel: #fff;
+  --border: #d7dce3;
+  --text: #20242a;
+  --muted: #5f6875;
+}
+@media (max-width: 800px) {
+  .brand-layout {
+    grid-template-columns: 150px minmax(0, 1fr);
+  }
+  .brand-header {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .brand-content {
+    padding: 16px;
+  }
+  .brand-title-row {
+    flex-wrap: wrap;
+  }
+}

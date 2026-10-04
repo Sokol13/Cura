@@ -1,5 +1,8 @@
 import { readFileSync } from 'node:fs';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import Fastify from 'fastify';
+import { registerBrandRoutes } from '../src/brands/routes.js';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, expect, it } from 'vitest';
@@ -67,6 +70,7 @@ async function fixture() {
     processed: file('first'),
   }).asset;
   return {
+    dir,
     db,
     catalog,
     store,
@@ -189,4 +193,58 @@ it('rejects stale edits and cross-parent IDs/pins without partial writes', async
   f.store.deleteBrand(brand.id);
   expect(() => f.store.getBrand(brand.id)).toThrow();
   expect(f.catalog.getAsset(f.asset.id).id).toBe(f.asset.id);
+});
+
+it('exports exact pinned bytes and rejects altered retained data', async () => {
+  const f = await fixture();
+  const app = Fastify();
+  app.setErrorHandler((error, _request, reply) =>
+    reply
+      .code((error as { statusCode?: number }).statusCode ?? 500)
+      .send({ error: String(error) }),
+  );
+  const paths = resolveUserPaths({
+    CURA_DATA_DIR: join(f.dir, 'data'),
+    CURA_CACHE_DIR: join(f.dir, 'cache'),
+    CURA_LOG_DIR: join(f.dir, 'log'),
+  });
+  registerBrandRoutes(app, f.db, f.catalog, paths);
+  cleanups.push(() => app.close());
+  const bytes = Buffer.from('pinned original font bytes');
+  const hash = createHash('sha256').update(bytes).digest('hex');
+  const snapshotPath = join(paths.data, 'retained-font');
+  await writeFile(snapshotPath, bytes);
+  const original = f.catalog.getAsset(f.asset.id);
+  const asset = f.catalog.ingest({
+    libraryId: f.library.id,
+    rootId: original.rootId,
+    relativePath: 'font.ttf',
+    actualRelativePath: 'font.ttf',
+    processed: { ...file(hash), snapshotPath },
+  }).asset;
+  const brand = f.store.createBrand(f.library.id, { name: 'Portable' });
+  f.store.saveBrand(brand.id, {
+    name: brand.name,
+    guidelines: '',
+    expectedRevision: 0,
+    colors: [],
+    logos: [],
+    fonts: [
+      {
+        name: 'Font',
+        role: 'Body',
+        pin: { assetId: asset.id, versionId: asset.currentVersionId },
+      },
+    ],
+  });
+  const response = await app.inject({ url: `/api/brands/${brand.id}/package` });
+  expect(response.statusCode).toBe(200);
+  const data = response.json() as { files: { base64: string; hash: string }[] };
+  expect(Buffer.from(data.files[0]!.base64, 'base64')).toEqual(bytes);
+  expect(data.files[0]!.hash).toBe(hash);
+  expect(response.body).not.toContain(snapshotPath);
+  await writeFile(snapshotPath, 'corrupted');
+  expect(
+    (await app.inject({ url: `/api/brands/${brand.id}/package` })).statusCode,
+  ).toBe(409);
 });
