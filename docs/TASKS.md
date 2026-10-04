@@ -43,29 +43,29 @@
 **Files:** packages/server/src/media/{metadata,image,path-utils}.ts and corresponding test files; dependencies installed centrally.
 **Interfaces:** `parsePngMetadata(input: Buffer): GenerationMetadata`; `GenerationMetadata = { prompt: string; negativePrompt: string; model: string; seed: string; source: string; params: Record<string, unknown> }`. `processFile(input: { filePath: string; dataDir: string; cacheDir: string }): Promise<ProcessedFile>`; output includes hash, size, type, width, height, colors, phash, exif, generation, snapshotPath, thumbnailPath. Paths in processing result are absolute private server paths. `normalizeRelativePath(value: string): string` and `resolveContained(root: string, relative: string): Promise<string>`.
 
-- [ ] Write failing tests for SD parameters, ComfyUI graph references, malformed/oversized PNG chunks, palette/dimensions/hash, immutable snapshot, NFC dedup path and symlink escape.
-- [ ] Run tests and confirm missing behavior; implement bounded PNG tEXt/zTXt/iTXt parsing, Sharp/exifr processing and path containment.
-- [ ] Test at least one generated PNG end to end through processFile, unsupported format fallback and corrupted image behavior. Expected: deterministic metadata and safe retained bytes.
-- [ ] Integrate tests with Task 3/4; full gate; commit/push.
+- [x] Write failing tests for SD parameters, ComfyUI graph references, malformed/oversized PNG chunks, palette/dimensions/hash, immutable snapshot, NFC dedup path and symlink escape.
+- [x] Run tests and confirm missing behavior; implement bounded PNG tEXt/zTXt/iTXt parsing, Sharp/exifr processing and path containment.
+- [x] Test at least one generated PNG end to end through processFile, unsupported format fallback and corrupted image behavior. Expected: deterministic metadata and safe retained bytes.
+- [x] Integrate tests with Task 3/4; full gate; commit/push.
 
 ## Task 3: Catalog contracts and persistence
 
 **Files:** packages/shared/src/catalog.ts; packages/server/src/catalog-store.ts, catalog-mappers.ts if needed; drizzle/0001_catalog.sql and journal; test/catalog-store.test.ts.
 **Interfaces:** Shared schemas/types follow ARCHITECTURE.md. `CatalogStore` constructor consumes `AppDatabase`; methods expose libraries/roots/assets/versions/folders/tags/collections/annotations, query/filter and batch operations. `ingest(input)` consumes Task-2 ProcessedFile plus libraryId, rootId, relativePath and actualRelativePath; returns `{ asset, changed }`. All API-visible results parse shared schemas.
 
-- [ ] Write failing transaction tests for create/reopen, content/path dedup, NFC/NFD aliases, replacement ordinal/old snapshot, FTS tags/notes/prompts, all combined filters, cross-library rejection, trash/restore, folder cycles, short Chinese substring search and persisted settings.
-- [ ] Implement migration and prepared store transactions, FTS5 index maintenance and indexed library queries; retain all domain timestamps.
-- [ ] Run real SQLite tests, including 1000-row query latency. Expected: correct persisted results and <200 ms measured queries.
-- [ ] Full gate; commit/push. Task 2 may run in parallel; integration waits for both contracts.
+- [x] Write failing transaction tests for create/reopen, content/path dedup, NFC/NFD aliases, replacement ordinal/old snapshot, FTS tags/notes/prompts, all combined filters, cross-library rejection, trash/restore, folder cycles, short Chinese substring search and persisted settings.
+- [x] Implement migration and prepared store transactions, FTS5 index maintenance and indexed library queries; retain all domain timestamps.
+- [x] Run real SQLite tests, including 1000-row query latency. Expected: correct persisted results and <200 ms measured queries.
+- [x] Full gate; commit/push. Task 2 may run in parallel; integration waits for both contracts.
 
 ## Task 4: Local library lifecycle, ingestion and API
 
 **Files:** packages/server/src/media/{worker,service}.ts, catalog-routes.ts, app.ts, index.ts; server integration tests; scripts/start.mjs.
 **Interfaces:** Routes and events exactly as ARCHITECTURE.md. `MediaService` consumes CatalogStore/UserPaths and broadcasts shared events. Worker only performs heavy filesystem/media work; store mutations remain short coordinator transactions.
 
-- [ ] Write failing real-app tests for library/root creation, bounded raw uploads, directory picker, worker ingestion, restart/rescan, live additions, replacement, safe stream endpoints and diagnostics ZIP.
-- [ ] Implement worker queue, chokidar watcher, atomic snapshots, error handling, API schema validation and graceful shutdown. Start script builds missing/stale production output for clean install/start.
-- [ ] Run real server tests; assert watcher adds within 5 seconds, old bytes survive replacement, traversal/Origin blocked and originals unchanged. Add simulated Windows file-in-use / >260-character paths and macOS EPERM actionable guidance tests; distinguish simulation from real-machine smoke evidence.
+- [x] Write failing real-app tests for library/root creation, bounded raw uploads, directory picker, worker ingestion, restart/rescan, live additions, replacement, safe stream endpoints and diagnostics ZIP.
+- [x] Implement worker queue, chokidar watcher, atomic snapshots, error handling, API schema validation and graceful shutdown. Start script builds missing/stale production output for clean install/start.
+- [x] Run real server tests; assert watcher adds within 5 seconds, old bytes survive replacement, traversal/Origin blocked and originals unchanged. Add simulated Windows file-in-use / >260-character paths and macOS EPERM actionable guidance tests; distinguish simulation from real-machine smoke evidence.
 - [ ] Full gate; commit/push.
 
 ## Task 5: P0 browser asset library and organization (parallel B after contracts)
@@ -73,9 +73,9 @@
 **Files:** packages/web/src/catalog/\*, App.tsx, styles.css, i18n.ts, web tests; e2e/catalog.spec.ts.
 **Interfaces:** Uses shared schemas and HTTP endpoints only. Persist library, theme, language, view/column state through Zustand. Virtualized grid/list reads paginated assets and displays thumbnails by version ID.
 
-- [ ] Write failing browser tests for create/open, directory registration, file picker/drop upload, selection, folder tree, tag groups/colors, rating/notes/batch operations, trash/restore and smart collections.
-- [ ] Implement three-column dark/orange shell, empty/loading/error states, complete bilingual strings and light theme.
-- [ ] Implement combined search/filters, palette color and similar-image queries; inspector edits generation metadata. Keyboard Cmd/Ctrl+F, arrows, Delete and Space must ignore editable fields.
+- [x] Write failing browser tests for create/open, directory registration, file picker/drop upload, selection, folder tree, tag groups/colors, rating/notes/batch operations, trash/restore and smart collections.
+- [x] Implement three-column dark/orange shell, empty/loading/error states, complete bilingual strings and light theme.
+- [x] Implement combined search/filters, palette color and similar-image queries; inspector edits generation metadata. Keyboard Cmd/Ctrl+F, arrows, Delete and Space must ignore editable fields.
 - [ ] Real-server E2E and web unit tests; full gate; screenshots; commit/push.
 
 ## Task 6: P0 detail, versions, diagnostics and milestone acceptance
@@ -83,10 +83,12 @@
 **Files:** web preview/version/settings components; e2e/p0.spec.ts, e2e/stress.spec.ts; scripts/generate-fixtures.mjs; README, TESTING, SMOKE_TEST, REPORT-v0.1.0, CHANGELOG.
 **Interfaces:** Uses persisted AssetVersion/Annotation contracts; normalized annotation coordinates; compare immutable versions.
 
-- [ ] Write failing E2E for preview/zoom, version-specific annotations, replacement/history/side-by-side, cache rebuild, diagnostic ZIP, offline state and complete P0 lifecycle with all non-loopback requests blocked.
-- [ ] Implement detail/settings; generate a deterministic 1000-image fixture with SD/Comfy PNG metadata.
-- [ ] Run stress E2E: all thumbnails, <=5-second watcher, every search/filter <200 ms, bounded grid DOM and measured scroll responsiveness. Run clean clone/install/start browser check.
-- [ ] Independent review of full P0 diff; reproduce and fix material bugs with tests. Verify all nine AGENTS.md v0.1.0 definitions with evidence, record true platform limits.
+- [x] Write failing E2E for preview/zoom, version-specific annotations, replacement/history/side-by-side, cache rebuild, diagnostic ZIP, offline state and complete P0 lifecycle with all non-loopback requests blocked.
+- [x] Implement detail/settings; generate a deterministic 1000-image fixture with SD/Comfy PNG metadata.
+- [x] Run focused stress E2E: all thumbnails, <=5-second watcher, every search/filter <200 ms, bounded grid DOM and measured scroll responsiveness. Browser input-to-paint, six-format previews and separate synthetic 10,000-record virtualization also passed.
+- [x] Independent review of full P0 diff; reproduce and fix material bugs with tests. Record true platform limits.
+- [x] Clean clone/install/start automatically opens the configured Linux browser; create/reload a library through the Chinese UI.
+- [ ] Verify all nine AGENTS.md v0.1.0 definitions against the final integrated commit.
 - [ ] Full local gate, push main and verify CI, update report/README/smoke/changelog/version, tag only when all gates hold; verify release workflow. Report in chat, continue Task 7.
 
 ## Task 7: P1 boards, slots and matrices
@@ -127,6 +129,4 @@
 
 ## Task ledger
 
-Task 2: media module integrated at 37b0c54, 55 media tests and full local suite passed; worker/API E2E integration remains in Task 4.
-
-Task 1: complete (commits 68c38ee..56433f2; lint/typecheck/test/e2e passed, 25 unit tests and 1 E2E; GitHub CI 37194418005 green). Tasks 2, 3 and 5 started in isolated worktrees. Per-task test evidence, commit ranges and rulings are recorded in PROGRESS.md and DECISIONS.md, the user-selected durable ledger locations.
+Tasks 1–3: delivered to main with their then-current full gate and observed green CI. Tasks 4–6: implementation and focused regressions integrated on feat-runtime; clean-clone install/start/browser creation passed; final combined gate, main push/CI and v0.1.0 publication are pending. Checked implementation steps do not mark these tasks released. The nine-item acceptance ledger is in REPORT-v0.1.0.md. Tasks 7–10 remain next, and v0.1.0 publication must be followed immediately by Task 7. Per-task test evidence, commit ranges and rulings remain in PROGRESS.md and DECISIONS.md.

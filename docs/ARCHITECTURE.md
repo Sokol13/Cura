@@ -19,7 +19,9 @@ SQLite, logs, thumbnail cache, settings and immutable version snapshots live onl
 
 Every ingested version has a content-addressed immutable snapshot before becoming visible. Replacing a referenced file can therefore preserve the previous bytes even after an external editor overwrites the source. Snapshots are deduplicated by SHA-256; displayed names remain human-readable. Database relative paths are normalized NFC with `/` as the stored separator; physical paths retain actual filesystem spelling in source aliases. Filesystem operations always use `path` helpers and realpath containment. Symlinks escaping registered roots are rejected. Upload names cannot contain separators or dot traversal.
 
-Content duplicates merge within a library, keeping all source aliases. NFC/NFD variants of the same relative path identify one source; new differing bytes at that source append a version. Filename deduplication must not destroy distinct assets in different roots. If one of several source aliases changes bytes, fork that alias into a new asset with inherited history and metadata before appending its version. Unchanged aliases retain the original asset, preventing alternating rescans from changing its latest version. Versions and asset metadata survive restarts; deleting a missing source never deletes historical content.
+Content duplicates merge within a library, keeping all source aliases. NFC/NFD variants of the same relative path identify one source; new differing bytes at that source append a version. Filename deduplication must not destroy distinct assets in different roots. If one of several live source aliases changes bytes, fork that alias into a new asset with inherited history and metadata before appending its version. Unchanged aliases retain the original asset, preventing alternating rescans from changing its latest version. Each source retains its last observed content hash and availability. Missing aliases do not cause false forks after a rename; assets with no available source retain history and expose a missing-source indicator. A complete rescan reconciles missing sources only when its root revision is still current; partial enumeration errors and stale worker results cannot erase newer watcher state.
+
+Version bytes are immutable. Manual generation-field corrections update the current asset and its current version together, so subsequent replacement archives the corrected prompt/model/source/seed/parameters. Asset-level notes, ratings, folders and tags remain shared across versions. Version-specific annotations retain their asset/version ownership when their text or coordinates are edited.
 
 ## Data model
 
@@ -50,7 +52,7 @@ erDiagram
   Library ||--o{ Activity : records
 ```
 
-`Asset`: id, libraryId, rootId, relativePath, name, hash, type, size, width, height, colors, phash, rating, note, source, model, prompt, negativePrompt, seed, params, exif, folderId, deletedAt, finalized, createdAt, updatedAt. `AssetVersion`: id, assetId, ordinal, hash, snapshotPath, thumbnailPath, file metadata and generation metadata. Source aliases map asset/root/normalized relative path to actual relative path. Annotation coordinates are normalized `[0,1]` and attach to a version. Folder parents cannot cycle or cross libraries. Smart collections persist validated query rules.
+`Asset`: id, libraryId, rootId, relativePath, name, hash, type, size, width, height, colors, phash, rating, note, source, model, prompt, negativePrompt, seed, params, exif, folderId, deletedAt, finalized, missing, createdAt, updatedAt. `AssetVersion`: id, assetId, ordinal, hash, snapshotPath, thumbnailPath, file metadata and generation metadata. Source aliases map asset/root/normalized relative path to actual relative path, last hash and availability; migration `0002_source_availability.sql` adds availability tracking. Annotation coordinates are normalized `[0,1]` and attach to a version. Folder parents cannot cycle or cross libraries. Smart collections persist validated query rules. Snapshot/thumbnail filesystem paths are private store fields and are never serialized into public version responses.
 
 ## HTTP contracts
 
@@ -72,7 +74,7 @@ All JSON request bodies and query strings are parsed with shared Zod schemas. Re
 | `GET /api/versions/:versionId/file`               | Safe file stream with content-type and nosniff                              |
 | `GET /api/versions/:versionId/thumbnail`          | Safe cached preview; SVG originals never inline-executable                  |
 | `GET, POST /api/assets/:assetId/annotations`      | Version-specific image notes                                                |
-| `DELETE /api/annotations/:annotationId`           | Remove a note                                                               |
+| `PATCH, DELETE /api/annotations/:id`              | Edit text/coordinates without changing ownership, or remove a note          |
 | `GET, POST /api/libraries/:libraryId/folders`     | Hierarchical catalog folders                                                |
 | `GET, POST /api/libraries/:libraryId/tags`        | Colored/grouped tags                                                        |
 | `GET, POST /api/libraries/:libraryId/collections` | Saved searches                                                              |
@@ -85,20 +87,24 @@ All JSON request bodies and query strings are parsed with shared Zod schemas. Re
 | `DELETE /api/roots/:id`                           | Unregister root and stop watcher; retained snapshots remain                 |
 | `PATCH /api/libraries/:libraryId`                 | Rename catalog                                                              |
 | `GET /api/diagnostics`                            | ZIP with version, platform, database stats and sanitized logs               |
-| `POST /api/cache/rebuild`                         | Rebuild thumbnail cache without changing originals                          |
+| `GET /api/cache`                                  | Thumbnail cache file count and bytes                                        |
+| `POST /api/cache/clear`                           | Remove cached previews only; preserve originals and retained snapshots      |
+| `POST /api/cache/rebuild`                         | Rebuild previews for all retained versions, including trashed assets        |
 | `GET /api/events`                                 | WebSocket progress, asset changes and errors                                |
 
-Asset queries: `q`, `folderId`, `tagId`, `rating`, `type`, `color`, `source`, `after`, `before`, `minWidth`, `minHeight`, `similarTo`, `trash`, `offset`, `limit`. Combining means AND. Text search covers filename, prompt, model, source, note and tag names; FTS syntax is quoted/escaped as user text. For Chinese and other unsegmented CJK input, combine FTS5 with indexed-library bounded substring matching (including one- and two-character terms) against the same normalized search text; benchmark this path at the release fixture scale. Color distance ranks palette matches; pHash Hamming distance ranks similar images. Responses include `{ items, total }` and pagination never exceeds 200 records.
+Asset queries: `q`, `folderId`, `tagId`, `rating`, `type`, `color`, `source`, `after`, `before`, `minWidth`, `minHeight`, `similarTo`, `trash`, `offset`, `limit`. Combining means AND. Text search covers filename, prompt, model, source, note and tag names; FTS syntax is quoted/escaped as user text. For Chinese and other unsegmented CJK input, combine FTS5 with indexed-library bounded substring matching (including one- and two-character terms) against the same normalized search text; benchmark this path at the release fixture scale. Color distance ranks palette matches; pHash Hamming distance ranks similar images. A similarity reference without a valid hash returns `400 SIMILARITY_UNAVAILABLE`; candidates without valid hashes are excluded. Responses include `{ items, total }` and pagination never exceeds 200 records.
 
-WebSocket events: `{ type: 'scan' | 'asset' | 'error' | 'thumbnail', libraryId, rootId?, assetId?, completed?, total?, message? }`. UI refetches only active data; reconnect also refreshes. HTTP remains authoritative when sockets disconnect.
+WebSocket events: `{ type: 'scan' | 'asset' | 'error' | 'thumbnail', libraryId, rootId?, assetId?, completed?, total?, message?, code? }`. UI refetches active data and the open preview; reconnect also refreshes. A bounded recent-error buffer replays startup scan failures to later subscribers and clears repaired-root errors. HTTP remains authoritative when sockets disconnect. The browser uses error codes to render localized permission guidance.
+
+Settings patches contain only explicitly supplied fields; changing one preference does not reset omitted language/theme/library/layout values. Diagnostics contain system/version/statistics plus allowlisted log fields from the last 128 KiB of the log, excluding asset bytes, database contents, arbitrary log payloads and source paths. Media failures are subscribed before startup resume so early errors reach diagnostics.
 
 ## Ingestion pipeline
 
 1. Resolve and validate root registration, persist root, start watcher before initial enumeration.
 2. Worker enumerates files without following escaping links. A bounded queue coalesces repeated events. Only completed/stable writes are ingested; transient errors are recorded and retried on next event/rescan.
-3. Worker streams bytes into a temporary snapshot while computing SHA-256, checks source stat stability before/after and retries changed files. Metadata, palette, perceptual hash and thumbnail are derived from those same snapshot bytes. Atomically publish the snapshot and thumbnail only after processing succeeds. Sample 5–8 dominant colors.
+3. Worker revalidates containment when executing each queued job, streams bytes into a temporary snapshot while computing SHA-256, checks source stat stability before/after and retries changed files. Metadata, palette, perceptual hash and thumbnail are derived from those same snapshot bytes. Atomically publish the snapshot and thumbnail only after processing succeeds. Sample up to eight distinct dominant colors; low-color images can produce fewer than five.
 4. Main thread commits source, asset, version, FTS and activity in one short transaction; same content is a no-op. Worker failures affect one file, not the scan.
-5. Push progress and asset availability; live added files should appear within 5 seconds. Shutdown closes watchers and workers before SQLite.
+5. Push progress and asset availability; live added files should appear within 5 seconds. Coalesced changes received during processing trigger another pass. Shutdown stops watchers, drains pending worker operations and then closes SQLite.
 
 Original file responses use Content-Disposition attachment and a restrictive sandbox CSP for potentially active content (SVG, HTML, XML, PDF and unknown formats); nosniff alone is insufficient. Rasterized SVG thumbnails are the only inline SVG preview. Unsupported formats retain original bytes and receive a generic preview. Malformed PNG metadata, corrupt images, huge chunks and decompression bombs have bounded parsers and safe fallback. P0 uses no external executable. P1 video uses browser decoding where supported because the prescribed ffmpeg-static package is GPL-3.0 and conflicts with the permissive runtime rule; any unmet format gate must remain explicit rather than silently claiming full support.
 

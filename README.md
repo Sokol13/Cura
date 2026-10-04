@@ -36,14 +36,14 @@ pnpm.cmd start
 2. Browse the virtualized grid/list. Select an asset to inspect dimensions, size, EXIF, palette, source, model, prompt, negative prompt, and seed. Edit descriptive fields, tags, notes, or rating, then save.
 3. Create nested logical folders, colored tags and tag groups. Filter by folder/tag plus format, exact rating, source, color, indexed date, and minimum dimensions. Smart collections save a search and its filters.
 4. Search filenames, tags, prompts, and notes. English terms use full-text matching; Chinese/CJK input also uses substring matching. Click a palette swatch for nearby colors, or **Similar images** for visual pHash ranking. This is visual similarity, not semantic or face recognition.
-5. Open preview with Space or the preview control. Zoom, place anchored text annotations, inspect versions, replace the current file, and compare two versions side by side. Download an individual retained version when needed.
-6. Use multi-selection for ratings, folders, tags, and trash/restore. Trash is reversible. Settings provides language, theme, panel widths, rescan, thumbnail rebuilding, and a diagnostic ZIP download.
+5. Open preview with Space or the preview control. Zoom, add/edit anchored text annotations, move between assets with arrow keys, inspect versions, replace the current file, and compare two versions side by side. An open current preview follows a watched file replacement; a selected historical version remains selected. Download an individual retained version when needed.
+6. Use multi-selection for ratings, folders, tags, and trash/restore. Trash is reversible. Settings provides language, theme, panel widths, rescan, thumbnail cache usage/clear/rebuild, and a diagnostic ZIP download. Clearing thumbnails preserves originals and retained versions; rebuild restores their previews.
 
 The default interface is Simplified Chinese with a dark theme and orange accents. English, light/system themes, grid/list choice, and panel widths are saved locally. Cmd/Ctrl+F focuses search, arrow keys change selection, Space previews, and Delete moves selected assets to Trash; shortcuts do not replace normal editing inside text fields.
 
 ## Files and metadata
 
-Registering a folder leaves original files in place. Cura also retains one immutable snapshot per distinct file content so an external overwrite cannot destroy an older version. **This uses additional disk space**: plan for the retained unique versions plus thumbnails; uploads also have Inbox copies. Logical folders, tags, manual replacement, and Trash do not rewrite registered originals. See [storage and backup](docs/SETUP.md#data-directories-and-backup).
+Registering a folder leaves original files in place. Cura also retains one immutable snapshot per distinct file content so an external overwrite cannot destroy an older version. **This uses additional disk space**: plan for the retained unique versions plus thumbnails; uploads also have Inbox copies. Logical folders, tags, manual replacement, and Trash do not rewrite registered originals. Missing sources are marked without discarding their saved previews/history; a renamed source keeps its asset identity when its content matches. See [storage and backup](docs/SETUP.md#data-directories-and-backup).
 
 PNG, JPEG, WebP, GIF, SVG, and AVIF receive image previews; other files remain manageable with generic icons. GIF thumbnails use the first frame, and SVG previews are rasterized. Flat-color artwork can have fewer than five palette colors. Browser uploads/replacements are limited to 100 MiB per file; oversized or unsupported image decoding falls back to a manageable asset.
 
@@ -53,7 +53,7 @@ Generation metadata is read from data actually embedded in PNGs:
 - ComfyUI: supported connected nodes in the `prompt` execution graph, with original workflow/parameters retained. Workflow-only files, unknown custom nodes, and ambiguous output branches can produce partial fields and warnings rather than guesses.
 - Midjourney: explicitly named `Midjourney Prompt`, `Midjourney Model`, and `Midjourney Seed` fields. There is no universal Midjourney metadata format; Cura does not infer missing information from a filename.
 
-The inspector exposes raw parameters and parser warnings. You can correct missing fields manually; Cura does not embed those edits back into originals.
+The inspector exposes raw parameters and parser warnings. You can correct missing fields manually; those corrections stay with the current version when it is later archived. Notes and ratings belong to the asset across versions. Cura does not embed edits back into originals. Similarity is available only for images with a valid perceptual hash; other files display an explanatory hint.
 
 Canvas/slot/matrix workflows, brand and CMF kits, PSD/PDF/video/3D thumbnails, and whole-library neutral export are **P1 work**, not part of v0.1. Agent automation, Supabase/team synchronization, and FCPXML are P2. [PRD.md](docs/PRD.md) defines the roadmap.
 
