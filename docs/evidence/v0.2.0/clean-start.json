@@ -1,0 +1,75 @@
+{
+  "milestone": "v0.2.0",
+  "status": "passed",
+  "verifiedAt": "2026-10-04T12:36:16.443812+00:00",
+  "implementationCommit": "6a6010c2067073e6ba2c5ab55575b9736f815331",
+  "environment": {
+    "os": "Linux x64",
+    "node": "22.23.3",
+    "pnpm": "10.34.6",
+    "chromium": "151.0.7922.173",
+    "startupNodePath": "",
+    "browserVerificationNodePath": ""
+  },
+  "clone": {
+    "method": "git clone --no-local from the local canonical repository; independent Git objects",
+    "nodeModulesAbsentBeforeInstall": true,
+    "packageVersions": {
+      "package.json": "0.2.0",
+      "packages/server/package.json": "0.2.0",
+      "packages/shared/package.json": "0.2.0",
+      "packages/web/package.json": "0.2.0"
+    },
+    "frozenLockfile": true,
+    "installSeconds": 4.7,
+    "lockfileSha256": "594e1601385e7e35d088dcddc373bc95b3e7d23770459c99470475eead9d1157"
+  },
+  "dependencies": {
+    "installedPackages": 493,
+    "productionLicensePackages": 150,
+    "licenseCheckPassed": true,
+    "sharpNativeLicenseException": "Documented libvips exception retained; bundled notices are reviewed separately.",
+    "sqlitePrebuiltVerified": true,
+    "sharpPrebuiltVerified": true,
+    "nodeGypInvoked": false,
+    "optionalCanvasInInstalledGraph": false,
+    "optionalCanvasPhysicallyInstalled": false,
+    "optionalCanvasResolvableWithEmptyNodePath": false
+  },
+  "startup": {
+    "command": "NODE_PATH= CURA_OPEN_BROWSER=1 PORT=<isolated-port> pnpm start",
+    "emptyDataCacheLogDirectories": true,
+    "buildPassed": true,
+    "health": {
+      "status": "ok"
+    },
+    "host": "127.0.0.1",
+    "defaultBrowserOpened": true,
+    "defaultBrowserMethod": "Fresh isolated XDG MIME association launched headless Chromium; no global desktop settings changed.",
+    "freshBrowserProfile": true,
+    "attachedWith": "Playwright connectOverCDP to the automatically opened page",
+    "pageGotoCalled": false,
+    "newPageCalled": false
+  },
+  "persistence": {
+    "language": "zh-CN",
+    "libraryName": "v0.2 启动验证 · 设计资料库",
+    "createdThroughChineseUI": true,
+    "sameLibraryIdAfterReload": true,
+    "activeLibraryIdAfterReload": true,
+    "closedDatabaseContainsLibrary": true,
+    "closedDatabaseIntegrityCheck": "ok"
+  },
+  "screenshot": "docs/screenshots/v0.2-clean-start.png",
+  "cleanup": {
+    "privateServerStopped": true,
+    "privateBrowserStopped": true,
+    "serverAndCdpPortsReleased": true
+  },
+  "scope": {
+    "physicalMacOSVerified": false,
+    "physicalWindowsVerified": false,
+    "fullUnitSuiteIncluded": false,
+    "notes": "This evidence covers clean install and actual startup/browser persistence. CI and complete test-suite evidence are recorded separately."
+  }
+}

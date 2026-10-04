@@ -1,0 +1,13 @@
+# v0.2.0 clean startup verification
+
+The implementation at `6a6010c2067073e6ba2c5ab55575b9736f815331` passed a fresh clone, frozen install, normal startup, automatic browser opening, and Chinese library creation/persistence check on Linux. Machine-readable results are in [clean-start.json](clean-start.json); the [captured screen](../../screenshots/v0.2-clean-start.png) shows the created library after reload.
+
+1. Clone with `git clone --no-local` into a new directory and check out the implementation commit. Confirm that `node_modules` is absent and all four package manifests declare `0.2.0`.
+2. Run `pnpm install --frozen-lockfile` with Node 22.23.3 and pnpm 10.34.6. Both native-module verification scripts used prebuilt binaries; the install log contained no `node-gyp` invocation.
+3. Inspect `pnpm list -r --depth Infinity --json` and the physical `.pnpm` directory. Neither contains `@napi-rs/canvas`. With `NODE_PATH=` it also cannot be resolved by Node. `NODE_PATH= pnpm check:licenses` passed for all 150 installed runtime packages, retaining the documented Sharp native-library exception.
+4. Create isolated `XDG_CONFIG_HOME`/`XDG_DATA_HOME` directories containing an HTTP/HTTPS default desktop association. Its launcher invokes headless Chromium with a fresh profile and a private CDP port. This exercises Cura's normal default-browser opener without changing the machine's browser association.
+5. Run `NODE_PATH= CURA_OPEN_BROWSER=1 PORT=<isolated-port> pnpm start`, supplying new empty data/cache/log directories through the documented `CURA_*_DIR` variables. The normal command builds all packages and starts the real server.
+6. Connect Playwright with `chromium.connectOverCDP` and select the already opened Cura page. Do not call `page.goto` or `newPage`. Verify the title, use the default Chinese interface to create `v0.2 启动验证 · 设计资料库`, reload, and verify the same library ID and persisted active-library setting through the real API.
+7. Stop the private server/browser, confirm both listening ports close, and check the closed SQLite database contains that library and passes `PRAGMA integrity_check`.
+
+The final startup run explicitly cleared `NODE_PATH`, used fresh data and a fresh browser profile, and required no account. The supplied screenshot is 1440 × 1000. This verifies Linux headless desktop association behavior; physical macOS and Windows default-browser behavior still requires the release smoke checklist. The full unit/E2E suites are separate evidence.
