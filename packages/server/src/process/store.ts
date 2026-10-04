@@ -1,4 +1,5 @@
 import * as C from '@cura/shared';
+import { randomUUID } from 'node:crypto';
 import type { AppDatabase } from '../database.js';
 
 type Row = Record<string, unknown>;
@@ -126,6 +127,59 @@ export class ProcessStore {
         (generation) => generation.origin === 'legacy-backfill',
       ).length,
     });
+  }
+  jobs(libraryId: string): C.GenerationJob[] {
+    this.requireLibrary(libraryId);
+    return (
+      this.database.sqlite
+        .prepare(
+          'SELECT payload FROM generation_jobs WHERE library_id=? ORDER BY created_at DESC,id',
+        )
+        .all(libraryId) as { payload: string }[]
+    ).map((row) => C.GenerationJobSchema.parse(JSON.parse(row.payload)));
+  }
+  job(id: string): C.GenerationJob {
+    const row = this.database.sqlite
+      .prepare('SELECT payload FROM generation_jobs WHERE id=?')
+      .get(id) as { payload: string } | undefined;
+    if (!row) throw new ProcessError('Generation job not found');
+    return C.GenerationJobSchema.parse(JSON.parse(row.payload));
+  }
+  createJob(libraryId: string, request: C.GenerateRequest): C.GenerationJob {
+    this.requireLibrary(libraryId);
+    const date = new Date().toISOString();
+    const job = C.GenerationJobSchema.parse({
+      id: randomUUID(),
+      libraryId,
+      provider: 'mock',
+      status: 'queued',
+      progress: 0,
+      request: C.GenerateRequestSchema.parse(request),
+      assetIds: [],
+      error: null,
+      createdAt: date,
+      updatedAt: date,
+    });
+    this.database.sqlite
+      .prepare('INSERT INTO generation_jobs VALUES (?,?,?,?,?)')
+      .run(job.id, libraryId, JSON.stringify(job), date, date);
+    return job;
+  }
+  updateJob(
+    id: string,
+    patch: Partial<
+      Pick<C.GenerationJob, 'status' | 'progress' | 'assetIds' | 'error'>
+    >,
+  ): C.GenerationJob {
+    const job = C.GenerationJobSchema.parse({
+      ...this.job(id),
+      ...patch,
+      updatedAt: new Date().toISOString(),
+    });
+    this.database.sqlite
+      .prepare('UPDATE generation_jobs SET payload=?,updated_at=? WHERE id=?')
+      .run(JSON.stringify(job), job.updatedAt, id);
+    return job;
   }
 }
 
