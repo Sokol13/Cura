@@ -17,7 +17,7 @@
     "lint": "pnpm check:licenses && eslint . && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "pnpm --filter @cura/shared build && pnpm -r typecheck && tsc --noEmit -p tsconfig.tools.json",
-    "test": "pnpm --filter @cura/shared build && pnpm -r --if-present test && node --test supabase/seed-browser-fixture.test.mjs scripts/release-from-ci.test.mjs scripts/summarize-cloud-check.test.mjs",
+    "test": "pnpm --filter @cura/shared build && pnpm -r --if-present test --exclude test/automation-archive-performance.test.ts && pnpm --filter @cura/server exec vitest run test/automation-archive-performance.test.ts --maxWorkers=1 && node --test supabase/seed-browser-fixture.test.mjs scripts/release-from-ci.test.mjs scripts/summarize-cloud-check.test.mjs",
     "e2e": "pnpm build && playwright test",
     "db:generate": "pnpm --filter @cura/server db:generate",
     "check:licenses": "node scripts/check-runtime-licenses.mjs"

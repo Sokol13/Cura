@@ -68,7 +68,7 @@ The exact production package source at `41e45b1` passed the full local gate. All
 
 ## Source identity and release checks
 
-The recorded frozen local commit `41e45b1` predates publication through the connected GitHub app. That route preserves exact Git trees while creating a new commit object. Candidate `1f24a5b` has the identical lockfile, root package manifest and full production package trees:
+The recorded frozen local commit `41e45b1` predates publication through the connected GitHub app. That route preserves exact Git trees while creating a new commit object. Candidate `1f24a5b` has the identical lockfile and full production package trees:
 
 | Package | Git tree                                   |
 | ------- | ------------------------------------------ |
@@ -77,3 +77,7 @@ The recorded frozen local commit `41e45b1` predates publication through the conn
 | web     | `2cbc9497411ea334bbc946e0eb889c5beab42a93` |
 
 An independent final review found no remaining material defect. All known reproducible review defects were fixed and covered by regressions; platform/provider limits are listed above. The release request verifies these complete package trees, all four `0.3.0` manifests, this readiness marker, successful main CI and unchanged remote main before publication. No package source changes follow local acceptance.
+
+### Final CI scheduling correction
+
+The documentation-only request CI 37210844246 blocked publication on a 267.24 ms archive heartbeat sample (limit 250 ms) while unrelated unit workers ran concurrently. Preview/queue limits passed and the unchanged archive suite passes in isolation. Root `pnpm test` now runs that same three-case suite in a single worker after all other server/web units finish, keeping all 434 tests and unchanged thresholds. Only the root test command and explanatory documentation changed; the production package trees, lockfile and startup command remain identical. The corrected request must pass full remote CI before publication.

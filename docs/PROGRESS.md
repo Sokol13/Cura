@@ -50,7 +50,7 @@ The user accepted phase 0 on 2026-10-04 and authorized uninterrupted development
 
 ## In progress
 
-- Publish final report/request and verify its CI, immutable tag and GitHub Release. The connected GitHub app provides exact-tree non-force main publication while the shell credential is expired.
+- Final request `e530e4f` correctly did not publish: CI 37210844246 failed one archive heartbeat measurement under concurrent unit workloads (267.24 ms versus 250 ms). The root test command now isolates the unchanged three-case performance suite after other units, preserving all thresholds/counts and all production package trees. The corrected local lint/typecheck and all 434 unit/tool tests pass, including all three unchanged archive cases in the isolated invocation. The full remote gate remains required before publication. The connected GitHub app provides exact-tree non-force main publication while the shell credential is expired.
 
 ## Next
 

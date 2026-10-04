@@ -301,3 +301,11 @@ Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate cor
 **Decision:** Preserve valid catalog tag labels up to the catalog's 255-character limit in historical automation snapshots, while retaining the smaller model-suggestion bound. Archive work yields between guarded batches of at most 20 assets. Concurrent folder/group moves are reconciled to a valid graph with local-parent preference and explicit conflict snapshots; merged arrays retain each domain reader's canonical order to avoid false new edits after replay.
 
 **Alternatives rejected:** Truncating user-authored history, blocking the request thread for a whole library, accepting cyclic merged graphs, or suppressing real changes through a global order-insensitive hash.
+
+## Isolated archive responsiveness acceptance
+
+**Decision:** Run the existing three archive performance/cancellation tests in a single Vitest worker after all other server/web unit suites finish. The root command excludes that file only from its first recursive invocation, then explicitly runs the unchanged file before the Node tool tests. Standalone server tests still include it. No test, assertion or threshold is removed.
+
+**Evidence and reason:** CI 37210499373 passed the complete frozen source. The documentation-only request CI 37210844246 then measured a 267.24 ms timer gap against the 250 ms bound while server and web Vitest workloads ran concurrently; preview and queue responses still met 200 ms. The same unchanged suite passes alone. A process-wide wall-clock heartbeat measures OS scheduling contention as well as archive blocking, so acceptance must isolate unrelated test workloads, matching the existing browser performance protocol. Production archive batches remain bounded at 20 assets.
+
+**Alternatives rejected:** Raising the 250 ms limit, skipping the performance check, adding retries until green, or changing production code without evidence of an application regression.
