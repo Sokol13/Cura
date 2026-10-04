@@ -9,6 +9,8 @@ import { MediaService } from './media/service.js';
 import { registerCatalogRoutes } from './catalog-routes.js';
 import { registerPreviewRoutes } from './media/preview-routes.js';
 import { registerProcessRoutes } from './process/routes.js';
+import { BoardStore } from './boards/store.js';
+import { registerBoardRoutes } from './boards/routes.js';
 import { isAllowedLocalRequest } from './security.js';
 import { registerStaticFiles } from './static-files.js';
 
@@ -70,6 +72,9 @@ export async function createApp(options: AppOptions = {}) {
     });
     await registerCatalogRoutes(app, store, media, options.paths);
     await registerPreviewRoutes(app, store, media);
+    registerBoardRoutes(app, new BoardStore(options.database), (event) =>
+      media.notify(event),
+    );
     app.addHook('onReady', () => media.resume());
     app.addHook('onClose', async () => {
       await media.close();
