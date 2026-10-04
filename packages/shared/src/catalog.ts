@@ -214,6 +214,13 @@ export const CreateAnnotationSchema = z
     text: z.string().trim().min(1).max(10000),
   })
   .strict();
+export const UpdateAnnotationSchema = CreateAnnotationSchema.pick({
+  text: true,
+  x: true,
+  y: true,
+})
+  .partial()
+  .strict();
 export const AnnotationSchema = z.object({
   ...entity,
   assetId: IdSchema,
@@ -233,6 +240,10 @@ export const SettingsSchema = z
     inspectorWidth: z.number().min(240).max(800).default(320),
   })
   .strict();
+export const CacheUsageSchema = z.object({
+  files: z.number().int().nonnegative(),
+  bytes: z.number().int().nonnegative(),
+});
 export const UpdateSettingsSchema = z
   .object({
     activeLibraryId: IdSchema.nullable().optional(),
@@ -251,6 +262,7 @@ export const CatalogEventSchema = z.object({
   completed: z.number().int().nonnegative().optional(),
   total: z.number().int().nonnegative().optional(),
   message: z.string().optional(),
+  code: z.string().optional(),
 });
 
 export type Library = z.infer<typeof LibrarySchema>;
@@ -278,4 +290,5 @@ export type CreateTagGroup = z.input<typeof CreateTagGroupSchema>;
 export type CreateCollection = z.input<typeof CreateCollectionSchema>;
 export type UpdateCollection = z.input<typeof UpdateCollectionSchema>;
 export type CreateAnnotation = z.input<typeof CreateAnnotationSchema>;
+export type UpdateAnnotation = z.input<typeof UpdateAnnotationSchema>;
 export type UpdateSettings = z.input<typeof UpdateSettingsSchema>;

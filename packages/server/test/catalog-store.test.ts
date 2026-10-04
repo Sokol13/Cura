@@ -600,3 +600,140 @@ describe('source availability', () => {
     expect(f.store.listVersions(original.id)).toHaveLength(2);
   });
 });
+
+describe('reviewed catalog editing and similarity', () => {
+  it('retains manual generation corrections in the archived version after replacement', async () => {
+    const f = await fixture();
+    const asset = f.ingest('first.png', 'a', {
+      generation: {
+        ...file('a').generation,
+        params: { raw: 'original PNG parameters' },
+      },
+    }).asset;
+    f.store.updateAsset(asset.id, {
+      prompt: 'corrected prompt',
+      negativePrompt: 'corrected negative',
+      model: 'corrected model',
+      source: 'corrected source',
+      seed: '18446744073709551614',
+      rating: 5,
+      note: 'global note',
+    });
+    f.store.replaceAsset(asset.id, file('b'), 'replacement.png');
+    const archived = f.store
+      .listVersions(asset.id)
+      .find((version) => version.id === asset.currentVersionId)!;
+    expect(archived).toMatchObject({
+      prompt: 'corrected prompt',
+      negativePrompt: 'corrected negative',
+      model: 'corrected model',
+      source: 'corrected source',
+      seed: '18446744073709551614',
+      params: { raw: 'original PNG parameters' },
+    });
+    expect(archived).not.toHaveProperty('rating');
+    expect(archived).not.toHaveProperty('note');
+    expect(f.store.getAsset(asset.id)).toMatchObject({
+      rating: 5,
+      note: 'global note',
+    });
+    f.store.updateAsset(asset.id, {
+      prompt: 'current only',
+      params: { edited: true },
+    });
+    expect(f.store.listVersions(asset.id)[0]).toMatchObject({
+      prompt: 'current only',
+      params: { edited: true },
+    });
+    expect(
+      f.store
+        .listVersions(asset.id)
+        .find((version) => version.id === archived.id)?.prompt,
+    ).toBe('corrected prompt');
+  });
+
+  it('rejects unsupported similarity references and excludes candidates without a valid perceptual hash', async () => {
+    const f = await fixture();
+    const reference = f.ingest('reference.png', 'reference').asset;
+    const unsupported = f.ingest('unsupported.bin', 'unsupported', {
+      phash: '',
+      type: 'application/octet-stream',
+    }).asset;
+    const malformed = f.ingest('malformed.png', 'malformed', {
+      phash: '0123456789abcdeg',
+    }).asset;
+    const similar = f.ingest('similar.png', 'similar', {
+      phash: '0000000000000001',
+    }).asset;
+    for (const asset of [unsupported, malformed])
+      expect(() =>
+        f.store.listAssets(f.library.id, { similarTo: asset.id }),
+      ).toThrowError(
+        expect.objectContaining({
+          message: 'Similarity unavailable for this format',
+          code: 'SIMILARITY_UNAVAILABLE',
+          statusCode: 400,
+        }),
+      );
+    expect(
+      f.store
+        .listAssets(f.library.id, { similarTo: reference.id })
+        .items.map((asset) => asset.id),
+    ).toEqual([reference.id, similar.id]);
+  });
+
+  it('edits annotation text and position while retaining its original version ownership', async () => {
+    const f = await fixture();
+    const asset = f.ingest('first.png', 'a').asset;
+    const replacement = f.store.replaceAsset(
+      asset.id,
+      file('b'),
+      'replacement.png',
+    );
+    const annotation = f.store.createAnnotation(asset.id, {
+      versionId: asset.currentVersionId,
+      x: 0.2,
+      y: 0.3,
+      text: 'original note',
+    });
+    const updated = f.store.updateAnnotation(annotation.id, {
+      text: 'corrected note',
+    });
+    expect(updated).toMatchObject({
+      id: annotation.id,
+      assetId: asset.id,
+      versionId: asset.currentVersionId,
+      x: 0.2,
+      y: 0.3,
+      text: 'corrected note',
+      createdAt: annotation.createdAt,
+    });
+    expect(
+      f.store.updateAnnotation(annotation.id, { x: 0, y: 1 }),
+    ).toMatchObject({ text: 'corrected note', x: 0, y: 1 });
+    expect(() =>
+      f.store.updateAnnotation(annotation.id, {
+        versionId: replacement.currentVersionId,
+      } as unknown as { text: string }),
+    ).toThrow();
+    expect(() => f.store.updateAnnotation(annotation.id, { x: 1.1 })).toThrow();
+    expect(() =>
+      f.store.updateAnnotation(annotation.id, { text: '  ' }),
+    ).toThrow();
+    f.reopen();
+    expect(
+      f.store.listAnnotations(asset.id, asset.currentVersionId),
+    ).toMatchObject([
+      {
+        id: annotation.id,
+        versionId: asset.currentVersionId,
+        text: 'corrected note',
+        x: 0,
+        y: 1,
+      },
+    ]);
+    expect(
+      f.store.listAnnotations(asset.id, replacement.currentVersionId),
+    ).toEqual([]);
+  });
+});

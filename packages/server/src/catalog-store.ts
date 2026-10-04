@@ -343,17 +343,28 @@ export class CatalogStore {
       const reference = this.getAsset(parsed.similarTo);
       if (reference.libraryId !== libraryId)
         invalid('Similar asset belongs to another library');
+      if (!/^[a-f\d]{16}$/i.test(reference.phash))
+        throw new CatalogError(
+          'Similarity unavailable for this format',
+          'SIMILARITY_UNAVAILABLE',
+          400,
+        );
       similarHash = reference.phash;
     }
     const search = assetSearch(libraryId, parsed, similarHash);
+    const where =
+      search.where +
+      (similarHash === undefined
+        ? ''
+        : " AND length(json_extract(a.payload, '$.phash'))=16 AND json_extract(a.payload, '$.phash') NOT GLOB '*[^0-9a-fA-F]*'");
     const total = Number(
       this.row(
-        `SELECT count(*) AS total FROM assets a WHERE ${search.where}`,
+        `SELECT count(*) AS total FROM assets a WHERE ${where}`,
         ...search.params,
       )?.total ?? 0,
     );
     const items = this.rows(
-      `SELECT a.id FROM assets a WHERE ${search.where} ORDER BY ${search.order} LIMIT ? OFFSET ?`,
+      `SELECT a.id FROM assets a WHERE ${where} ORDER BY ${search.order} LIMIT ? OFFSET ?`,
       ...search.params,
       ...search.orderParams,
       search.limit,
@@ -423,6 +434,23 @@ export class CatalogStore {
       this.checkPatch(asset.libraryId, patch);
       const { tagIds, ...fields } = patch;
       if (tagIds) this.setTags(id, tagIds);
+      const generation = C.GenerationSchema.partial().parse(fields);
+      if (Object.keys(generation).length) {
+        const version = this.require('asset_versions', asset.currentVersionId);
+        const updatedAt = now();
+        const payload = C.AssetVersionSchema.parse({
+          ...(JSON.parse(String(version.payload)) as Row),
+          ...generation,
+          updatedAt,
+        });
+        this.run(
+          'UPDATE asset_versions SET payload=?,updated_at=? WHERE id=?',
+          JSON.stringify(payload),
+          updatedAt,
+          asset.currentVersionId,
+        );
+      }
+
       this.writeAsset(
         C.AssetSchema.parse({ ...asset, ...fields, updatedAt: now() }),
       );
@@ -1025,6 +1053,19 @@ export class CatalogStore {
       data.text,
       date,
       date,
+    );
+    return this.entity('annotations', id, C.AnnotationSchema);
+  }
+  updateAnnotation(id: string, input: C.UpdateAnnotation): C.Annotation {
+    const patch = C.UpdateAnnotationSchema.parse(input);
+    const current = this.entity('annotations', id, C.AnnotationSchema);
+    this.run(
+      'UPDATE annotations SET text=?,x=?,y=?,updated_at=? WHERE id=?',
+      patch.text ?? current.text,
+      patch.x ?? current.x,
+      patch.y ?? current.y,
+      now(),
+      id,
     );
     return this.entity('annotations', id, C.AnnotationSchema);
   }
