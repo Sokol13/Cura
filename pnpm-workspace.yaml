@@ -6,3 +6,5 @@ onlyBuiltDependencies:
 ignoredBuiltDependencies:
   - better-sqlite3
   - sharp
+ignoredOptionalDependencies:
+  - '@napi-rs/canvas'
