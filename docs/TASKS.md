@@ -122,14 +122,14 @@
 
 - [x] Write failing tests exporting selected assets and entire populated library, inspecting bytes and validating all metadata/CSV quoting/filename collisions.
 - [x] Implement streaming ZIP download that expands to the required portable folder; make export self-contained and offline-readable.
-- [ ] Independent review; v0.1 regression + all P1 E2E; every v0.2 criterion checked. Full gate, main push/CI, docs/report/smoke/changelog, tag/release verification, chat report; continue P2.
+- [x] Independent review; v0.1 regression + all P1 E2E; every v0.2 criterion checked. Full gate, main CI 37204693234, docs/report/smoke/changelog and tag v0.2.0 at 5719552 complete; reported in chat and continued P2. GitHub Release/tag duplicate workflow verification is tracked in PROGRESS.md.
 
 ## Task 10: P2 complete capabilities and final gate
 
 **Files:** modules agents, sync adapters, supabase/migrations/\*.sql, fcpxml; respective contracts/tests/UI and REPORT-v0.3.0.
 **Interfaces:** Vision provider has a usable configured implementation plus test provider; local automation is previewable/reversible. Supabase adapter uses env configuration and RLS; missing credentials never disable local catalog. FCPXML is standards-based escaped XML using exported media paths.
 
-- [ ] Plan concrete P2 module tests before implementation: auto tags/naming, nonfinal archive rules, script entity extraction, setting documents, optional login/local-first incremental conflict logs/team RLS, FCPXML validation.
+- [x] Plan concrete P2 module tests before implementation: auto tags/naming, nonfinal archive rules, script entity extraction, setting documents, optional login/local-first incremental conflict logs/team RLS, FCPXML validation.
 - [ ] Implement complete slices; test each implemented capability; document any omitted capability with concrete reason, especially unverified live cloud credentials.
 - [ ] Independent review, all earlier milestone gates, full suite/CI and release documentation/tag. Stop only when all milestones attained or a section-1 blocker is proven and recorded after three different approaches.
 

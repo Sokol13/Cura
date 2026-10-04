@@ -17,20 +17,26 @@ The user accepted phase 0 on 2026-10-04 and authorized uninterrupted development
 
 - Published [v0.1.0](https://github.com/Sokol13/Cura/releases/tag/v0.1.0) at `c564361` after all nine definitions passed. Final documentation CI 37198939724, tag CI 37199147410 and Release workflow 37199147287 all completed successfully. Reported the milestone in chat and immediately continued P1.
 
+## v0.2 acceptance and tag
+
+- All P0/P1 implementations and independent review corrections are complete. Main 44c53a7 passed CI 37204410094; final evidence/documentation commit 5719552 passed CI 37204693234. Both runs passed all 262 units (167 server + 95 web) and 21 real-server browser scenarios. Every acceptance row in REPORT-v0.2.0.md passes.
+- Annotated tag v0.2.0 points at 5719552 and is pushed. Reported the milestone in chat and immediately began P2. [Release workflow 37205042369](https://github.com/Sokol13/Cura/actions/runs/37205042369) and [tag CI 37205042438](https://github.com/Sokol13/Cura/actions/runs/37205042438) both passed. [GitHub v0.2.0](https://github.com/Sokol13/Cura/releases/tag/v0.2.0) is published (2026-10-04 13:20 UTC).
+- Final Linux acceptance: 1,000 distinct image ingestion 10.07 seconds, all thumbnails decoded, 70 queries at most 56.4 ms, browser search 93.9–103.4 ms, watched asset 874 ms, scroll frame p95 16.8 ms. Synthetic 10,000-record UI virtualization also passed. Physical Mac/Windows checks remain in SMOKE_TEST.md.
+- Clean clone at exact production source 179ec28 passed frozen install in 1.9 seconds, native prebuilts, NODE_PATH-empty resolution without optional canvas, automatic default-browser opening and Chinese library persistence. Source-tree hashes match the tag. Real v0.1 upgrade and 190-file browser audit are retained under evidence/v0.2.0/.
+
 ## In progress
 
-- P1 integration is at `/tmp/cura-p1` (`feat-p1`). All boards, brand/CMF, rich-preview, process and neutral-export slices are complete, including independent review corrections.
-- Final full local gate at production source `179ec28` passed with NODE_PATH empty: lint, typecheck, 262 units (167 server + 95 web), all 21 real-server E2Es in 2.0 minutes without retries. Actual 1,000-image ingestion took 10.07 seconds; all thumbnails decoded; 70 queries peaked at 56.4 ms, browser searches at 93.9–103.4 ms and watched-file display at 874 ms. Grid/list frame p95 was 16.8 ms; synthetic 10,000-record virtualization also passed.
-- Real v0.1-to-P1 migration preserved original identities, fields, timestamps, uint64 seeds, annotations, final selections and file hashes; three-to-six migrations, generation/final-owner backfills, historical pins and two idempotent reopens pass. See UPGRADES.md and evidence/v0.2.0/upgrade.json.
-- CI exposed three environment/timing gaps, now corrected: PDF decoding depended on a globally supplied optional canvas; a large store fixture exceeded Vitest's default setup budget; bundled Chromium lacked H.264. Independent PDF decoding runs in the real browser, the 1,000-record setup gets 15 seconds while every query still must stay below 200 ms, and CI explicitly installs Playwright's codec-capable Chrome channel with a startup capability probe and unchanged actual-video-pixel assertions. CI 37203147377 also exposed a native directory-input race: pending directory responses now disable editing, and controlled unit/browser regressions pass.
-- The final 190-file browser output audit was refreshed after the directory fix (4,232,493 bytes). Renewed clean clone at exact production source 179ec28 passes frozen install (1.9 seconds), native prebuilts, no optional canvas, normal default-browser opening and Chinese library persistence; private processes are stopped. Main 44c53a7 passed [CI 37204410094](https://github.com/Sokol13/Cura/actions/runs/37204410094), including all 262 units and 21 browser scenarios. Every inherited P0 and P1 acceptance row passes. Final documentation CI and tag/Release verification remain before publication/report.
-- P2 design is in P2-IMPLEMENTATION.md. Disposable real local Supabase Auth/refresh/RLS/private Storage and a genuine Apache-2.0 vision model have been verified without user credentials. Small-model malformed structured output is recorded honestly; the planned explicit caption mode retains model text and labels deterministic derivations. Supabase is paused and the model endpoint stopped during release acceptance. P2 implementation starts immediately after v0.2 publication/report.
+- P2 root integration is `/workspace/cura-p2` (`feat-p2`), starting from v0.2.0. Detailed plan: P2-IMPLEMENTATION.md. No P2 omission is justified; missing hosted credentials do not block the disposable real local Supabase acceptance stack.
+- Automation server/contracts/0006: `/workspace/cura-p2-automation`; automation UI: `/workspace/cura-p2-automation-ui`. Implement genuine configured vision proposals with explicit JSON/caption modes, guarded apply/undo, logical archive rules, retained script breakdowns and exact-version setting documents. Genuine Apache-2.0 CPU vision inference is available outside Cura's runtime.
+- Supabase server/contracts/0007: `/workspace/cura-p2-sync`; cloud UI: `/workspace/cura-p2-sync-ui`. Implement private server sessions, complete incremental graph transfer, verified immutable bytes, durable local-wins conflict handling and team RLS against the disposable real local stack.
+- FCPXML contracts/0008/server/UI: `/workspace/cura-p2-fcpxml`. Implement explicit ordered exact-version timelines, rational frame timing, retained-media package/relink and independent official DTD validation.
+- Coordinator owns catalog display names/archive controls, private managed roots, FTS refresh, shared exports/migration journal, navigation, portable export additions and release gates. Separate module branches supply scoped tested commits for integration.
 
 ## Next
 
-1. Push the completed P1 release corrections and evidence to main, observe green CI, and finish the renewed clean-start check.
-2. Check every inherited P0 and P1 acceptance row, publish v0.2.0 and report in chat.
-3. Immediately implement P2/task 10 through v0.3.0. Keep progress current and prioritize incoming Mac/Windows bugs; do not stop at an intermediate milestone.
+1. Complete the shared P2 contracts and catalog integration hooks.
+2. Integrate P2 contracts/migrations and core catalog hooks; run the complete foundation gate, push main and verify CI. Keep progress current for every completed task.
+3. Finish each complete P2 slice, real provider/Supabase/DTD/browser acceptance, independent review and all inherited gates. Publish v0.3.0 only after every implemented item is complete. Incoming desktop bugs take priority.
 
 ## Resume
 

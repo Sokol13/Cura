@@ -1,8 +1,8 @@
 # v0.2.0 — Canvas workflows and designer extensions
 
-**Status:** all nine inherited P0 definitions and all P1 definitions passed. The final production source, full local gate, renewed clean startup and [main CI 37204410094](https://github.com/Sokol13/Cura/actions/runs/37204410094) are verified. Release publication follows the final documentation CI gate.
+**Status:** all nine inherited P0 definitions and all P1 definitions passed. The final production source, full local gate, renewed clean startup and [main CI 37204410094](https://github.com/Sokol13/Cura/actions/runs/37204410094) are verified. Final documentation CI 37204693234, tag CI 37205042438 and Release workflow 37205042369 also passed.
 
-**Release target:** [v0.2.0](https://github.com/Sokol13/Cura/releases/tag/v0.2.0). This link is a target until publication is verified.
+**Published release:** [v0.2.0](https://github.com/Sokol13/Cura/releases/tag/v0.2.0), tagged at `5719552` on 2026-10-04.
 
 ## Delivered implementation
 
