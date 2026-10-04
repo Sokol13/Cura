@@ -198,6 +198,46 @@ describe('catalog sidebar', () => {
     );
   });
 
+  it('keeps native path editing unavailable until the pending directory value is established', async () => {
+    let resolveHome: ((response: Response) => void) | undefined;
+    const home = new Promise<Response>((resolve) => {
+      resolveHome = resolve;
+    });
+    fetchMock.mockImplementation(async (input) => {
+      if (input === '/api/directories') return home;
+      return ok({ ok: true });
+    });
+    const callbacks = mount();
+    fireEvent.click(screen.getByRole('button', { name: 'Register directory' }));
+    const dialog = screen.getByRole('dialog', { name: 'Register directory' });
+    const input = within(dialog).getByLabelText('Directory path');
+    // Native fill first selects the old value, then inserts text. A late home
+    // response between those steps must not turn an absolute path into home + path.
+    expect(input).toBeDisabled();
+    expect(
+      within(dialog).getByRole('button', { name: 'Cancel' }),
+    ).toHaveFocus();
+    await act(async () =>
+      resolveHome?.(
+        ok({ path: '/home/runner', parent: '/home', directories: [] }),
+      ),
+    );
+    expect(input).toBeEnabled();
+    expect(input).toHaveValue('/home/runner');
+    fireEvent.change(input, { target: { value: '/tmp/cura-images' } });
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Register directory' }),
+    );
+    await waitFor(() => expect(callbacks.onChanged).toHaveBeenCalled());
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/libraries/library-1/roots',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ path: '/tmp/cura-images' }),
+      }),
+    );
+  });
+
   it('preserves a typed directory while the initial home listing is still loading', async () => {
     let resolveHome: ((response: Response) => void) | undefined;
     const home = new Promise<Response>((resolve) => {

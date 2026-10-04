@@ -222,17 +222,48 @@ test('directory registration, live updates, drop upload, shortcuts and bilingual
       path.join(directory, 'Local reference.svg'),
       artwork('Local reference.svg', '#456c83', '#edccad').buffer,
     );
+    // Hold the real home response to exercise the native fill/load boundary.
+    // No response body or server state is mocked.
+    let releaseHome: (() => void) | undefined;
+    const homeGate = new Promise<void>((resolve) => {
+      releaseHome = resolve;
+    });
+    let markHomeRequested: (() => void) | undefined;
+    const homeRequested = new Promise<void>((resolve) => {
+      markHomeRequested = resolve;
+    });
+    await page.route('**/api/directories', async (route) => {
+      const response = await route.fetch();
+      markHomeRequested?.();
+      await homeGate;
+      await route.fulfill({ response });
+    });
     await page.goto('/');
     await createLibrary(page, 'Local directory workflow');
     await page
       .getByRole('button', { name: 'Register directory', exact: true })
       .click();
     let dialog = page.getByRole('dialog');
-    await dialog.getByLabel('Directory path', { exact: true }).fill(directory);
+    const directoryPath = dialog.getByLabel('Directory path', { exact: true });
+    await homeRequested;
+    try {
+      await expect(directoryPath).toBeDisabled();
+    } finally {
+      releaseHome?.();
+    }
+    await directoryPath.fill(directory);
+    await expect(directoryPath).toHaveValue(directory);
     await dialog.getByRole('button', { name: 'Browse', exact: true }).click();
+    const registered = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/roots') &&
+        response.request().method() === 'POST',
+    );
     await dialog
       .getByRole('button', { name: 'Register directory', exact: true })
       .click();
+    expect((await registered).ok()).toBeTruthy();
+    await expect(dialog).not.toBeVisible();
     const reference = page.getByRole('button', {
       name: 'Select Local reference.svg',
       exact: true,

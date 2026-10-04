@@ -45,7 +45,9 @@ export function OrganizationDialog({
         : null;
     const node = panel.current;
     node
-      ?.querySelector<HTMLElement>('input, select, textarea, button')
+      ?.querySelector<HTMLElement>(
+        'input:not(:disabled), select:not(:disabled), textarea:not(:disabled), button:not(:disabled)',
+      )
       ?.focus();
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -216,6 +218,8 @@ export function DirectoryBrowserDialog({
         <label className="form-field">
           <span>{t('directoryPath', 'Directory path')}</span>
           <input
+            // Keep async normalization outside native selection/insertion sequences.
+            disabled={loading}
             value={path}
             onChange={(event) => {
               pathEditVersion.current += 1;
