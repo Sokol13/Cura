@@ -4,7 +4,8 @@ import { createRequire } from 'node:module';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { expect, test } from '@playwright/test';
+import { expect, test, type BrowserContext } from '@playwright/test';
+import { encodeImagePdf } from '../packages/web/src/brands/pdf.js';
 import {
   AssetPageSchema,
   AssetSchema,
@@ -16,6 +17,46 @@ import {
 const requireWeb = createRequire(
   new URL('../packages/web/package.json', import.meta.url),
 );
+type BrowserPdfReader = {
+  GlobalWorkerOptions: { workerSrc: string };
+  OPS: { paintImageXObject: number };
+  getDocument: (input: { data: Uint8Array; isEvalSupported: boolean }) => {
+    promise: Promise<{
+      numPages: number;
+      getPage: (number: number) => Promise<{
+        view: number[];
+        getOperatorList: () => Promise<{
+          fnArray: number[];
+          argsArray: unknown[][];
+        }>;
+        getViewport: (options: { scale: number }) => {
+          width: number;
+          height: number;
+        };
+        render: (options: {
+          canvas: HTMLCanvasElement;
+          canvasContext: CanvasRenderingContext2D;
+          viewport: { width: number; height: number };
+        }) => { promise: Promise<void> };
+        cleanup: () => void;
+      }>;
+      destroy: () => Promise<void>;
+    }>;
+    destroy: () => Promise<void>;
+  };
+};
+async function routePdfReader(context: BrowserContext) {
+  for (const [url, module] of [
+    ['/__brand-test/pdf.mjs', 'pdfjs-dist/build/pdf.mjs'],
+    ['/__brand-test/pdf.worker.mjs', 'pdfjs-dist/build/pdf.worker.mjs'],
+  ])
+    await context.route(`**${url}`, (route) =>
+      route.fulfill({
+        contentType: 'text/javascript',
+        path: requireWeb.resolve(module!),
+      }),
+    );
+}
 const sharp = createRequire(
   new URL('../packages/server/package.json', import.meta.url),
 )('sharp') as (input: Buffer) => {
@@ -310,41 +351,10 @@ test('brand and CMF workflows retain version pins and export meaningful offline 
     );
     expect(attempts).toEqual([]);
     await offline.close();
-    for (const [url, module] of [
-      ['/__brand-test/pdf.mjs', 'pdfjs-dist/build/pdf.mjs'],
-      ['/__brand-test/pdf.worker.mjs', 'pdfjs-dist/build/pdf.worker.mjs'],
-    ])
-      await context.route(`**${url}`, (route) =>
-        route.fulfill({
-          contentType: 'text/javascript',
-          path: requireWeb.resolve(module!),
-        }),
-      );
+    await routePdfReader(context);
     const pdfResult = await page.evaluate(async (base64) => {
       const modulePath = '/__brand-test/pdf.mjs';
-      const pdf = (await import(modulePath)) as {
-        GlobalWorkerOptions: { workerSrc: string };
-        getDocument: (input: {
-          data: Uint8Array;
-          isEvalSupported: boolean;
-        }) => {
-          promise: Promise<{
-            numPages: number;
-            getPage: (number: number) => Promise<{
-              getViewport: (options: { scale: number }) => {
-                width: number;
-                height: number;
-              };
-              render: (options: {
-                canvas: HTMLCanvasElement;
-                canvasContext: CanvasRenderingContext2D;
-                viewport: { width: number; height: number };
-              }) => { promise: Promise<void> };
-            }>;
-            destroy: () => Promise<void>;
-          }>;
-        };
-      };
+      const pdf = (await import(modulePath)) as BrowserPdfReader;
       pdf.GlobalWorkerOptions.workerSrc = '/__brand-test/pdf.worker.mjs';
       const data = Uint8Array.from(atob(base64), (character) =>
         character.charCodeAt(0),
@@ -372,13 +382,23 @@ test('brand and CMF workflows retain version pins and export meaningful offline 
           if (r > 180 && g > 60 && g < 190 && b < 60) orange++;
           if (b > 130 && r < 90) blue++;
         }
-        counts.push({ dark, orange, blue });
+        counts.push({
+          dark,
+          orange,
+          blue,
+          width: viewport.width,
+          height: viewport.height,
+        });
       }
       await document.destroy();
       return counts;
     }, downloads.get('PDF')!.toString('base64'));
     expect(pdfResult.length).toBeGreaterThanOrEqual(3);
-    for (const result of pdfResult) expect(result.dark).toBeGreaterThan(100);
+    for (const result of pdfResult) {
+      expect(result.dark).toBeGreaterThan(100);
+      expect(result.width).toBeCloseTo(595.28, 2);
+      expect(result.height).toBeCloseTo(841.89, 2);
+    }
     expect(
       pdfResult.reduce((sum, result) => sum + result.orange, 0),
     ).toBeGreaterThan(1000);
@@ -565,5 +585,71 @@ test('brand and CMF workflows retain version pins and export meaningful offline 
     if (rootId)
       await request.delete(`/api/roots/${rootId}`).catch(() => undefined);
     await rm(directory, { recursive: true, force: true });
+  }
+});
+
+test('independent browser PDF reader decodes every A4 page and its exact image geometry', async ({
+  page,
+  context,
+}) => {
+  // This parser/renderer needs real DOMMatrix, ImageData and Canvas; do not import
+  // PDF.js in Node unit tests or substitute fake DOM globals/native canvas.
+  const jpeg = Buffer.from(
+    '/9j/2wBDAAIBAQEBAQIBAQECAgICAgQDAgICAgUEBAMEBgUGBgYFBgYGBwkIBgcJBwYGCAsICQoKCgoKBggLDAsKDAkKCgr/2wBDAQICAgICAgUDAwUKBwYHCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgr/wAARCAACAAIDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAACAn/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdgAGrY//Z',
+    'base64',
+  );
+  const image = { bytes: jpeg, width: 2, height: 2 };
+  const bytes = encodeImagePdf([image, image]);
+  await routePdfReader(context);
+  await page.goto('/');
+  const decoded = await page.evaluate(async (base64) => {
+    const modulePath = '/__brand-test/pdf.mjs';
+    const pdfjs = (await import(modulePath)) as BrowserPdfReader;
+    pdfjs.GlobalWorkerOptions.workerSrc = '/__brand-test/pdf.worker.mjs';
+    const task = pdfjs.getDocument({
+      data: Uint8Array.from(atob(base64), (character) =>
+        character.charCodeAt(0),
+      ),
+      isEvalSupported: false,
+    });
+    try {
+      const pdf = await task.promise;
+      const pages = [];
+      for (let index = 1; index <= pdf.numPages; index++) {
+        const page = await pdf.getPage(index);
+        const operators = await page.getOperatorList();
+        const imageIndex = operators.fnArray.indexOf(
+          pdfjs.OPS.paintImageXObject,
+        );
+        const viewport = page.getViewport({ scale: 1 });
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const context = canvas.getContext('2d')!;
+        await page.render({ canvas, canvasContext: context, viewport }).promise;
+        pages.push({
+          view: page.view,
+          imageIndex,
+          imageSize: operators.argsArray[imageIndex]?.slice(1) as number[],
+          center: [...context.getImageData(100, 100, 1, 1).data],
+        });
+        canvas.width = canvas.height = 0;
+        page.cleanup();
+      }
+      return pages;
+    } finally {
+      await task.destroy();
+    }
+  }, Buffer.from(bytes).toString('base64'));
+  expect(decoded).toHaveLength(2);
+  for (const page of decoded) {
+    expect(page.view).toEqual([0, 0, 595.28, 841.89]);
+    expect(page.imageIndex).toBeGreaterThanOrEqual(0);
+    expect(page.imageSize).toEqual([2, 2]);
+    expect(page.center[0]).toBeGreaterThan(220);
+    expect(page.center[1]).toBeGreaterThan(50);
+    expect(page.center[1]).toBeLessThan(85);
+    expect(page.center[2]).toBeLessThan(10);
+    expect(page.center[3]).toBe(255);
   }
 });
