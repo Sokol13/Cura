@@ -2,7 +2,7 @@ CREATE TABLE recorded_generations (id TEXT PRIMARY KEY NOT NULL, library_id TEXT
 --> statement-breakpoint
 CREATE INDEX recorded_generations_library ON recorded_generations(library_id,source,model);
 --> statement-breakpoint
-INSERT INTO recorded_generations SELECT min(v.id), a.library_id, json_extract(v.payload,'$.hash'), coalesce(json_extract(v.payload,'$.source'),''), coalesce(json_extract(v.payload,'$.model'),''), 'legacy-backfill', v.created_at, max(v.updated_at) FROM asset_versions v JOIN assets a ON a.id=v.asset_id GROUP BY a.library_id,json_extract(v.payload,'$.hash'),v.created_at;
+INSERT INTO recorded_generations SELECT g.id,g.library_id,g.hash,coalesce(json_extract(v.payload,'$.source'),''),coalesce(json_extract(v.payload,'$.model'),''),'legacy-backfill',g.created_at,g.updated_at FROM (SELECT min(v.id) AS id,a.library_id,json_extract(v.payload,'$.hash') AS hash,v.created_at,max(v.updated_at) AS updated_at FROM asset_versions v JOIN assets a ON a.id=v.asset_id GROUP BY a.library_id,json_extract(v.payload,'$.hash'),v.created_at) g JOIN asset_versions v ON v.id=g.id;
 --> statement-breakpoint
 UPDATE asset_versions SET payload=json_set(payload,'$.generationId',(SELECT g.id FROM recorded_generations g JOIN assets a ON a.library_id=g.library_id WHERE a.id=asset_versions.asset_id AND g.hash=json_extract(asset_versions.payload,'$.hash') AND g.created_at=asset_versions.created_at));
 --> statement-breakpoint

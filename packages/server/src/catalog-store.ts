@@ -4,6 +4,7 @@ import type Database from 'better-sqlite3';
 import * as C from '@cura/shared';
 import type { AppDatabase } from './database.js';
 import { assetSearch, registerSearchFunctions } from './catalog-search.js';
+import { setFinalSelection } from './process/final-selections.js';
 
 type Row = Record<string, unknown>;
 type Parser<T> = { parse: (input: unknown) => T };
@@ -432,7 +433,7 @@ export class CatalogStore {
     return this.sqlite.transaction(() => {
       const asset = this.getAsset(id);
       this.checkPatch(asset.libraryId, patch);
-      const { tagIds, ...fields } = patch;
+      const { tagIds, finalized, ...fields } = patch;
       if (tagIds) this.setTags(id, tagIds);
       const generation = C.GenerationSchema.partial().parse(fields);
       if (Object.keys(generation).length) {
@@ -449,11 +450,25 @@ export class CatalogStore {
           updatedAt,
           asset.currentVersionId,
         );
+        if (payload.generationId)
+          this.run(
+            'UPDATE recorded_generations SET source=?,model=?,updated_at=? WHERE id=?',
+            payload.source,
+            payload.model,
+            updatedAt,
+            payload.generationId,
+          );
       }
 
       this.writeAsset(
         C.AssetSchema.parse({ ...asset, ...fields, updatedAt: now() }),
       );
+      if (finalized !== undefined)
+        setFinalSelection(
+          this.sqlite,
+          { libraryId: asset.libraryId, ownerKind: 'manual', ownerId: id },
+          finalized ? { assetId: id, versionId: asset.currentVersionId } : null,
+        );
       this.log(asset.libraryId, id, 'update', fields);
       return this.getAsset(id);
     })();
@@ -573,7 +588,21 @@ export class CatalogStore {
         asset.id,
       )?.next,
     );
-    const metadata = this.fileMetadata(processed);
+    const metadata = {
+      ...this.fileMetadata(processed),
+      generationId: randomUUID(),
+    };
+    this.run(
+      'INSERT INTO recorded_generations VALUES (?,?,?,?,?,?,?,?)',
+      metadata.generationId,
+      asset.libraryId,
+      metadata.hash,
+      metadata.source,
+      metadata.model,
+      'recorded',
+      date,
+      date,
+    );
     const version = C.AssetVersionSchema.parse({
       id,
       assetId: asset.id,
@@ -599,6 +628,7 @@ export class CatalogStore {
       ...metadata,
       name,
       currentVersionId: id,
+      finalized: false,
       updatedAt: date,
     });
     this.writeAsset(updated);
@@ -626,7 +656,7 @@ export class CatalogStore {
       note: inherited?.note ?? '',
       folderId: inherited?.folderId ?? null,
       deletedAt: null,
-      finalized: inherited?.finalized ?? false,
+      finalized: false,
       tags: [],
       createdAt: date,
       updatedAt: date,
