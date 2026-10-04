@@ -2,6 +2,10 @@ import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 const en = {
+  similarUnavailable: 'Similarity is unavailable for this file format.',
+  cacheUsage: '{{count}} files · {{size}}',
+  clearCache: 'Clear thumbnails',
+  cacheCleared: 'Thumbnail cache cleared',
   originalUnavailable:
     'Original unavailable; the retained version is still available.',
   scanStarted: 'Library scan started',
@@ -191,6 +195,10 @@ const en = {
   importFailed: 'Import failed. Please retry the remaining files.',
 };
 const zh: Record<keyof typeof en, string> = {
+  similarUnavailable: '此文件格式暂不支持相似搜索。',
+  cacheUsage: '{{count}} 个文件 · {{size}}',
+  clearCache: '清空缩略图缓存',
+  cacheCleared: '已清空缩略图缓存',
   originalUnavailable: '原文件不可用；保留的版本仍然可用。',
   scanStarted: '已开始扫描资产库',
   allFolders: '全部文件夹',

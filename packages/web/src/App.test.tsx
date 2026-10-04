@@ -54,6 +54,7 @@ let settings = {
   activeLibraryId: libraryId,
 };
 let queries: URL[] = [];
+let cacheFiles = 3;
 
 beforeEach(async () => {
   vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(720);
@@ -69,6 +70,7 @@ beforeEach(async () => {
     activeLibraryId: libraryId,
   };
   queries = [];
+  cacheFiles = 3;
   await i18n.changeLanguage('en');
   vi.stubGlobal(
     'fetch',
@@ -76,7 +78,12 @@ beforeEach(async () => {
       const url = new URL(path, 'http://localhost');
       queries.push(url);
       let body: unknown;
-      if (url.pathname === '/api/settings') {
+      if (url.pathname === '/api/cache')
+        body = { files: cacheFiles, bytes: cacheFiles ? 4096 : 0 };
+      else if (url.pathname === '/api/cache/clear') {
+        cacheFiles = 0;
+        body = { ok: true };
+      } else if (url.pathname === '/api/settings') {
         if (options?.method === 'PATCH')
           settings = { ...settings, ...JSON.parse(String(options.body)) };
         body = settings;
@@ -391,6 +398,129 @@ describe('Cura catalog', () => {
       await new Promise((resolve) => setTimeout(resolve, 180));
     });
     expect(screen.getByRole('alert')).toHaveTextContent('Full Disk Access');
+  });
+
+  it('disables similarity for assets without a perceptual hash', async () => {
+    asset.phash = '';
+    render(<App />);
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Select Forest.png' }),
+    );
+    expect(
+      screen.getByRole('button', { name: 'Find similar images' }),
+    ).toBeDisabled();
+    expect(
+      screen.getByText('Similarity is unavailable for this file format.'),
+    ).toBeVisible();
+  });
+
+  it('shows cache usage and refreshes it after clearing thumbnails', async () => {
+    render(<App />);
+    await screen.findByRole('button', { name: 'Select Forest.png' });
+    fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    expect(await screen.findByText('3 files · 4.0 KB')).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Clear thumbnails' }));
+    expect(await screen.findByText('0 files · 0 B')).toBeVisible();
+  });
+
+  it('reloads version history when a watched asset changes while preview stays open', async () => {
+    const channels: {
+      onmessage?: ((event: { data: string }) => void) | undefined;
+    }[] = [];
+    class LiveChannel {
+      onmessage?: (event: { data: string }) => void;
+      constructor() {
+        channels.push(this);
+      }
+      close() {
+        /* No real socket is opened by this browser unit test. */
+      }
+    }
+    vi.stubGlobal('WebSocket', LiveChannel);
+    const originalFetch = fetch;
+    const nextVersionId = '00000000-0000-4000-8000-000000000009';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string, options?: RequestInit) => {
+        if (path.endsWith('/versions')) {
+          const first = { ...initialAsset, id: libraryId, assetId, ordinal: 1 };
+          return new Response(
+            JSON.stringify(
+              asset.currentVersionId === nextVersionId
+                ? [first, { ...first, id: nextVersionId, ordinal: 2 }]
+                : [first],
+            ),
+          );
+        }
+        return originalFetch(path, options);
+      }),
+    );
+    render(<App />);
+    fireEvent.doubleClick(
+      await screen.findByRole('button', { name: 'Select Forest.png' }),
+    );
+    await screen.findByRole('button', { name: 'View V1: Forest.png' });
+    asset.currentVersionId = nextVersionId;
+    act(() =>
+      channels[0]?.onmessage?.({
+        data: JSON.stringify({ type: 'asset', libraryId, assetId }),
+      }),
+    );
+    expect(
+      await screen.findByRole('button', { name: 'View V2: Forest.png' }),
+    ).toBeVisible();
+  });
+
+  it('navigates between adjacent assets inside the preview', async () => {
+    const second = {
+      ...initialAsset,
+      id: '00000000-0000-4000-8000-000000000003',
+      name: 'Coast.png',
+      currentVersionId: '00000000-0000-4000-8000-000000000004',
+    };
+    const originalFetch = fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string, options?: RequestInit) => {
+        const url = new URL(path, 'http://localhost');
+        if (url.pathname.endsWith('/assets'))
+          return new Response(
+            JSON.stringify({ items: [asset, second], total: 2 }),
+          );
+        if (url.pathname.endsWith('/versions')) {
+          const item = path.includes(second.id) ? second : asset;
+          return new Response(
+            JSON.stringify([
+              {
+                ...item,
+                id: item.currentVersionId,
+                assetId: item.id,
+                ordinal: 1,
+              },
+            ]),
+          );
+        }
+        if (url.pathname === `/api/assets/${second.id}`)
+          return new Response(JSON.stringify(second));
+        return originalFetch(path, options);
+      }),
+    );
+    render(<App />);
+    fireEvent.doubleClick(
+      await screen.findByRole('button', { name: 'Select Forest.png' }),
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Next asset' }));
+    expect(
+      await within(screen.getByRole('dialog')).findByRole('heading', {
+        name: 'Coast.png',
+      }),
+    ).toBeVisible();
+    fireEvent.click(screen.getByRole('button', { name: 'Previous asset' }));
+    expect(
+      await within(screen.getByRole('dialog')).findByRole('heading', {
+        name: 'Forest.png',
+      }),
+    ).toBeVisible();
   });
 
   it('explains an unavailable server and retries without reloading the browser', async () => {

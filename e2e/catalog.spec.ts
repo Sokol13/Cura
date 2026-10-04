@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { expect, test, type Page } from '@playwright/test';
@@ -153,8 +153,31 @@ test('local catalog imports, organizes, searches, batches and preserves workspac
     .getByRole('dialog')
     .getByRole('combobox', { name: 'Theme', exact: true })
     .selectOption('dark');
-  await page
-    .getByRole('dialog')
+  dialog = page.getByRole('dialog');
+  await expect(dialog.getByText(/files ·/)).toBeVisible();
+  await dialog
+    .getByRole('button', { name: 'Clear thumbnails', exact: true })
+    .click();
+  await expect(
+    dialog.getByText('0 files · 0 B', { exact: true }),
+  ).toBeVisible();
+  await dialog
+    .getByRole('button', { name: 'Rebuild thumbnails', exact: true })
+    .click();
+  await expect(dialog.getByRole('status')).toHaveText(
+    'Thumbnail rebuild started',
+  );
+  await expect(dialog.getByText(/3 files ·/)).toBeVisible();
+  const downloadPromise = page.waitForEvent('download');
+  await dialog
+    .getByRole('link', { name: 'Export diagnostic logs', exact: true })
+    .click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toMatch(/\.zip$/);
+  const downloadPath = await download.path();
+  if (!downloadPath) throw new Error('Diagnostic download did not finish');
+  expect((await readFile(downloadPath)).subarray(0, 2).toString()).toBe('PK');
+  await dialog
     .getByRole('button', { name: 'Close', exact: true })
     .last()
     .click();

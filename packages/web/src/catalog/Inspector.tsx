@@ -257,9 +257,12 @@ function InspectorForm({
         </details>
       </section>
       <div className="inspector-actions">
-        <button type="button" onClick={onSimilar}>
+        <button type="button" onClick={onSimilar} disabled={!asset.phash}>
           {t('similar')}
         </button>
+        {!asset.phash && (
+          <p className="field-hint">{t('similarUnavailable')}</p>
+        )}
         <a
           href={assetUrl(asset.currentVersionId, 'file')}
           download={asset.name}

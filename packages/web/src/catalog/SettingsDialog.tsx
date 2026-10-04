@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   SettingsSchema,
+  CacheUsageSchema,
   type Settings,
   type UpdateSettings,
 } from '@cura/shared';
 import { request } from './api';
+import { formatBytes } from './format';
 
 export function SettingsDialog({
   settings,
@@ -59,6 +61,21 @@ export function SettingsDialog({
       previous?.focus();
     };
   }, []);
+  const [cache, setCache] = useState<{ files: number; bytes: number } | null>(
+    null,
+  );
+  useEffect(() => {
+    const controller = new AbortController();
+    void request('/api/cache', { signal: controller.signal })
+      .then((data) => CacheUsageSchema.parse(data))
+      .then((usage) => {
+        if (!controller.signal.aborted) setCache(usage);
+      })
+      .catch((error: unknown) => {
+        if (!controller.signal.aborted) onError(error);
+      });
+    return () => controller.abort();
+  }, [onError]);
   const [status, setStatus] = useState('');
   const [busy, setBusy] = useState(false);
   const update = (patch: UpdateSettings) => {
@@ -69,8 +86,16 @@ export function SettingsDialog({
     try {
       await request(path, { method: 'POST', body: {} });
       setStatus(
-        t(path.endsWith('/rescan') ? 'scanStarted' : 'cacheRebuilding'),
+        t(
+          path.endsWith('/rescan')
+            ? 'scanStarted'
+            : path.endsWith('/clear')
+              ? 'cacheCleared'
+              : 'cacheRebuilding',
+        ),
       );
+      if (path.startsWith('/api/cache'))
+        setCache(CacheUsageSchema.parse(await request('/api/cache')));
     } catch (error) {
       onError(error);
     } finally {
@@ -139,7 +164,23 @@ export function SettingsDialog({
             </label>
           ))}
           <h3>{t('maintenance')}</h3>
+          {cache && (
+            <p className="field-hint">
+              {t('cacheUsage', {
+                count: cache.files,
+                size: formatBytes(cache.bytes),
+              })}
+            </p>
+          )}
           <div className="maintenance-actions">
+            <button
+              disabled={busy || cache?.files === 0}
+              onClick={() => {
+                void maintenance('/api/cache/clear');
+              }}
+            >
+              {t('clearCache')}
+            </button>
             <button
               disabled={!libraryId || busy}
               onClick={() => {

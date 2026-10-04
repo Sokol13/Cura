@@ -217,7 +217,7 @@ export function App() {
         .finally(() => {
           if (generation === queryGeneration.current) setLoading(false);
         });
-    }, 120);
+    }, 60);
     return () => {
       clearTimeout(timer);
       controller.abort();
@@ -280,6 +280,25 @@ export function App() {
       socket?.close();
     };
   }, [libraryId, refresh, reportError, t]);
+
+  const previewId = preview?.id;
+  const currentPreview = preview
+    ? (assets.find((asset) => asset.id === preview.id) ?? preview)
+    : null;
+  useEffect(() => {
+    if (!previewId) return;
+    const controller = new AbortController();
+    void request(`/api/assets/${previewId}`, { signal: controller.signal })
+      .then((data) => AssetSchema.parse(data))
+      .then((asset) => {
+        if (!controller.signal.aborted)
+          setPreview((current) => (current?.id === asset.id ? asset : current));
+      })
+      .catch((failure: unknown) => {
+        if (!controller.signal.aborted) reportError(failure);
+      });
+    return () => controller.abort();
+  }, [previewId, revision, reportError]);
 
   const changeLibrary = (id: string) => {
     setLibraryId(id);
@@ -424,11 +443,25 @@ export function App() {
           ),
         ]);
         setTotal(page.total);
+        return page.items;
       }
     } catch (failure) {
       reportError(failure);
     } finally {
       paging.current = false;
+    }
+  };
+  const previewIndex = currentPreview
+    ? assets.findIndex((asset) => asset.id === currentPreview.id)
+    : -1;
+  const navigatePreview = async (direction: -1 | 1) => {
+    if (previewIndex < 0) return;
+    let next = assets[previewIndex + direction];
+    if (!next && direction === 1 && assets.length < total)
+      next = (await loadMore())?.[0];
+    if (next) {
+      setPreview(next);
+      setSelected(new Set([next.id]));
     }
   };
   const selectAsset = (asset: Asset, additive: boolean, range: boolean) => {
@@ -744,9 +777,17 @@ export function App() {
           onError={reportError}
         />
       )}
-      {preview && (
+      {currentPreview && (
         <AssetPreview
-          asset={preview}
+          asset={currentPreview}
+          hasPrevious={previewIndex > 0}
+          hasNext={
+            previewIndex >= 0 &&
+            (previewIndex < assets.length - 1 || assets.length < total)
+          }
+          onNavigate={(direction) => {
+            void navigatePreview(direction);
+          }}
           onClose={() => setPreview(null)}
           onChanged={refresh}
         />
