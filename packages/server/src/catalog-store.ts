@@ -551,19 +551,120 @@ export class CatalogStore {
       name: String(row.name),
     }));
   }
-  updateVersionPreview(versionId: string, thumbnailPath: string | null): void {
-    this.require('asset_versions', versionId);
-    const date = now();
-    this.run(
-      "UPDATE asset_versions SET thumbnail_path=?, updated_at=?, payload=json_set(payload, '$.updatedAt', ?) WHERE id=?",
-      thumbnailPath,
-      date,
-      date,
-      versionId,
+  getVersionPreview(versionId: string): C.AssetVersion {
+    return C.AssetVersionSchema.parse(
+      JSON.parse(String(this.require('asset_versions', versionId).payload)),
     );
+  }
+  listPendingPreviews(libraryId: string): C.PreviewCandidate[] {
+    this.getLibrary(libraryId);
+    return this.rows(
+      `SELECT v.id,v.payload FROM asset_versions v JOIN assets a ON a.id=v.asset_id
+      WHERE a.library_id=? AND (json_extract(v.payload,'$.previewState') IS NULL OR json_extract(v.payload,'$.previewState')='pending')
+      AND json_extract(v.payload,'$.type') NOT IN ('image/png','image/jpeg','image/webp','image/gif','image/avif','image/svg+xml')
+      AND (lower(json_extract(v.payload,'$.name')) GLOB '*.glb' OR lower(json_extract(v.payload,'$.name')) GLOB '*.obj' OR lower(json_extract(v.payload,'$.name')) GLOB '*.psd' OR lower(json_extract(v.payload,'$.name')) GLOB '*.pdf' OR lower(json_extract(v.payload,'$.name')) GLOB '*.mp4' OR lower(json_extract(v.payload,'$.name')) GLOB '*.mov')
+      ORDER BY v.created_at,v.id LIMIT 16`,
+      libraryId,
+    ).flatMap((row) => {
+      const version = C.AssetVersionSchema.parse(
+        JSON.parse(String(row.payload)),
+      );
+      const format = C.richPreviewFormat(version.name, version.type);
+      return format
+        ? [
+            {
+              id: version.id,
+              assetId: version.assetId,
+              sourceHash: version.hash,
+              name: version.name,
+              size: version.size,
+              format,
+              revision: version.previewRevision ?? 0,
+            },
+          ]
+        : [];
+    });
+  }
+  checkPreviewRevision(
+    versionId: string,
+    sourceHash: string,
+    revision: number,
+  ): C.AssetVersion {
+    const version = this.getVersionPreview(versionId);
+    if (
+      version.hash !== sourceHash ||
+      (version.previewRevision ?? 0) !== revision
+    )
+      throw new CatalogError(
+        'The source or preview revision changed.',
+        'STALE_PREVIEW',
+        409,
+      );
+    if (!C.richPreviewFormat(version.name, version.type))
+      throw new CatalogError(
+        'This version does not use browser previews.',
+        'INVALID_PREVIEW',
+        400,
+      );
+    return version;
+  }
+  updateVersionPreview(
+    versionId: string,
+    thumbnailPath: string | null,
+    patch: {
+      state?: C.AssetVersion['previewState'];
+      error?: string | null;
+      width?: number;
+      height?: number;
+    } = {},
+  ): void {
+    this.sqlite.transaction(() => {
+      const version = this.getVersionPreview(versionId),
+        date = now();
+      const previewState =
+        patch.state ??
+        (thumbnailPath
+          ? 'ready'
+          : C.richPreviewFormat(version.name, version.type)
+            ? 'pending'
+            : undefined);
+      const fields = {
+        previewState,
+        previewRevision: (version.previewRevision ?? 0) + 1,
+        previewError: patch.error ?? null,
+      };
+      const payload = {
+        ...version,
+        ...fields,
+        ...(patch.width ? { width: patch.width } : {}),
+        ...(patch.height ? { height: patch.height } : {}),
+        updatedAt: date,
+      };
+      this.run(
+        'UPDATE asset_versions SET thumbnail_path=?,updated_at=?,payload=? WHERE id=?',
+        thumbnailPath,
+        date,
+        JSON.stringify(payload),
+        versionId,
+      );
+      const asset = this.getAsset(version.assetId);
+      if (asset.currentVersionId === versionId)
+        this.writeAsset(
+          C.AssetSchema.parse({
+            ...asset,
+            ...fields,
+            ...(patch.width ? { width: patch.width } : {}),
+            ...(patch.height ? { height: patch.height } : {}),
+            updatedAt: date,
+          }),
+        );
+    })();
   }
   private fileMetadata(processed: IngestedFile) {
     return {
+      previewState: processed.thumbnailPath ? ('ready' as const) : undefined,
+      previewRevision: 0,
+      previewError: null,
       hash: processed.hash,
       size: processed.size,
       type: processed.type,

@@ -476,7 +476,11 @@ describe('catalog preview cache recovery', () => {
         f.store
           .listVersions(asset.id)
           .find((version) => version.id === original.id),
-      ).toEqual({ ...original, updatedAt: changedAt });
+      ).toEqual({
+        ...original,
+        previewRevision: (original.previewRevision ?? 0) + 1,
+        updatedAt: changedAt,
+      });
       expect(f.store.getVersionFile(replacement.currentVersionId)).toEqual(
         unchanged,
       );

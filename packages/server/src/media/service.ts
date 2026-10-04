@@ -15,6 +15,8 @@ import { fileURLToPath } from 'node:url';
 import chokidar, { type FSWatcher } from 'chokidar';
 import {
   UploadQuerySchema,
+  richPreviewFormat,
+  type PreviewFailure,
   type Asset,
   type CatalogEvent,
   type LibraryRoot,
@@ -594,6 +596,57 @@ export class MediaService {
     );
     this.store.deleteRoot(id);
   }
+  submitPreview(
+    versionId: string,
+    sourceHash: string,
+    revision: number,
+    bytes: Buffer,
+  ): Promise<void> {
+    return this.track(async () => {
+      this.store.checkPreviewRevision(versionId, sourceHash, revision);
+      let result: { thumbnailPath: string; width: number; height: number };
+      try {
+        result = await this.job({
+          kind: 'preview',
+          cacheDir: this.paths.cache,
+          bytes,
+        });
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'INVALID_PREVIEW')
+          Object.assign(error as Error, { statusCode: 400 });
+        throw error;
+      }
+      this.store.checkPreviewRevision(versionId, sourceHash, revision);
+      this.store.updateVersionPreview(versionId, result.thumbnailPath, {
+        state: 'ready',
+        width: result.width,
+        height: result.height,
+      });
+      const file = this.store.getVersionFile(versionId);
+      this.emit({
+        type: 'thumbnail',
+        libraryId: file.libraryId,
+        assetId: file.assetId,
+      });
+    });
+  }
+  previewFailure(versionId: string, failure: PreviewFailure): void {
+    const version = this.store.checkPreviewRevision(
+      versionId,
+      failure.sourceHash,
+      failure.revision,
+    );
+    this.store.updateVersionPreview(versionId, null, {
+      state: failure.state,
+      error: failure.error,
+    });
+    const file = this.store.getVersionFile(versionId);
+    this.emit({
+      type: 'thumbnail',
+      libraryId: file.libraryId,
+      assetId: version.assetId,
+    });
+  }
   cacheInfo(): Promise<{ files: number; bytes: number }> {
     return this.track(() =>
       this.job({ kind: 'cache-info', cacheDir: this.paths.cache }),
@@ -620,6 +673,15 @@ export class MediaService {
       const root = await realpath(this.paths.data);
       for (const version of this.store.listAllVersions()) {
         if (this.closed) throw stopped();
+        if (richPreviewFormat(version.name, version.type)) {
+          this.store.updateVersionPreview(version.id, null);
+          this.emit({
+            type: 'thumbnail',
+            libraryId: version.libraryId,
+            assetId: version.assetId,
+          });
+          continue;
+        }
         const processed = await this.job<ProcessedFile>({
           kind: 'process',
           root,

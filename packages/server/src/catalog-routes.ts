@@ -224,7 +224,10 @@ export async function registerCatalogRoutes(
     const file = store.getVersionFile(id(request.params, 'versionId'));
     reply
       .header('x-content-type-options', 'nosniff')
-      .header('cache-control', 'private, max-age=31536000, immutable');
+      .header(
+        'cache-control',
+        file.thumbnailPath ? 'private, no-cache' : 'no-store',
+      );
     if (file.thumbnailPath) {
       const safe = await resolveContained(
         paths.cache,

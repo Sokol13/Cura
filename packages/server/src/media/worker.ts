@@ -1,12 +1,20 @@
 import { parentPort } from 'node:worker_threads';
 import { lstat, readdir, realpath, unlink } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
+import { savePreview } from './preview-upload.js';
 import { processFile } from './image.js';
 import { resolveContained } from './path-utils.js';
 
 interface Job {
   id: number;
-  kind: 'scan' | 'process' | 'shutdown' | 'cache-info' | 'cache-clear';
+  kind:
+    | 'scan'
+    | 'process'
+    | 'shutdown'
+    | 'cache-info'
+    | 'cache-clear'
+    | 'preview';
+  bytes: Uint8Array;
   root: string;
   relativePath: string;
   dataDir: string;
@@ -174,11 +182,13 @@ port.on('message', (job: Job) => {
       port.postMessage({
         id: job.id,
         result:
-          job.kind === 'scan'
-            ? await scan(job.root)
-            : job.kind === 'cache-info' || job.kind === 'cache-clear'
-              ? await cache(job.cacheDir, job.kind === 'cache-clear')
-              : await process(job),
+          job.kind === 'preview'
+            ? await savePreview(job.cacheDir, job.bytes)
+            : job.kind === 'scan'
+              ? await scan(job.root)
+              : job.kind === 'cache-info' || job.kind === 'cache-clear'
+                ? await cache(job.cacheDir, job.kind === 'cache-clear')
+                : await process(job),
       });
     } catch (error) {
       port.postMessage({ id: job.id, error: failure(error) });
