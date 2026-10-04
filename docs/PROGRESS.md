@@ -15,11 +15,14 @@ The user accepted phase 0 on 2026-10-04 and authorized continuous autonomous dev
 
 - Phase 1 documents integrated and independently reviewed: RESEARCH.md, PRD.md, ARCHITECTURE.md and TASKS.md. Final local gate passed (25 unit tests, 1 E2E). Pushed `56433f2`; [GitHub CI 37194418005](https://github.com/Sokol13/Cura/actions/runs/37194418005) succeeded and `gh run watch --exit-status` confirmed it.
 - Task 2 media primitives: feat-media (/tmp/cura-media); Task 3 contracts/store: feat-catalog-store (/tmp/cura-store); Task 5 UI: feat-web (/tmp/cura-web). Integration belongs to coordinator.
-- P0 dependency/startup preparation passed full local gate (25 unit tests, 1 E2E): audited npm licenses, pinned Sharp/exifr/chokidar/WebSocket/fflate/Zustand/Virtual; native Sharp encode/decode verified; start now builds before launch.
+- P0 dependency/startup preparation pushed as `3473fb4`; [CI 37194568281](https://github.com/Sokol13/Cura/actions/runs/37194568281) is green. It passed full local gate (25 unit tests, 1 E2E): audited npm licenses, pinned Sharp/exifr/chokidar/WebSocket/fflate/Zustand/Virtual; native Sharp encode/decode verified; start now builds before launch.
 - Mandatory setup succeeded with Node 22.23.3 / pnpm 10.34.6; the provisioned Chromium launch succeeded. Root-only Playwright OS-package installation used the documented fallback.
 - Baseline quality gate passed: lint, typecheck, 25 unit tests and 1 real-server E2E.
 - Independent architecture review findings were incorporated: alias divergence, stable snapshots, active-file response headers, CJK substring search, organization mutation contracts, full offline workflow and platform error cases.
 - No milestone claims or new tags have been made.
+
+- Shared Zod catalog contracts integrated at `b4e6d25`; full local gate passed (26 unit tests, 1 E2E). Publishing with this progress update.
+- Runtime/worker integration under /tmp/cura-runtime branch feat-runtime. First real-ingestion integration test fails as expected on missing API (404 versus 201), before implementation.
 
 ## Next
 
