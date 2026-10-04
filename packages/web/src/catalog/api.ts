@@ -47,8 +47,9 @@ export async function request<T>(
 export function assetUrl(
   versionId: string,
   kind: 'thumbnail' | 'file',
+  revision?: number,
 ): string {
-  return `/api/versions/${encodeURIComponent(versionId)}/${kind}`;
+  return `/api/versions/${encodeURIComponent(versionId)}/${kind}${kind === 'thumbnail' && revision !== undefined ? `?revision=${revision}` : ''}`;
 }
 
 export async function uploadFile(libraryId: string, file: File): Promise<void> {

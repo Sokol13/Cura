@@ -95,7 +95,11 @@ export function AssetGrid({
                 >
                   <span className="asset-image">
                     <img
-                      src={assetUrl(asset.currentVersionId, 'thumbnail')}
+                      src={assetUrl(
+                        asset.currentVersionId,
+                        'thumbnail',
+                        asset.previewRevision,
+                      )}
                       alt=""
                       loading="lazy"
                       onError={(e) => {

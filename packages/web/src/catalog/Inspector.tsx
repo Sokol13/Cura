@@ -1,3 +1,5 @@
+import { richPreviewFormat } from '@cura/shared';
+import { PreviewStatus } from '../media/PreviewStatus';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { Asset, Folder, Tag, UpdateAsset } from '@cura/shared';
@@ -102,9 +104,19 @@ function InspectorForm({
         aria-label={t('preview')}
       >
         <img
-          src={assetUrl(asset.currentVersionId, 'thumbnail')}
+          src={assetUrl(
+            asset.currentVersionId,
+            'thumbnail',
+            asset.previewRevision,
+          )}
           alt={asset.name}
         />
+        {richPreviewFormat(asset.name, asset.type) && (
+          <PreviewStatus
+            state={asset.previewState}
+            error={asset.previewError}
+          />
+        )}
         <span>⤢</span>
       </button>
       <h3 className="asset-title">{asset.name}</h3>

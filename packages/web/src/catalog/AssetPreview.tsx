@@ -1,3 +1,4 @@
+import { PreviewStatus } from '../media/PreviewStatus';
 import {
   ErrorResponseSchema,
   type Annotation,
@@ -150,8 +151,9 @@ function ImageCanvas({
   const viewport = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 900, height: 620 });
   const [failed, setFailed] = useState(false);
-  const width = version.width ?? 800;
-  const height = version.height ?? 600;
+  const [decodedSize, setDecodedSize] = useState({ width: 800, height: 600 });
+  const width = version.width ?? decodedSize.width;
+  const height = version.height ?? decodedSize.height;
   const fitScale = Math.min(
     1,
     Math.max(1, size.width - 48) / width,
@@ -188,13 +190,20 @@ function ImageCanvas({
 
   return (
     <div className="preview-viewport" ref={viewport}>
-      {!imageTypes.has(version.type) || failed ? (
+      {(!imageTypes.has(version.type) && version.previewState !== 'ready') ||
+      failed ? (
         <div className="preview-unavailable">
           <span aria-hidden="true" className="preview-file-icon">
             ▧
           </span>
           <p>{t(failed ? 'imageError' : 'unavailable')}</p>
           <span>{version.name}</span>
+          {version.previewState && (
+            <PreviewStatus
+              state={version.previewState}
+              error={version.previewError}
+            />
+          )}
         </div>
       ) : (
         <div
@@ -204,10 +213,19 @@ function ImageCanvas({
           <img
             src={assetUrl(
               version.id,
-              version.type === 'image/svg+xml' ? 'thumbnail' : 'file',
+              version.type === 'image/svg+xml' || !imageTypes.has(version.type)
+                ? 'thumbnail'
+                : 'file',
+              version.previewRevision,
             )}
             alt={`${version.name} — V${version.ordinal}`}
             draggable={false}
+            onLoad={(event) =>
+              setDecodedSize({
+                width: event.currentTarget.naturalWidth,
+                height: event.currentTarget.naturalHeight,
+              })
+            }
             onError={() => setFailed(true)}
             onClick={place}
           />
