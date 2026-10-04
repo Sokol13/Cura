@@ -1,11 +1,13 @@
 {
   "environment": "Linux x64, Node22.23.3, pnpm10.34.6, Chromium151",
-  "clone": "git clone --no-local --branch feat-runtime /workspace/Cura /tmp/cura-clean-v010",
-  "commit": "68f835f",
+  "clone": "git clone --no-local --branch main /workspace/Cura /tmp/cura-release-clean",
+  "commit": "8cec733",
   "install": "pnpm install --frozen-lockfile",
   "start": "pnpm start",
+  "runtimeLicenseCheck": "126 installed production packages passed the license allowlist with the explicit mandated Sharp native exception",
   "nativeCompilation": false,
-  "browserLaunch": "OS default-browser association in isolated XDG configuration launches headless Chromium; no manual page.goto",
+  "staticServing": "Root-contained native Node/Fastify handler",
+  "browserLaunch": "OS default-browser association in isolated XDG configuration launches headless Chromium; attached to already-open page without page.goto",
   "libraryCreated": true,
   "persistedAfterReload": true,
   "physicalMacWindowsVerified": false
