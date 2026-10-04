@@ -42,16 +42,21 @@ The user accepted phase 0 on 2026-10-04 and authorized uninterrupted development
 - Real v0.2 upgrade passed 17 preservation checks across all 36 legacy tables, six-to-nine migrations, retained file hashes and two unchanged reopens. Reproducible evidence records exact source `41e45b1`. An independent clean clone of the same source passed frozen install (2.4 seconds), normal automatic-browser startup (24.4 seconds), Chinese library creation and restart persistence. Browser license inventory verified 196 emitted files, 4,351,021 bytes and 159 allowed runtime dependency groups.
 - Four package versions now declare 0.3.0 as a release candidate. REPORT-v0.3.0.md explicitly lists pending gates; no release request or tag exists. Mandatory real local Supabase CI is implemented and will count only after actual remote success. The independently reviewed release fallback remains inactive until every milestone gate passes; its 12 guard/recovery tests pass.
 
+## v0.3 final acceptance
+
+- Complete candidate `1f24a5b` is published on main and passed [CI 37210499373](https://github.com/Sokol13/Cura/actions/runs/37210499373). Both jobs succeeded: lint/types, 434 default unit/tool tests and 27 ordinary browser scenarios; 17 genuine Supabase integration tests, security advisors and the configured two-device browser scenario. No cloud case was skipped in its required job.
+- All nine inherited P0 definitions, all P1 criteria and all three P2 capability groups pass. Final independent review found no remaining material defect. REPORT-v0.3.0.md records the checklist, exact package trees, local clean-start/upgrade/performance/model evidence and physical/hosted limits.
+- Final documentation and the explicit release request are prepared. The automated fallback can create the annotated tag and GitHub Release only after this exact request commit passes full CI and remains main. Existing tags cannot be moved.
+
 ## In progress
 
-- Complete candidate publication from `/workspace/cura-p2` to main, then remote core and mandatory genuine-cloud CI verification. All three P2 capability groups and local acceptance are complete; detailed evidence is in REPORT-v0.3.0.md and evidence/v0.3.0/.
-- No v0.3.0 tag or release request exists. The connected GitHub app provides publication while the expired shell credential is unavailable; exact tree equality and non-force updates remain required.
+- Publish final report/request and verify its CI, immutable tag and GitHub Release. The connected GitHub app provides exact-tree non-force main publication while the shell credential is expired.
 
 ## Next
 
-1. Publish the complete tested candidate and current evidence to main.
-2. Verify ordinary CI and the actual Supabase Auth/RLS/Storage/two-device browser CI; resolve any failure before release.
-3. Mark every inherited definition passed, activate the gated release request, verify the immutable v0.3.0 tag and GitHub Release, and publish final progress with green latest-main CI. Incoming desktop bugs take priority.
+1. Observe complete final-request CI and the gated release job.
+2. Verify v0.3.0 tag/Release, remove the consumed request, publish final progress and verify green latest-main CI.
+3. Stop owned development processes. Once all three published milestones are verified, stop under AGENTS.md section 1(a). Incoming desktop bugs take priority.
 
 ## Resume
 

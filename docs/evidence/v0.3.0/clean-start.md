@@ -27,7 +27,7 @@ NODE_PATH= node docs/evidence/v0.3.0/clean-start.mjs \
 ```
 
 The destination must not already exist. The source may be any local repository
-containing the frozen commit. `git clone --no-local` creates independent objects;
+containing the frozen commit. For a fresh public checkout, use published candidate `1f24a5b` (or the final `v0.3.0` tag) as the commit argument and choose a new destination; its complete package trees and lockfile are identical, as recorded in REPORT-v0.3.0.md. The original local commit ID records the historical measurement and need not be present in a public clone. `git clone --no-local` creates independent objects;
 the verifier checks for absent shared-object alternates and `node_modules`, then
 checks out the exact full commit. All four package versions must be `0.3.0`.
 

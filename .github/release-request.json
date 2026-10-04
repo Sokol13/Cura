@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "tag": "v0.3.0",
+  "ready": true,
+  "report": "docs/REPORT-v0.3.0.md",
+  "productionTrees": {
+    "server": "2623c9c07958fb6ad824ae04e070fd07b704bce7",
+    "shared": "620958c6f4e2022063156ebe10b060e680d1c6c6",
+    "web": "2cbc9497411ea334bbc946e0eb889c5beab42a93"
+  }
+}

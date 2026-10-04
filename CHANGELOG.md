@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 — release candidate
+## 0.3.0 — 2026-10-04
 
 - Add bilingual automation review with explicit offline metadata rules and a configured real vision provider, exact-version proposal apply/selective undo, source preservation and provider provenance.
 - Add portable display names, archive/restore controls and saved non-final archive rules with bounded cancellable processing and historical final-owner protection.
