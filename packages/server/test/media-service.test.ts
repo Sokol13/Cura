@@ -4,6 +4,7 @@ import {
   mkdir,
   readFile,
   readdir,
+  rename,
   rm,
   symlink,
   unlink,
@@ -429,4 +430,135 @@ it('rechecks source containment when the real worker executes a queued file', as
   const exited = new Promise<number>((resolve) => worker.once('exit', resolve));
   worker.postMessage({ kind: 'shutdown' });
   expect(await exited).toBe(0);
+});
+
+it('keeps one asset when a source is renamed and later edited, then marks deletion missing', async () => {
+  const { media, originals, library, store } = await setup();
+  await media.registerRoot(library.id, originals);
+  const first = join(originals, 'before.bin');
+  const next = join(originals, 'after.bin');
+  await writeFile(first, 'original');
+  watchers[0]!.emit('add', first);
+  await expect.poll(() => store.listAssets(library.id).total).toBe(1);
+  const original = store.listAssets(library.id).items[0]!;
+  await rename(first, next);
+  watchers[0]!.emit('unlink', first);
+  watchers[0]!.emit('add', next);
+  await expect
+    .poll(() => store.getAsset(original.id).relativePath)
+    .toBe('after.bin');
+  await writeFile(next, 'edited original');
+  watchers[0]!.emit('change', next);
+  await expect.poll(() => store.getAsset(original.id).size).toBe(15);
+  expect(store.listAssets(library.id).total).toBe(1);
+  expect(store.listVersions(original.id)).toHaveLength(2);
+  await unlink(next);
+  watchers[0]!.emit('unlink', next);
+  expect(store.getAsset(original.id).missing).toBe(true);
+  expect(
+    await readFile(
+      store.getVersionFile(original.currentVersionId).snapshotPath,
+      'utf8',
+    ),
+  ).toBe('original');
+});
+
+it('reconciles files removed while the watcher was offline after a complete rescan', async () => {
+  const { media, originals, library, store } = await setup();
+  const file = join(originals, 'offline.bin');
+  await writeFile(file, 'retained');
+  await media.registerRoot(library.id, originals);
+  await expect.poll(() => store.listAssets(library.id).total).toBe(1);
+  const original = store.listAssets(library.id).items[0]!;
+  await unlink(file);
+  await media.rescan(library.id);
+  await expect.poll(() => store.getAsset(original.id).missing).toBe(true);
+  expect(store.listVersions(original.id)).toHaveLength(1);
+});
+
+it('does not mark sources missing after partial enumeration permission errors', async () => {
+  const { media, originals, library, store } = await setup();
+  const file = join(originals, 'protected.bin');
+  await writeFile(file, 'present');
+  await media.registerRoot(library.id, originals);
+  await expect.poll(() => store.listAssets(library.id).total).toBe(1);
+  const original = store.listAssets(library.id).items[0]!;
+  const completed = deferred();
+  media.subscribe((event) => {
+    if (event.type === 'scan' && event.total === 0) completed.resolve();
+  });
+  transport.dispatch = async (job) =>
+    job.kind === 'scan'
+      ? { files: [], errors: [{ code: 'EACCES', message: 'Denied subtree' }] }
+      : dispatch(job);
+  await media.rescan(library.id);
+  await completed.promise;
+  expect(store.getAsset(original.id).missing).toBe(false);
+});
+
+it('does not reactivate a deleted source when an earlier worker result arrives late', async () => {
+  const { media, originals, library, store } = await setup();
+  const file = join(originals, 'deleted.bin');
+  await writeFile(file, 'original');
+  await media.registerRoot(library.id, originals);
+  await expect.poll(() => store.listAssets(library.id).total).toBe(1);
+  const original = store.listAssets(library.id).items[0]!;
+  const copied = deferred();
+  const release = deferred();
+  cleanup.push(async () => release.resolve());
+  transport.dispatch = async (job) => {
+    const result = await dispatch(job);
+    if (job.kind === 'process') {
+      copied.resolve();
+      await release.promise;
+    }
+    return result;
+  };
+  await writeFile(file, 'edited');
+  watchers[0]!.emit('change', file);
+  await copied.promise;
+  await unlink(file);
+  watchers[0]!.emit('unlink', file);
+  release.resolve();
+  await expect.poll(() => transport.instances[0]!.active).toBe(0);
+  expect(store.getAsset(original.id).missing).toBe(true);
+  expect(store.getAsset(original.id).hash).toBe(original.hash);
+});
+
+it('does not mark a newly watched file missing using an older scan enumeration', async () => {
+  const { media, originals, library, store } = await setup();
+  await writeFile(join(originals, 'a.bin'), 'first existing');
+  await writeFile(join(originals, 'b.bin'), 'second existing');
+  await media.registerRoot(library.id, originals);
+  await expect.poll(() => store.listAssets(library.id).total).toBe(2);
+  const copied = deferred();
+  const release = deferred();
+  const completed = deferred();
+  cleanup.push(async () => release.resolve());
+  let first = true;
+  transport.dispatch = async (job) => {
+    const result = await dispatch(job);
+    if (job.kind === 'process' && first) {
+      first = false;
+      copied.resolve();
+      await release.promise;
+    }
+    return result;
+  };
+  media.subscribe((event) => {
+    if (event.type === 'scan' && event.total === 2 && event.completed === 2)
+      completed.resolve();
+  });
+  await media.rescan(library.id);
+  await copied.promise;
+  const file = join(originals, 'new.bin');
+  await writeFile(file, 'new content');
+  watchers[0]!.emit('add', file);
+  release.resolve();
+  await completed.promise;
+  const added = store
+    .listAssets(library.id)
+    .items.find((asset) => asset.name === 'new.bin');
+  expect(added).toBeDefined();
+  expect(added?.missing).toBe(false);
 });

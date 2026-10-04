@@ -88,10 +88,11 @@ export class MediaService {
   private readonly listeners = new Set<(event: CatalogEvent) => void>();
   private readonly pending = new Map<
     string,
-    { dirty: boolean; promise: Promise<Asset | null> }
+    { dirty: boolean; removed: boolean; promise: Promise<Asset | null> }
   >();
   private readonly scans = new Map<string, Promise<void>>();
   private readonly reconcileRoots = new Map<string, LibraryRoot>();
+  private readonly rootChanges = new Map<string, number>();
   private readonly operations = new Set<Promise<unknown>>();
 
   constructor(
@@ -192,6 +193,7 @@ export class MediaService {
   }
   private enqueue(root: LibraryRoot, file: string) {
     if (this.closed || !this.watchers.has(root.id)) return;
+    this.rootChanged(root);
     const key = `${root.id}:${file}`;
     if (!this.pending.has(key) && this.pending.size >= MAX_QUEUED_JOBS) {
       this.reconcileRoots.set(root.id, root);
@@ -210,6 +212,39 @@ export class MediaService {
           });
       })
       .finally(() => this.reconcile());
+  }
+  private sourceMissing(root: LibraryRoot, file: string) {
+    if (this.closed || !this.watchers.has(root.id)) return;
+    this.rootChanged(root);
+    const pending = this.pending.get(`${root.id}:${file}`);
+    if (pending) {
+      pending.removed = true;
+      pending.dirty = false;
+    }
+    try {
+      const asset = this.store.markSourceMissing(
+        root.id,
+        normalizeRelativePath(relative(root.path, file)),
+      );
+      if (asset)
+        this.emit({
+          type: 'asset',
+          libraryId: root.libraryId,
+          rootId: root.id,
+          assetId: asset.id,
+        });
+    } catch (error) {
+      this.emit({
+        type: 'error',
+        libraryId: root.libraryId,
+        rootId: root.id,
+        message: fileOperationMessage(error),
+      });
+    }
+  }
+  private rootChanged(root: LibraryRoot) {
+    this.rootChanges.set(root.id, (this.rootChanges.get(root.id) ?? 0) + 1);
+    if (this.scans.has(root.id)) this.reconcileRoots.set(root.id, root);
   }
   private emit(event: CatalogEvent) {
     for (const listener of this.listeners) {
@@ -298,7 +333,8 @@ export class MediaService {
       };
       watcher
         .on('add', (file) => this.enqueue(root, file))
-        .on('change', (file) => this.enqueue(root, file));
+        .on('change', (file) => this.enqueue(root, file))
+        .on('unlink', (file) => this.sourceMissing(root, file));
       watcher.on('error', (error) => {
         this.emit({
           type: 'error',
@@ -344,6 +380,7 @@ export class MediaService {
   private scan(root: LibraryRoot): Promise<void> {
     const existing = this.scans.get(root.id);
     if (existing) return existing;
+    const revision = this.rootChanges.get(root.id) ?? 0;
     const running = (async () => {
       try {
         const { files, errors } = await this.job<{
@@ -361,6 +398,7 @@ export class MediaService {
             message: fileOperationMessage(failure),
           });
         let completed = 0;
+        let complete = errors.length === 0;
         this.emit({
           type: 'scan',
           libraryId: root.libraryId,
@@ -373,6 +411,7 @@ export class MediaService {
           try {
             await this.ingest(root, file);
           } catch (error) {
+            complete = false;
             this.emit({
               type: 'error',
               libraryId: root.libraryId,
@@ -388,6 +427,27 @@ export class MediaService {
             completed,
             total: files.length,
           });
+        }
+        if (
+          complete &&
+          completed === files.length &&
+          !this.closed &&
+          this.watchers.has(root.id) &&
+          revision === (this.rootChanges.get(root.id) ?? 0)
+        ) {
+          const assets = this.store.reconcileSources(
+            root.id,
+            files.map((file) =>
+              normalizeRelativePath(relative(root.path, file)),
+            ),
+          );
+          for (const asset of assets)
+            this.emit({
+              type: 'asset',
+              libraryId: root.libraryId,
+              rootId: root.id,
+              assetId: asset.id,
+            });
         }
       } catch (error) {
         this.emit({
@@ -417,11 +477,13 @@ export class MediaService {
     const existing = this.pending.get(key);
     if (existing) {
       existing.dirty = true;
+      existing.removed = false;
       return existing.promise;
     }
     if (this.pending.size >= MAX_QUEUED_JOBS) return Promise.reject(busy());
     const state = {
       dirty: false,
+      removed: false,
       promise: Promise.resolve<Asset | null>(null),
     };
     state.promise = (async () => {
@@ -438,7 +500,8 @@ export class MediaService {
             dataDir: this.paths.data,
             cacheDir: this.paths.cache,
           });
-          if (this.closed || !this.watchers.has(root.id)) return null;
+          if (state.removed || this.closed || !this.watchers.has(root.id))
+            return null;
           const result = this.store.ingest({
             libraryId: root.libraryId,
             rootId: root.id,
@@ -461,6 +524,7 @@ export class MediaService {
             });
           }
         } catch (error) {
+          if (state.removed) return null;
           if (!state.dirty || this.closed || !this.watchers.has(root.id))
             throw error;
         }
@@ -527,6 +591,7 @@ export class MediaService {
     const watcher = this.watchers.get(id);
     this.watchers.delete(id);
     this.reconcileRoots.delete(id);
+    this.rootChanges.delete(id);
     await watcher?.close();
     await this.scans.get(id);
     await Promise.allSettled(
@@ -562,6 +627,7 @@ export class MediaService {
     if (this.closing) return this.closing;
     this.closed = true;
     this.reconcileRoots.clear();
+    this.rootChanges.clear();
     for (const item of this.queuedJobs.splice(0)) item.reject(stopped());
     this.closing = (async () => {
       await Promise.allSettled(this.watching.values());
