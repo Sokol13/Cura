@@ -1,137 +1,120 @@
-# Local development setup
+# Setup and local operation
 
-Use Node.js 22, pnpm 10.34.6, Git, GitHub CLI, and Chromium. The exact Node patch version is pinned in `.node-version` and `.nvmrc`. All platforms use the committed pnpm lockfile.
-
-better-sqlite3 uses an upstream prebuilt binary and performs a real in-memory SQLite query during installation. The project disables fallback to node-gyp; a platform without a compatible prebuilt fails explicitly. No C++ compiler is required for SQLite. Do not bypass the repository postinstall check with `--ignore-scripts` or disable TLS verification.
+Cura needs Node.js **22**, pnpm **10.34.6**, and Git. The exact CI Node patch is in `.node-version` and `.nvmrc`; the lockfile pins package versions. A network connection is needed to clone and install dependencies. Normal library use after installation requires neither networking nor an account.
 
 ## macOS: Homebrew
 
-1. Install [Homebrew](https://brew.sh/) using its official instructions. Then run:
+Install [Homebrew](https://brew.sh/) using its official instructions, then:
 
-   ```bash
-   brew install git node@22 gh
-   export PATH="$(brew --prefix node@22)/bin:$PATH"
-   printf '\nexport PATH="%s/bin:$PATH"\n' "$(brew --prefix node@22)" >> ~/.zprofile
-   npm install --global pnpm@10.34.6
-   node --version
-   pnpm --version
-   git --version
-   gh --version
-   ```
+```bash
+brew install git node@22
+export PATH="$(brew --prefix node@22)/bin:$PATH"
+printf '\nexport PATH="%s/bin:$PATH"\n' "$(brew --prefix node@22)" >> ~/.zprofile
+npm install --global pnpm@10.34.6
+node --version
+pnpm --version
+git clone https://github.com/Sokol13/Cura.git
+cd Cura
+pnpm install
+pnpm start
+```
 
-   Node must report `v22.x`, and pnpm must report `10.34.6`. Homebrew provides the current Node 22 patch. For exact CI parity, use the version in `.node-version` from the [official Node.js downloads](https://nodejs.org/en/download).
-
-2. Authenticate for development and clone the repository:
-
-   ```bash
-   gh auth login --hostname github.com --git-protocol https --web
-   gh auth setup-git
-   gh auth status
-   git clone https://github.com/Sokol13/Cura.git
-   cd Cura
-   pnpm install --frozen-lockfile
-   pnpm exec playwright install chromium
-   ```
-
-3. Start development:
-
-   ```bash
-   pnpm dev
-   ```
-
-   Open `127.0.0.1:5173` in your browser. Changes to server, web, and shared packages are watched. Ctrl+C stops the process group.
+Node should report `v22.x`; pnpm should report `10.34.6`. Homebrew supplies the current Node 22 patch. To match CI exactly, use the pinned patch from the [official Node.js downloads](https://nodejs.org/en/download).
 
 ## Windows: winget and the official Node installer
 
-Install Git and GitHub CLI in PowerShell:
+Install Git from PowerShell:
 
 ```powershell
 winget install --id Git.Git -e --accept-package-agreements --accept-source-agreements
-winget install --id GitHub.cli -e --accept-package-agreements --accept-source-agreements
 ```
 
-Download the Windows x64 or ARM64 **Node 22** installer from [Node.js](https://nodejs.org/en/download), preferably the version in `.node-version`. Keep npm and PATH support enabled. Do not install an unversioned `OpenJS.NodeJS.LTS` package: the current LTS may be newer than Node 22. Additional native-module compiler tools are unnecessary for this project.
+Install **Node 22** for your Windows architecture from the [official Node.js downloads](https://nodejs.org/en/download). Keep npm and PATH support enabled. An unversioned `OpenJS.NodeJS.LTS` winget install may select a newer major, so check the version before using it. Compiler/Visual Studio tools are not needed for Cura's native dependencies.
 
-Open a new PowerShell window to refresh PATH:
+Open a new PowerShell window:
 
 ```powershell
 node --version
 npm.cmd install --global pnpm@10.34.6
 pnpm.cmd --version
-git --version
-gh --version
-gh auth login --hostname github.com --git-protocol https --web
-gh auth setup-git
-gh auth status
 git clone https://github.com/Sokol13/Cura.git
 cd Cura
-pnpm.cmd install --frozen-lockfile
-pnpm.cmd exec playwright install chromium
-pnpm.cmd dev
+pnpm.cmd install
+pnpm.cmd start
 ```
 
-The `.cmd` commands avoid PowerShell execution-policy restrictions on npm/pnpm `.ps1` wrappers. Replace `pnpm` with `pnpm.cmd` throughout this documentation if needed. Git for Windows includes Git Bash for Bash scripts; regular development also works through the native PowerShell commands above, without WSL.
+The `.cmd` suffix avoids PowerShell restrictions on npm/pnpm `.ps1` wrappers. Use `pnpm.cmd` in place of `pnpm` elsewhere in these docs if required. Ordinary use runs on native Windows Node; WSL is not required.
 
-GitHub authentication supports development and the setup script's final check. It is not required to run the local application.
+## Start, stop, and configure
 
-## Build, run, and test
+`pnpm install && pnpm start` is sufficient on a shell supporting `&&`; older PowerShell can run the two commands on separate lines. Start builds all packages, starts the local server, and opens the default browser at [http://127.0.0.1:3000](http://127.0.0.1:3000). If the browser does not open automatically, visit that URL. Keep the terminal running and stop with Ctrl+C.
 
-From the repository root:
+[http://127.0.0.1:3000/api/health](http://127.0.0.1:3000/api/health) should return HTTP 200 with `{"status":"ok"}`. Binding stays on `127.0.0.1`; Host/Origin validation prevents serving Cura as a public site.
+
+To choose a different port and data directory:
 
 ```bash
-pnpm build
-pnpm start
+pnpm start --port 3100 --data-dir "/absolute/path/to/cura-data"
 ```
 
-The server binds to `127.0.0.1:3000`, hosts `packages/web/dist`, and opens the default desktop browser. `/api/health` returns HTTP 200 and `{"status":"ok"}`. Ctrl+C stops the server. Override the port and database directory with `pnpm start --port 3100 --data-dir /absolute/path`; command-line values take precedence over their environment variables. Host and Origin checks restrict browser requests to supported local addresses.
-
-```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm e2e
+```powershell
+pnpm.cmd start --port 3100 --data-dir 'C:\CuraData'
 ```
 
-Vitest runs server and web tests. Playwright builds the project, starts an isolated real server, opens headless Chromium, verifies the page title, and requests the health API. E2E uses temporary user directories and manages its own server; do not start another server on its test port.
+CLI values override the corresponding environment variables. For an already-built independent server, use `node packages/server/dist/index.js --port 3100 --data-dir ...` instead. The data override does not automatically relocate separate cache and log directories.
 
-On Linux, install the browser and system libraries with `pnpm exec playwright install --with-deps chromium`; installing system packages requires root or sudo. The cloud setup script includes this step. If system libraries are already installed but system-package installation is unavailable, the script verifies the existing libraries by launching a real browser. macOS and Windows usually only need `pnpm exec playwright install chromium`.
+| Variable                   | Purpose                                                        |
+| -------------------------- | -------------------------------------------------------------- |
+| `PORT`                     | API/production port; default `3000`                            |
+| `CURA_OPEN_BROWSER`        | Set to `0` to suppress browser opening                         |
+| `CURA_DATA_DIR`            | Override catalog, retained bytes, Inbox, and settings location |
+| `CURA_CACHE_DIR`           | Override thumbnail-cache location                              |
+| `CURA_LOG_DIR`             | Override log location                                          |
+| `CURA_CHROMIUM_EXECUTABLE` | Developer/test-only path to an explicitly provisioned Chromium |
 
-`pnpm db:generate` creates a Drizzle migration from the schema. Phase 0 already includes the initial migration, so normal installation does not need this command. Server startup automatically applies pending migrations.
+Use absolute directory paths. Bash example: `CURA_OPEN_BROWSER=0 pnpm start`. PowerShell example: `$env:CURA_OPEN_BROWSER = '0'`, then `pnpm.cmd start`.
 
-## Data directories
+## Data directories and backup
 
-The server uses `env-paths('Cura', { suffix: '' })`:
+Default directories come from `env-paths('Cura', { suffix: '' })`:
 
-| System  | Database directory                      | Cache directory                    | Log directory                            |
+| System  | Data                                    | Cache                              | Logs                                     |
 | ------- | --------------------------------------- | ---------------------------------- | ---------------------------------------- |
 | macOS   | `~/Library/Application Support/Cura`    | `~/Library/Caches/Cura`            | `~/Library/Logs/Cura`                    |
 | Windows | `%LOCALAPPDATA%\Cura\Data`              | `%LOCALAPPDATA%\Cura\Cache`        | `%LOCALAPPDATA%\Cura\Log`                |
 | Linux   | `${XDG_DATA_HOME:-~/.local/share}/Cura` | `${XDG_CACHE_HOME:-~/.cache}/Cura` | `${XDG_STATE_HOME:-~/.local/state}/Cura` |
 
-The database is `cura.sqlite`; SQLite may create adjacent `-wal` and `-shm` files. The log is `cura.log`. Phase 0 creates the cache directory without producing business-data caches. Runtime data stays outside the Git checkout.
+The data directory contains `cura.sqlite` (and possibly SQLite `-wal`/`-shm` files), content-addressed snapshots under `objects/`, and uploads under `libraries/<library-id>/Inbox/`. Preferences live in the database. Thumbnails live under the cache directory's `thumbnails/`; logs use `cura.log`. Runtime files do not belong in the Git checkout or registered original folders.
 
-| Variable                   | Default or purpose                                                                                                            |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| `PORT`                     | `3000`; changes the API port while preserving loopback binding                                                                |
-| `CURA_OPEN_BROWSER`        | Set to `0` to suppress browser opening in headless environments                                                               |
-| `CURA_DATA_DIR`            | Override the database directory; use an absolute path                                                                         |
-| `CURA_CACHE_DIR`           | Override the cache directory; use an absolute path                                                                            |
-| `CURA_LOG_DIR`             | Override the log directory; use an absolute path                                                                              |
-| `CURA_CHROMIUM_EXECUTABLE` | Optional explicit Chromium path for setup verification and E2E in constrained containers; CI uses Playwright's pinned browser |
+**Register folder** references original files without moving, renaming, or rewriting them. It also snapshots each distinct content hash: earlier bytes remain available even after another application overwrites/removes an original. Identical content shares a snapshot. Uploads are copied into Inbox and also snapshotted; budget for Inbox copies, all unique retained versions, and thumbnails. Trash/restore and unregistering a folder do not reclaim version storage. The current UI does not provide snapshot garbage collection.
 
-In Bash: `CURA_OPEN_BROWSER=0 pnpm start`. In PowerShell: run `$env:CURA_OPEN_BROWSER = '0'`, then `pnpm.cmd start`. If `PORT` is set before `pnpm dev`, the Vite API proxy uses the same value.
+Manual **Replace file** creates a new retained version without changing the registered source file; rescanning that unchanged source does not undo the replacement. A later actual source change is indexed as a new version. Logical folders/tags/annotations change the catalog only.
 
-## Clean-checkout acceptance
+For a consistent backup, stop Cura and copy the **whole data directory**, plus registered original folders you still edit. Backing up only `cura.sqlite` omits retained bytes and Inbox files. Cache thumbnails can be rebuilt from Settings. Whole-library portable export is P1; copying the data directory is the current local backup procedure, not that future export format.
 
-On Linux or macOS with Node 22, pnpm, gh, and GitHub authentication available:
+## Permissions and import problems
+
+- **macOS EPERM/EACCES:** For protected Desktop, Documents, Downloads, or Pictures folders, allow the terminal or Node under **System Settings → Privacy & Security → Full Disk Access**, reopen the terminal if needed, then retry registration/rescan.
+- **Windows locked files/permission errors:** Close applications holding the file, check that your account can read the registered folder and write the Cura data/cache/log directories, then retry. Do not change originals to recover the catalog.
+- **Unavailable root:** Reconnect the drive or restore access, then rescan. Unregistering stops watching without deleting originals or retained versions.
+- **New file not yet visible:** Wait for the writing application to finish. Check scan/error status and try Settings → Rescan if needed. A file changing during ingestion is not published as a mixed or incomplete snapshot.
+- **Missing thumbnail:** Unsupported/corrupt files remain manageable with a generic icon. Raster decoding is bounded to 100 million pixels; SVG input is bounded to 8 MiB. GIF previews use the first frame. PNG metadata parsing is bounded and reports warnings in raw parameters.
+- **Upload rejected:** Browser import/replacement accepts at most 100 MiB per file. Names must be portable filenames, not paths or Windows reserved device names.
+- **Port already used:** Stop the other Cura process or select another port. Do not run two servers against the same data directory.
+
+Export **Settings → Export diagnostics** after reproducing a problem. The ZIP contains `diagnostics.json` (system/runtime/version and database statistics) and `logs.json` (bounded, filtered log records). It excludes asset bytes and full metadata; inspect the archive before sharing. If Cura cannot start, include the terminal error and relevant `cura.log` lines. See [SMOKE_TEST.md](SMOKE_TEST.md) for the desktop report checklist.
+
+## Native modules and development
+
+Installation verifies published better-sqlite3 and Sharp native binaries with a real SQLite query and image encode/decode. There is no compiler fallback. If a prebuilt is unavailable, check Node 22, OS/architecture, optional dependencies, and access to the package/prebuild download hosts; retry a normal install. Do not use `--ignore-scripts` or remove optional Sharp platform packages. [DEPENDENCIES.md](DEPENDENCIES.md) explains native notices.
+
+For development:
 
 ```bash
-cd "$(mktemp -d)"
-git clone https://github.com/Sokol13/Cura.git
-cd Cura
-bash scripts/codex-setup.sh
-pnpm build
-CURA_OPEN_BROWSER=0 pnpm start
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-In another terminal, run `curl --fail http://127.0.0.1:3000/api/health`; the response must be `{"status":"ok"}`. The setup script reports a warning if its final `gh auth status` fails, allowing local development to proceed. A local setup pass does not establish GitHub authentication, CI success, or release publication. On Windows, use Git Bash for the same script or the equivalent PowerShell installation commands above.
+Open [http://127.0.0.1:5173](http://127.0.0.1:5173). Vite proxies API requests to port 3000, or the `PORT` set before `pnpm dev`. Server, web, and shared code reload during development. Startup applies existing database migrations; `pnpm db:generate` is for schema development, not normal installation.
+
+For automation, install Chromium with `pnpm exec playwright install chromium`; Linux may need `pnpm exec playwright install --with-deps chromium` and root/sudo for system packages. GitHub CLI is only needed for repository publishing or the cloud setup script (`brew install gh` / `winget install --id GitHub.cli -e`). The repeatable `bash scripts/codex-setup.sh` checks tools, dependencies, a real browser launch, and GitHub authentication. Git Bash supplies Bash on Windows. [CODEX_ENV.md](CODEX_ENV.md) documents the cloud toolchain and constrained-browser fallback; [TESTING.md](TESTING.md) lists validation commands.

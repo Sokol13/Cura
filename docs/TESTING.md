@@ -1,35 +1,42 @@
 # Testing
 
-## Automated checks
+## Commands and isolation
 
-Run from the repository root with Node 22 and the pinned pnpm:
+Use Node 22 and pnpm 10.34.6 from the repository root:
 
 ```bash
+pnpm install --frozen-lockfile
+pnpm exec playwright install chromium
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm e2e
 ```
 
-`pnpm e2e` builds all packages, starts its own compiled production server on 127.0.0.1:4318, uses temporary database/cache/log directories, opens the real home page in headless Chromium, checks its title and heading, and requests `/api/health` from the browser. It writes `docs/screenshots/phase-0.png` and shuts down the server. Existing services are not reused.
+On Linux, browser system dependencies may require `pnpm exec playwright install --with-deps chromium`. Windows may use `pnpm.cmd`. `pnpm lint` includes ESLint and Prettier; typecheck builds the shared contracts first; Vitest exercises server and web modules; E2E builds production packages before testing.
 
-The server suite covers the Zod health response, static assets and unknown APIs, Host/Origin validation, CLI configuration, a real SQLite migration, timestamps and reopening the same database without losing a row. The web suite renders the real React component and switches its zh-CN/en translations.
+Playwright starts a real compiled server at `http://127.0.0.1:4318`, with temporary database/cache/log directories and no browser auto-open. It does not reuse an existing server. The harness stops the child and removes its temporary directories. Keep port 4318 free. `playwright-report/` and `test-results/` contain results/failure traces; milestone screenshots live under `docs/screenshots/`. The P0 UI screenshot is `v0.1.0.png`; the historical scaffold capture is `phase-0.png`.
 
-## Current-container evidence
+## Coverage and evidence at the P0 integration checkpoint
 
-- Node 22.23.3 and pnpm 10.34.6 were used.
-- `pnpm lint`, `pnpm typecheck`, and `pnpm build` passed.
-- Vitest: 23 server tests and 2 web tests passed; none skipped.
-- Playwright: 1 real-server Chromium E2E passed; screenshot captured.
-- better-sqlite3 downloaded a published prebuilt binary, performed a native SQLite query, and reused it successfully on repeat installation. No node-gyp build ran.
-- `bash scripts/codex-setup.sh` passed twice from a different working directory. The full environment bootstrap also passed, including `gh auth setup-git` and `gh auth status`.
-- A real Chromium session observed a React hot update without manual refresh; tsx restarted the API after a server edit and the Vite API proxy stayed functional. Temporary edits were restored and all development processes were stopped.
-- The setup script rejected the initially supplied Node 24 before installing project dependencies.
-- A compiled server launched from an unrelated temporary working directory accepted its CLI port/data-directory settings, returned health 200, rejected hostile Host/Origin values with 403, and shut down cleanly on SIGTERM.
+The following distinguishes completed module checks from the integrated release gate. Exact test counts, commit IDs, CI links, and final milestone results belong in [PROGRESS.md](PROGRESS.md) and the version report so this methodology does not acquire stale totals.
 
-This cloud image has no root/sudo access and blocks the Playwright CDN downloads. Local browser verification used the explicitly configured `/usr/bin/chromium` (151.0.7922.173), not a claimed successful download of Playwright's Chromium 141. The repository setup still attempts `playwright install --with-deps chromium`, then verifies the provisioned browser and its libraries by launching it. GitHub CI uses the Playwright-pinned browser and installs its OS dependencies normally.
+| Area               | Verification and expected assertions                                                                                                                                                                                                                                                                                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Foundation         | Passing baseline checks cover health/static hosting, Host/Origin rejection, CLI settings, real SQLite migrations/timestamps/reopen, and React translation changes. The original real-server Chromium smoke path and clean install/start were verified in phase 0; see [REPORT-v0.0.1.md](REPORT-v0.0.1.md).                                                                                  |
+| Media              | Integrated unit checks cover exact SD/Comfy seed parsing, text chunks and CRCs, corrupt/oversized metadata, graph ambiguity, immutable byte snapshots, palette/dimensions/pHash, EXIF, GIF/SVG behavior, NFC identity with actual NFD locators, and containment/symlink rejection. Invalid inputs must not produce fabricated metadata or mismatched snapshot/preview bytes.                 |
+| Persistence/search | Integrated unit checks use real SQLite for libraries/roots, duplicate aliases and divergence, version retention, manual replacement/rescan, tags/groups/folders, annotation ownership, smart collections, settings, and atomic cross-library rejection. The 1,000-record store test covers measured search including short CJK. This is not a full HTTP/browser performance result.          |
+| Runtime API        | The runtime branch's API integration tests pass with real files, SQLite, worker processing, and watchers through Fastify injection. They check registration/upload, thumbnail/file responses, retained old bytes, unchanged originals, rescan, watcher updates, organization, diagnostics, and invalid inputs. They are API integration tests, not Chromium E2E.                             |
+| Catalog/preview UI | Component tests exercise local controls and mocked API interactions. Real-server catalog and preview E2Es must separately prove create/register/upload, organization/filter/restore/settings, metadata/annotations/replacement/compare, and error states. Component success alone does not establish that integration.                                                                       |
+| Full P0 gate       | At this documentation checkpoint, integrated P0 browser workflows and stress acceptance are pending. Passing unit/API modules or a typechecked stress spec does not certify all P0 features, 1,000 thumbnails, under-200-ms HTTP queries, five-second browser watcher updates, or full offline operation. Record a passing integrated run and green remote CI before claiming the milestone. |
 
-A fresh HTTPS clone into a temporary directory, with core.autocrlf=true and no node_modules, passed setup, build, pnpm start, health/homepage HTTP 200, and the entire lint/typecheck/test/e2e chain. Its working tree remained clean afterward. GitHub CI [37030932058](https://github.com/Sokol13/Cura/actions/runs/37030932058) passed every required step, including normal Chromium/system-dependency installation; gh run watch --exit-status succeeded. macOS/Windows desktop browser opening and filesystem behavior require the manual checks in SMOKE_TEST.md; Linux results are not a claim that those operating systems were tested.
+The current Linux environment has verified Node 22.23.3, pnpm 10.34.6, published SQLite/Sharp prebuilt operation, and a provisioned Chromium launch. It cannot install system packages as root and has restricted Playwright CDN access. Local runs use the explicit `CURA_CHROMIUM_EXECUTABLE=/usr/bin/chromium` when required; this is not evidence that Playwright's pinned browser downloaded. CI installs the pinned Chromium/system dependencies normally. `scripts/codex-setup.sh` first attempts normal installation, then proves any configured fallback by launching it.
+
+## Release checks beyond unit tests
+
+Run the complete command chain on the final integrated commit and a clean install/start. Every P0 feature needs a real-server E2E path. Capture the three-column workspace screenshot, inspect error/loading/empty states, verify diagnostics ZIP content, and retain evidence for all nine v0.1 gates in PRD/AGENTS. A local green run is separate from `gh run watch --exit-status` proving the corresponding GitHub Actions run is green.
+
+For physical macOS/Windows, follow [SMOKE_TEST.md](SMOKE_TEST.md): automatic browser opening, protected-folder permissions, long paths, locked-file errors, actual Unicode filesystem behavior, keyboard conventions, and display/scrolling remain desktop checks. Linux simulations or path tests do not prove those systems were exercised. P1 canvas/brand/media/export and P2 cloud/Agent/FCPXML checks are added with those implementations; none are claimed by the v0.1 suite.
 
 ## P0 scale and offline acceptance
 
