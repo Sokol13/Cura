@@ -62,6 +62,12 @@ export const GenerationSchema = z.object({
   params: JsonSchema,
 });
 const fileFields = {
+  generationId: IdSchema.optional(),
+  previewState: z
+    .enum(['pending', 'ready', 'unsupported', 'failed'])
+    .optional(),
+  previewRevision: z.number().int().nonnegative().optional(),
+  previewError: z.string().max(1000).nullable().optional(),
   hash: z.string(),
   type: z.string(),
   size: z.number().int().nonnegative(),
