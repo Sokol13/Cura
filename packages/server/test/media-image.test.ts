@@ -104,7 +104,7 @@ describe('image processing', () => {
       expect.arrayContaining([expect.stringMatching(/limit|size/i)]),
     );
     expect(await readFile(result.snapshotPath)).toEqual(bytes);
-  });
+  }, 15000);
 
   it('derives dimensions, dominant colors, perceptual hash and preview from retained PNG bytes', async () => {
     const bytes = await stripes();

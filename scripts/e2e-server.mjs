@@ -11,7 +11,7 @@ const child = spawn(
   {
     env: {
       ...process.env,
-      PORT: '4318',
+      PORT: process.env.CURA_E2E_PORT ?? '4318',
       CURA_OPEN_BROWSER: '0',
       CURA_DATA_DIR: join(directory, 'data'),
       CURA_CACHE_DIR: join(directory, 'cache'),

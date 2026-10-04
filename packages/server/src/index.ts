@@ -17,10 +17,14 @@ async function start(): Promise<void> {
     pino.multistream([{ stream: process.stdout }, { stream: logDestination }]),
   );
 
-  const app = await createApp({ loggerInstance: logger });
-  app.addHook('onClose', () => {
-    database.close();
-    logDestination.end();
+  const app = await createApp({
+    loggerInstance: logger,
+    database,
+    paths,
+    onClose: () => {
+      database.close();
+      logDestination.end();
+    },
   });
 
   try {

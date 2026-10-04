@@ -3,6 +3,11 @@ import { fileURLToPath } from 'node:url';
 import { HealthResponseJsonSchema, HealthResponseSchema } from '@cura/shared';
 import fastifyStatic from '@fastify/static';
 import Fastify, { type FastifyBaseLogger } from 'fastify';
+import type { AppDatabase } from './database.js';
+import type { UserPaths } from './paths.js';
+import { CatalogStore } from './catalog-store.js';
+import { MediaService } from './media/service.js';
+import { registerCatalogRoutes } from './catalog-routes.js';
 import { isAllowedLocalRequest } from './security.js';
 
 export const DEFAULT_WEB_ROOT = fileURLToPath(
@@ -11,6 +16,9 @@ export const DEFAULT_WEB_ROOT = fileURLToPath(
 
 export interface AppOptions {
   loggerInstance?: FastifyBaseLogger;
+  database?: AppDatabase;
+  paths?: UserPaths;
+  onClose?: () => void | Promise<void>;
   staticRoot?: string | false;
 }
 
@@ -41,6 +49,30 @@ export async function createApp(options: AppOptions = {}) {
     { schema: { response: { 200: HealthResponseJsonSchema } } },
     async () => HealthResponseSchema.parse({ status: 'ok' }),
   );
+
+  if (options.database && options.paths) {
+    const store = new CatalogStore(options.database);
+    const media = new MediaService(store, options.paths);
+    media.subscribe((event) => {
+      if (event.type === 'error')
+        app.log.error(
+          {
+            operation: 'media',
+            code: event.code ?? 'MEDIA_FAILURE',
+            libraryId: event.libraryId,
+            rootId: event.rootId,
+            assetId: event.assetId,
+          },
+          'Media operation failed; inspect the affected registered root.',
+        );
+    });
+    await registerCatalogRoutes(app, store, media, options.paths);
+    app.addHook('onReady', () => media.resume());
+    app.addHook('onClose', async () => {
+      await media.close();
+      await options.onClose?.();
+    });
+  }
 
   app.all('/api', (_request, reply) => reply.callNotFound());
   app.all('/api/*', (_request, reply) => reply.callNotFound());

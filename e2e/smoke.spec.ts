@@ -21,7 +21,7 @@ test('production homepage renders and its same-origin health endpoint is ready',
   expect(HealthResponseSchema.parse(health.body)).toEqual({ status: 'ok' });
   await mkdir('docs/screenshots', { recursive: true });
   await page.screenshot({
-    path: 'docs/screenshots/phase-0.png',
+    path: 'docs/screenshots/startup.png',
     fullPage: true,
   });
 });
