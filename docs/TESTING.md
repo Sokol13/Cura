@@ -6,7 +6,7 @@ Use Node 22 and pnpm 10.34.6 from the repository root:
 
 ```bash
 pnpm install --frozen-lockfile
-pnpm exec playwright install chromium
+pnpm exec playwright install chromium chrome
 pnpm lint
 pnpm typecheck
 pnpm test

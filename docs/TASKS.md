@@ -104,7 +104,7 @@
 
 - [x] Write failing persistence and E2E tests for infinite canvas pan/zoom, positions/groups/edges/text, templates, drag/drop finalization, replacement revision and character-angle/scene-option matrices.
 - [x] Implement React Flow view and local APIs with per-library validation, persist reload state and reusable templates.
-- [ ] Full gate, docs/progress, commit/push/CI.
+- [x] Full gate, docs/progress, commit/push/CI (44c53a7, CI 37204410094).
 
 ## Task 8: P1 brands, CMF, rich previews and creative process (parallel C/D)
 
@@ -113,7 +113,7 @@
 
 - [x] Write failing tests for brand CRUD/font registration/logo guidelines and every export, CMF composition, GLB/OBJ/PSD/PDF/video supported previews, timeline/model-source hit rates.
 - [x] Audit dependency licenses and install permitted readers/renderers; implement browser-first 3D/video capture and bounded document parsing. Unsupported codecs yield explicit generic preview and cannot silently pass a capability gate.
-- [ ] Full gate with E2E for each P1 feature, docs/progress, commit/push/CI.
+- [x] Full gate with E2E for each P1 feature, docs/progress, commit/push/CI (262 units, 21 E2Es, CI 37204410094).
 
 ## Task 9: P1 neutral export and v0.2.0 gate
 
