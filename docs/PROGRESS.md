@@ -9,7 +9,7 @@ The user accepted phase 0 on 2026-10-04 and authorized uninterrupted development
 - Phase 0 and published v0.0.1; phase-1 research, PRD, architecture and task plan.
 - P0 media workers, immutable snapshots, metadata extraction, catalog persistence, local APIs, filesystem watching and full asset-library UI are integrated on feat-runtime.
 - Independent review fixes verified: unavailable-source/rename lineage, preserved generation edits in versions, safe partial updates, per-file upload failures, similarity availability, live previews, retained diagnostics, cache management, annotation editing and adjacent navigation.
-- Final complete local gate passed: lint, typecheck, 125 server + 43 web unit tests, and all 9 real-server Chromium E2Es (60.0 seconds after the directory-picker fix).
+- Final complete local gate passed: lint, typecheck, 127 server + 43 web unit tests, and all 9 real-server Chromium E2Es (59.6 seconds after the native static-serving replacement).
 - Actual 1,000-image stress: all thumbnails decoded, 70 queries/filters worst 52.1 ms; browser search 93.5–105.6 ms; new file visible after 884 ms; no external requests. Six-format previews pass. Separate synthetic 10,000-record browser virtualization passes (not a 10,000-image ingestion claim).
 - Fresh clone/install/start passed with Node 22/pnpm 10 and native prebuilt binaries. The normal default-browser opener launched headless Chromium through isolated Linux desktop associations; the Chinese UI created a library and retained it after reload. Physical macOS/Windows remain user smoke checks.
 - Published module checkpoints and documentation already have green CI through c42dedf ([run 37196300041](https://github.com/Sokol13/Cura/actions/runs/37196300041)).
@@ -17,7 +17,7 @@ The user accepted phase 0 on 2026-10-04 and authorized uninterrupted development
 ## In progress
 
 - P0 implementation `c4f6597` passed [CI 37197744558](https://github.com/Sokol13/Cura/actions/runs/37197744558); `gh run watch --exit-status` succeeded. All 9 E2Es passed without retries. The previous failed CI remains historical evidence, not the current state.
-- Final REPORT-v0.1.0, README, architecture, task ledger, changelog and ten-minute SMOKE_TEST are ready. Final documentation CI and tag/release publication are next; no tag has been created yet.
+- Final full-tree license audit found and removed eight transitive BlueOak packages by replacing the optional static plugin with a 74-line native resource handler. Added outside-root symlink, MIME/HEAD/cache regressions and an automated production-license guard in lint. The full local gate passes: 170 unit tests and 9 E2Es. The corrected dependency/static-serving CI and renewed clean-clone check precede tagging; no tag exists yet.
 - P1 read-only implementation planning is complete for boards/slots/matrices, brands/CMF, richer previews, process statistics and neutral export. Actual browser prototypes verified H.264 MP4/MOV frames and RGB8 raw/RLE PSD composites. No P1 code is included in v0.1.0.
 
 ## Next

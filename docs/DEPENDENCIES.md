@@ -6,7 +6,7 @@ Cura's own source is [MIT licensed](../LICENSE). Dependencies retain their upstr
 
 | Packages                                                                          | License    | Role                                                                                                                |
 | --------------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------- |
-| Fastify, `@fastify/static`, `@fastify/websocket`, Pino                            | MIT        | Local HTTP/WebSocket server, static assets, logging                                                                 |
+| Fastify, `@fastify/websocket`, Pino                                               | MIT        | Local HTTP/WebSocket server, static assets, logging                                                                 |
 | better-sqlite3                                                                    | MIT        | SQLite bindings and published native addon; SQLite itself is [public domain](https://www.sqlite.org/copyright.html) |
 | Drizzle ORM                                                                       | Apache-2.0 | Database schema/migration integration                                                                               |
 | Sharp                                                                             | Apache-2.0 | Native image processing wrapper; this license does **not** cover every bundled native library                       |
@@ -52,6 +52,12 @@ The following reproduces the license assignments in that bundle's upstream notic
 The installed platform package includes `README.md` for the native notices and `versions.json` for the exact bundled-library versions. On pnpm, find these under `node_modules/.pnpm/@img+sharp-libvips-<platform>@<version>/node_modules/@img/sharp-libvips-<platform>/`. The [sharp-libvips project](https://github.com/lovell/sharp-libvips) supplies the build sources/recipes and upstream library references. These notices identify what was inspected; platform-specific bundles may differ and require their own manifest/README review.
 
 Preserve upstream license, copyright, and source-availability notices when redistributing native artifacts. This file is a dependency record, not a replacement for their full license texts or a legal determination. The exception covers the mandated native stack; it does not authorize unrelated GPL/AGPL dependencies.
+
+## Runtime license enforcement
+
+`pnpm check:licenses` inspects the installed production dependency graph, including transitive packages, and is part of `pnpm lint`/CI. The allowed package licenses are MIT, ISC, Apache-2.0 and BSD-2/3-Clause; dual-license expressions are accepted only where an allowed option can be selected. Only the explicitly mandated `@img/sharp-libvips-*` native bundle has the documented exception above. Native contents and bundled fonts/assets still need separate notice review.
+
+The original static-serving plugin pulled in a BlueOak-licensed glob dependency tree. Cura removed that optional plugin and serves built web resources directly using Node/Fastify with root containment, correct MIME types and HEAD/cache handling. Downgrading that dependency tree or silently expanding the license list was rejected.
 
 ## Installation and updates
 

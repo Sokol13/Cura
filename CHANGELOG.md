@@ -7,6 +7,7 @@
 - Add nested folders, colored tag groups, ratings, notes, batch editing, reversible Trash, smart collections, full-text/CJK search and combined filters.
 - Add virtualized grid/list views, preview zoom, editable version-specific annotations, adjacent navigation, live preview updates, replacement history and side-by-side comparison.
 - Add Chinese/English UI, dark/light/system themes, persistent layout, cache usage/clear/rebuild and sanitized diagnostic ZIPs.
+- Serve built resources through a root-contained native handler and enforce the production dependency license allowlist, including transitive packages.
 - Add real-server/offline browser workflows, 1,000-image stress acceptance, source-availability recovery, cross-platform path/permission regressions and desktop smoke instructions.
 - Keep canvas/slots/brands/CMF, richer media and neutral export for v0.2.0; Agent/cloud/FCPXML work follows in v0.3.0. Release validation is tracked in `docs/REPORT-v0.1.0.md`; all nine completion definitions have evidence and the implementation CI is green.
 

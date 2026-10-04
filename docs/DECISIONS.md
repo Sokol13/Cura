@@ -187,3 +187,11 @@
 **Reason:** Delayed initial home-directory listings could overwrite a chosen folder and cause the wrong directory to be registered. Two controlled deferred-response regressions reproduced initial and explicit-browse races before the fix.
 
 **Alternatives rejected:** Disabling manual path entry, assuming local requests always finish before typing, or weakening watcher timing tests to hide unrelated scan work.
+
+## Transitive runtime license enforcement
+
+**Decision:** Inspect the complete installed production dependency tree in `pnpm lint`, selecting permitted branches of dual licenses and retaining only the documented mandatory Sharp native exception. Replace the optional static-serving plugin's BlueOak/glob dependency tree with a small native Node/Fastify resource handler.
+
+**Reason:** A final full-tree audit found eight transitive BlueOak packages despite the direct dependency inventory appearing compliant. The optional plugin is not required by the fixed stack. Root-contained static file serving needs no glob enumeration or extra runtime dependencies.
+
+**Alternatives rejected:** Treating a permissive but unlisted license as implicitly approved, pinning a web of older transitive packages, or broadening the mandatory Sharp exception to unrelated packages.

@@ -14,12 +14,13 @@
     "dev": "pnpm --filter @cura/shared build && concurrently -k -n shared,server,web \"pnpm --filter @cura/shared dev\" \"pnpm --filter @cura/server dev\" \"pnpm --filter @cura/web dev\"",
     "build": "pnpm --filter @cura/shared build && pnpm --filter @cura/server build && pnpm --filter @cura/web build",
     "start": "pnpm build && node packages/server/dist/index.js",
-    "lint": "eslint . && prettier --check .",
+    "lint": "pnpm check:licenses && eslint . && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "pnpm --filter @cura/shared build && pnpm -r typecheck && tsc --noEmit -p tsconfig.tools.json",
     "test": "pnpm --filter @cura/shared build && pnpm -r --if-present test",
     "e2e": "pnpm build && playwright test",
-    "db:generate": "pnpm --filter @cura/server db:generate"
+    "db:generate": "pnpm --filter @cura/server db:generate",
+    "check:licenses": "node scripts/check-runtime-licenses.mjs"
   },
   "devDependencies": {
     "@eslint/js": "9.37.0",
