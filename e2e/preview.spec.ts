@@ -1,4 +1,6 @@
-import { mkdir } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { deflateSync } from 'node:zlib';
 import { expect, test, type BrowserContext } from '@playwright/test';
 import {
@@ -162,6 +164,31 @@ test('offline preview persists image notes and compares immutable replacement ve
   expect(notes[0]!.versionId).toBe(asset.currentVersionId);
   expect(notes[0]!.x).toBeCloseTo(0.25, 2);
   expect(notes[0]!.y).toBeCloseTo(0.6, 2);
+  await dialog
+    .getByRole('button', { name: 'Edit annotation 1', exact: true })
+    .click();
+  await expect(noteInput).toHaveValue('Adjust shadow edge');
+  await noteInput.fill('Keep the revised shadow edge');
+  await dialog
+    .getByRole('button', { name: 'Save annotation', exact: true })
+    .click();
+  await expect(
+    dialog.getByRole('button', {
+      name: 'Annotation 1: Keep the revised shadow edge',
+      exact: true,
+    }),
+  ).toBeVisible();
+  const editedNotes = AnnotationsSchema.parse(
+    await (await request.get(`/api/assets/${asset.id}/annotations`)).json(),
+  );
+  expect(editedNotes).toHaveLength(1);
+  expect(editedNotes[0]).toMatchObject({
+    id: notes[0]!.id,
+    versionId: notes[0]!.versionId,
+    x: notes[0]!.x,
+    y: notes[0]!.y,
+    text: 'Keep the revised shadow edge',
+  });
 
   await dialog.getByLabel('Replace file', { exact: true }).setInputFiles({
     name: 'preview-replacement.png',
@@ -175,7 +202,7 @@ test('offline preview persists image notes and compares immutable replacement ve
     dialog.getByRole('img', { name: 'preview-replacement.png — V2' }),
   ).toBeVisible();
   await expect(
-    dialog.getByText('Adjust shadow edge', { exact: true }),
+    dialog.getByText('Keep the revised shadow edge', { exact: true }),
   ).toHaveCount(0);
   await dialog
     .getByRole('button', { name: 'Compare versions', exact: true })
@@ -214,17 +241,19 @@ test('offline preview persists image notes and compares immutable replacement ve
     .dblclick();
   await dialog.getByRole('button', { name: /View V1:/ }).click();
   await expect(
-    dialog.getByText('Adjust shadow edge', { exact: true }),
+    dialog.getByText('Keep the revised shadow edge', { exact: true }),
   ).toBeVisible();
   await expect(
-    dialog.getByRole('button', { name: 'Annotation 1: Adjust shadow edge' }),
+    dialog.getByRole('button', {
+      name: 'Annotation 1: Keep the revised shadow edge',
+    }),
   ).toBeVisible();
   await page.screenshot({ path: 'docs/screenshots/preview-annotation.png' });
   await dialog
     .getByRole('button', { name: 'Delete annotation 1', exact: true })
     .click();
   await expect(
-    dialog.getByText('Adjust shadow edge', { exact: true }),
+    dialog.getByText('Keep the revised shadow edge', { exact: true }),
   ).toHaveCount(0);
   expect(
     AnnotationsSchema.parse(
@@ -315,4 +344,102 @@ test('SVG preview uses a raster thumbnail and unsupported files remain downloada
     .getAttribute('href');
   expect(await (await request.get(unknownUrl!)).body()).toEqual(unknown);
   expect(externalRequests).toEqual([]);
+});
+
+test('open preview navigates adjacent assets and follows a watched file replacement', async ({
+  page,
+  request,
+  context,
+}) => {
+  test.setTimeout(45_000);
+  const externalRequests = await blockExternalRequests(context);
+  const directory = await mkdtemp(join(tmpdir(), 'cura-preview-watch-'));
+  const original = previewFixture(90);
+  const replacement = previewFixture(180);
+  try {
+    await writeFile(join(directory, 'watch-a.png'), original);
+    await writeFile(join(directory, 'watch-b.png'), previewFixture(120));
+    const create = await request.post('/api/libraries', {
+      data: { name: 'Live preview acceptance' },
+    });
+    expect(create.ok()).toBe(true);
+    const library = LibrarySchema.parse(await create.json());
+    expect(
+      (
+        await request.patch('/api/settings', {
+          data: { activeLibraryId: library.id, language: 'en' },
+        })
+      ).ok(),
+    ).toBe(true);
+    expect(
+      (
+        await request.post(`/api/libraries/${library.id}/roots`, {
+          data: { path: directory },
+        })
+      ).ok(),
+    ).toBe(true);
+    await expect
+      .poll(
+        async () =>
+          AssetPageSchema.parse(
+            await (
+              await request.get(`/api/libraries/${library.id}/assets`)
+            ).json(),
+          ).total,
+        { timeout: 15_000 },
+      )
+      .toBe(2);
+    await page.goto('/');
+    await page
+      .getByRole('button', { name: 'Select watch-a.png', exact: true })
+      .dblclick();
+    const dialog = page.getByRole('dialog', { name: 'Asset preview' });
+    await expect(
+      dialog.getByRole('img', { name: 'watch-a.png — V1' }),
+    ).toBeVisible();
+    const forward = await dialog
+      .getByRole('button', { name: 'Next asset', exact: true })
+      .isEnabled();
+    await dialog
+      .getByRole('button', {
+        name: forward ? 'Next asset' : 'Previous asset',
+        exact: true,
+      })
+      .click();
+    await expect(
+      dialog.getByRole('img', { name: 'watch-b.png — V1' }),
+    ).toBeVisible();
+    await dialog
+      .getByRole('button', { name: 'Close preview', exact: true })
+      .press(forward ? 'ArrowLeft' : 'ArrowRight');
+    await expect(
+      dialog.getByRole('img', { name: 'watch-a.png — V1' }),
+    ).toBeVisible();
+    await writeFile(join(directory, 'watch-a.png'), replacement);
+    await expect(
+      dialog.getByRole('img', { name: 'watch-a.png — V2' }),
+    ).toBeVisible({ timeout: 10_000 });
+    await expect(
+      dialog.getByRole('button', { name: /View V1:/ }),
+    ).toBeVisible();
+    const catalog = AssetPageSchema.parse(
+      await (await request.get(`/api/libraries/${library.id}/assets`)).json(),
+    );
+    const asset = catalog.items.find((item) => item.name === 'watch-a.png')!;
+    const history = AssetVersionsSchema.parse(
+      await (await request.get(`/api/assets/${asset.id}/versions`)).json(),
+    );
+    const oldVersion = history.find((version) => version.ordinal === 1)!;
+    expect(
+      await (await request.get(`/api/versions/${oldVersion.id}/file`)).body(),
+    ).toEqual(original);
+    expect(
+      await (
+        await request.get(`/api/versions/${asset.currentVersionId}/file`)
+      ).body(),
+    ).toEqual(replacement);
+    expect(externalRequests).toEqual([]);
+  } finally {
+    await rm(directory, { recursive: true, force: true });
+  }
 });
