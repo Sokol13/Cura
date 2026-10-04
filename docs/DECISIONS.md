@@ -135,3 +135,33 @@
 **Reason:** The milestone requires a clean clone/install/start without a separate build command. Rebuilding on start is simple, guarantees current source and works identically on macOS/Windows; the startup cost is acceptable for v0.1. Native module smoke checks fail visibly when a platform binary is unavailable without invoking a compiler.
 
 **Alternatives rejected:** A complex timestamp-based build cache, requiring undocumented build steps, or letting native install scripts fall back to node-gyp.
+
+## Manual replacement and media bounds
+
+**Decision:** Source aliases retain their last observed source hash separately from an asset's current version. Upload replacement appends a version without editing a registered source; rescanning unchanged source bytes is a no-op.
+
+**Reason:** The original-preservation promise otherwise conflicts with replacement: an unchanged external file could undo the new current version on every rescan.
+
+**Alternatives rejected:** Overwriting registered sources or treating the current asset hash as the last observed source hash.
+
+**Decision:** Bound raster decoding to 100 million pixels, SVG input to 8 MiB, and PNG text/graph work to explicit parser limits. Animated GIF thumbnails use the first frame. Palettes contain up to eight actual dominant colors; flat-color images may contain fewer than five.
+
+**Reason:** Bounded work protects the local service from malformed files and memory exhaustion. Repeating invented palette entries would misrepresent single-color artwork.
+
+**Alternatives rejected:** Unbounded decoding and fabricated colors. Originals remain retained and manageable when preview extraction cannot proceed.
+
+## Native bundle notice correction
+
+**Decision:** Preserve the actual installed native bundle notices: Sharp's npm wrapper is Apache-2.0; upstream libvips is LGPL-2.1-or-later, while the selected @img/sharp-libvips bundle declares LGPL-3.0-or-later and includes other native-component terms (including Cairo MPL-2.0). DEPENDENCIES.md inventories these distinctions.
+
+**Reason:** Wrapper and upstream-library labels alone do not describe the shipped prebuilt bundle. The explicit mandatory-Sharp reconciliation above applies to that documented bundle, not just one library label.
+
+**Alternatives rejected:** Describing the bundled runtime as entirely permissive or reducing all native notices to LGPL-2.1.
+
+## Version metadata corrections and unavailable sources
+
+**Decision:** Keep version bytes immutable, but apply manual generation-metadata corrections to the current version as well as the asset so the correction survives later replacement. Preserve unavailable source aliases for history, exclude them from duplicate-divergence counts, reconcile deletions/renames, and show retained assets with a missing-original indicator.
+
+**Reason:** Editing a prompt must not silently lose the correction when the next version arrives. A renamed file is one continuing asset, not an active duplicate of its vanished old path. Retained snapshots remain usable even when sources disappear.
+
+**Alternatives rejected:** Deleting catalog history with source files, counting stale aliases as live duplicates, or retaining corrections only on the mutable current-asset record.
