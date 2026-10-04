@@ -1,0 +1,13 @@
+# Automation implementation decisions and verification notes
+
+These scoped notes accompany the P2 implementation; the coordinator incorporates their summary into DECISIONS.md and PROGRESS.md.
+
+- Use explicit caption mode alongside strict JSON. Genuine pinned SmolVLM produced useful captions but failed several structured protocols and hallucinated details. Preserve raw text and label deterministic vocabulary/name derivations. Rejected: converting prose into JSON while claiming model-structured output, a hidden fallback, or shipping model weights/Python dependencies in Cura.
+- Changes are selected by stable field IDs and guarded by both source version and exact field state. A tag set is one field; later tag edits conflict rather than being heuristically merged away during undo. Rejected: unconditional apply/undo and physical file rename.
+- Rule age uses retained version creation time, not mutable asset/cache timestamps. Any active historical final owner protects the asset. Rule snapshots remain in job history after rule edits/deletion. Rejected: checking only the current asset.finalized projection.
+- Scripts retain original immutable UTF-8 bytes. Offline extraction is explicitly grammar-based; provider/manual ranges become locally derived exact excerpts. Aggregate excerpt bytes are bounded to prevent repeated ranges amplifying a small input into unbounded output. Rejected: source-less invented quotations and accepting malformed UTF-8 replacement characters.
+- Documents snapshot source metadata and original version identity at generation time. They remain manually editable with revision CAS and neutral exports. Rejected: live metadata views presented as historical documents.
+
+Completed checkpoint d3adbfd: HTTP providers, bounded workers/jobs, proposal apply/undo, archive rules, scripts, documents, portable reader and HTTP routes; 23 focused tests, server typecheck and scoped lint passed. Follow-up RED→GREEN regressions caught aggregate reference amplification and missing archive-rule rationale. Additional real protocol tests cover mixed failures, bounded concurrency, cancellation, interrupted restart, collision handling and historical final protection.
+
+The full `pnpm test` attempt on the module branch stopped at the coordinator's known pending central Sidebar archived-filter regression (94/95 web tests passed); no full-suite-green claim is made here. The final integrated unit/browser/performance/release gate belongs to the coordinator. Genuine provider evidence records the actual production roundtrip and strict JSON rejection; the temporary CPU endpoint was shut down afterward.

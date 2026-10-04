@@ -66,6 +66,7 @@ const emptyFilters: Filters = {
   minHeight: undefined,
   similarTo: undefined,
   trash: false,
+  archived: false,
 };
 
 function savedFilters(rules: Collection['rules']): Filters {
@@ -83,6 +84,7 @@ function savedFilters(rules: Collection['rules']): Filters {
     minHeight,
     similarTo,
     trash,
+    archived,
   } = rules;
   return {
     q,
@@ -98,6 +100,7 @@ function savedFilters(rules: Collection['rules']): Filters {
     minHeight,
     similarTo,
     trash,
+    archived,
   };
 }
 
@@ -194,7 +197,11 @@ export function Sidebar({
                 type="button"
                 className={`nav-item ${filters.folderId === folder.id && !filters.trash ? 'active' : ''}`}
                 onClick={() =>
-                  onFilterChange({ folderId: folder.id, trash: false })
+                  onFilterChange({
+                    folderId: folder.id,
+                    trash: false,
+                    archived: false,
+                  })
                 }
               >
                 <span className="nav-icon" aria-hidden="true">
@@ -236,7 +243,9 @@ export function Sidebar({
           <button
             type="button"
             className={`nav-item ${filters.tagId === tag.id && !filters.trash ? 'active' : ''}`}
-            onClick={() => onFilterChange({ tagId: tag.id, trash: false })}
+            onClick={() =>
+              onFilterChange({ tagId: tag.id, trash: false, archived: false })
+            }
           >
             <span
               className="tag-dot"
@@ -365,7 +374,7 @@ export function Sidebar({
       <div className="sidebar-scroll">
         <button
           type="button"
-          className={`nav-item ${!filters.trash && !filters.folderId && !filters.tagId ? 'active' : ''}`}
+          className={`nav-item ${!filters.trash && !filters.archived && !filters.folderId && !filters.tagId ? 'active' : ''}`}
           onClick={() => onFilterChange({ ...emptyFilters })}
         >
           <span className="nav-icon" aria-hidden="true">
@@ -555,6 +564,16 @@ export function Sidebar({
         </section>
       </div>
       <div className="sidebar-footer">
+        <button
+          type="button"
+          className={`nav-item ${filters.archived && !filters.trash ? 'active' : ''}`}
+          onClick={() => onFilterChange({ ...emptyFilters, archived: true })}
+        >
+          <span className="nav-icon" aria-hidden="true">
+            ▤
+          </span>
+          <span>{t('archivedAssets')}</span>
+        </button>
         <button
           type="button"
           className={`nav-item ${filters.trash ? 'active' : ''}`}
@@ -819,6 +838,16 @@ export function Sidebar({
                       />
                     </label>
                   ))}
+                  <label className="checkbox-field">
+                    <input
+                      type="checkbox"
+                      checked={edit.rules?.archived ?? false}
+                      onChange={(event) =>
+                        updateRule({ archived: event.target.checked })
+                      }
+                    />
+                    {t('searchArchived')}
+                  </label>
                   <label className="checkbox-field">
                     <input
                       type="checkbox"

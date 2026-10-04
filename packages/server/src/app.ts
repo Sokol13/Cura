@@ -13,6 +13,8 @@ import { BoardStore } from './boards/store.js';
 import { registerBoardRoutes } from './boards/routes.js';
 import { registerBrandRoutes } from './brands/routes.js';
 import { registerExportRoutes } from './exports/routes.js';
+import { registerAutomationRoutes } from './automation/routes.js';
+import { registerFcpxmlRoutes } from './fcpxml/routes.js';
 import { isAllowedLocalRequest } from './security.js';
 import { registerStaticFiles } from './static-files.js';
 
@@ -86,6 +88,14 @@ export async function createApp(options: AppOptions = {}) {
     // Fastify closes hooks in reverse order: stop generation before media/database.
     registerProcessRoutes(app, options.database, store, media);
     registerExportRoutes(app, options.database, options.paths);
+    const automation = registerAutomationRoutes(app, {
+      database: options.database,
+      store,
+      media,
+      paths: options.paths,
+    });
+    app.addHook('onClose', () => automation.close());
+    registerFcpxmlRoutes(app, options.database, options.paths);
   }
 
   app.all('/api', (_request, reply) => reply.callNotFound());

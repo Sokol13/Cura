@@ -1,0 +1,31 @@
+{
+  "executedAt": "2026-10-04T13:40:40.009Z",
+  "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+  "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+  "mode": "json",
+  "proxy": "temporary byte-for-byte local forwarding solely to record upstream response",
+  "outcome": {
+    "code": "PROVIDER_INVALID_OUTPUT"
+  },
+  "upstream": {
+    "id": "chatcmpl-4f10400133bf46caac3af2ae1271cb1e",
+    "object": "chat.completion",
+    "created": 1791121239,
+    "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+    "choices": [
+      {
+        "index": 0,
+        "message": {
+          "role": "assistant",
+          "content": " One sentence.\nThe image is a simple illustration of a house with a blue roof and a brown door. The house is simple in design, with a red roof and a brown door. There are two windows on the front of the house, and a small chimney on the roof. The front door is dark brown. The house is surrounded by a green field. The sun is visible in the upper right corner of the image, indicating that it is either midday or early afternoon."
+        },
+        "finish_reason": "stop"
+      }
+    ],
+    "usage": {
+      "prompt_tokens": 127,
+      "completion_tokens": 97,
+      "total_tokens": 224
+    }
+  }
+}

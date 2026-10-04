@@ -33,6 +33,8 @@ const file = {
   updatedAt: timestamp,
 };
 const asset: Asset = {
+  displayName: null,
+  archivedAt: null,
   ...file,
   id: 'asset-a',
   libraryId: 'library-a',

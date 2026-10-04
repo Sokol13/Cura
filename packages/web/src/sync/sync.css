@@ -1,0 +1,225 @@
+.sync-workspace {
+  min-height: 100vh;
+  padding: 24px;
+  background: var(--bg, #151719);
+  color: var(--text, #e8e9eb);
+}
+.sync-header,
+.sync-actions,
+.sync-link-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sync-header {
+  margin-bottom: 20px;
+}
+.sync-header h1,
+.sync-header h2 {
+  flex: 1;
+  margin: 0;
+}
+.sync-workspace h2 {
+  font-size: 17px;
+}
+.sync-workspace h3 {
+  margin: 0;
+}
+.sync-workspace button,
+.sync-workspace input,
+.sync-workspace select {
+  font: inherit;
+  border-radius: 6px;
+  padding: 8px 12px;
+  border: 1px solid #49505a;
+  background: #272c33;
+  color: inherit;
+}
+.sync-workspace button:not(:disabled) {
+  cursor: pointer;
+}
+.sync-workspace button:disabled {
+  opacity: 0.5;
+}
+.sync-workspace .button-primary {
+  background: #e88242;
+  color: #171717;
+  border-color: #e88242;
+}
+.sync-workspace button:focus-visible,
+.sync-workspace input:focus-visible,
+.sync-workspace select:focus-visible,
+.sync-workspace summary:focus-visible {
+  outline: 2px solid #e88242;
+  outline-offset: 2px;
+}
+.sync-panel {
+  border: 1px solid #373e48;
+  background: #20242a;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 18px;
+}
+.sync-panel p {
+  line-height: 1.55;
+}
+.sync-muted {
+  color: #a9b1bd;
+  font-size: 13px;
+}
+.sync-inline-form {
+  border: 0;
+  padding: 14px 0;
+  margin: 0;
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sync-workspace label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.sync-workspace input {
+  min-width: 220px;
+  max-width: 100%;
+}
+.sync-workspace dl {
+  margin: 12px 0;
+}
+.sync-workspace dt {
+  font-size: 12px;
+  color: #a9b1bd;
+  margin-bottom: 4px;
+}
+.sync-workspace dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.sync-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr));
+  gap: 18px;
+}
+.sync-link-heading {
+  justify-content: space-between;
+}
+.sync-badge {
+  display: inline-block;
+  padding: 4px 9px;
+  border-radius: 99px;
+  background: #383028;
+  color: #f3bc94;
+  font-size: 12px;
+}
+.sync-progress progress {
+  width: 100%;
+  accent-color: #e88242;
+}
+.sync-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: #0009;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.sync-dialog {
+  width: min(900px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #20242a;
+  border: 1px solid #49505a;
+  border-radius: 12px;
+  padding: 24px;
+}
+.sync-dialog .sync-header {
+  position: sticky;
+  top: -24px;
+  background: inherit;
+  padding: 12px 0;
+  z-index: 1;
+}
+.sync-member {
+  border: 1px solid #49505a;
+  border-radius: 8px;
+  margin: 10px 0;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.sync-member code {
+  flex: 1;
+  overflow-wrap: anywhere;
+}
+.sync-confirm {
+  border-left: 3px solid #e88242;
+  padding: 12px;
+}
+.sync-conflicts {
+  list-style: none;
+  padding: 0;
+}
+.sync-conflicts li {
+  border-bottom: 1px solid #49505a;
+  padding: 12px 0;
+}
+.sync-dialog details {
+  margin: 12px 0;
+}
+.sync-dialog summary {
+  cursor: pointer;
+  padding: 8px;
+  background: #272c33;
+  border-radius: 4px;
+}
+.sync-dialog pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  padding: 12px;
+  max-height: 400px;
+  overflow: auto;
+}
+[data-theme='light'] .sync-workspace {
+  background: #f5f4f1;
+  color: #25282d;
+}
+[data-theme='light'] .sync-panel,
+[data-theme='light'] .sync-dialog {
+  background: #fff;
+  border-color: #d4d6d9;
+}
+[data-theme='light'] .sync-workspace button,
+[data-theme='light'] .sync-workspace input,
+[data-theme='light'] .sync-workspace select,
+[data-theme='light'] .sync-dialog summary {
+  background: #f1f2f4;
+  color: #25282d;
+  border-color: #bfc3c9;
+}
+[data-theme='light'] .sync-workspace .button-primary {
+  background: #e88242;
+  border-color: #e88242;
+}
+[data-theme='light'] .sync-muted,
+[data-theme='light'] .sync-workspace dt {
+  color: #626a76;
+}
+@media (max-width: 600px) {
+  .sync-workspace {
+    padding: 14px;
+  }
+  .sync-dialog {
+    padding: 16px;
+  }
+  .sync-inline-form label,
+  .sync-inline-form input {
+    width: 100%;
+  }
+}

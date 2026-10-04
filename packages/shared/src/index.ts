@@ -12,3 +12,8 @@ export * from './boards.js';
 export * from './process.js';
 export * from './exports.js';
 export * from './media-preview.js';
+export * from './asset-names.js';
+export * from './automation.js';
+export * from './sync.js';
+export * from './sync-portable.js';
+export * from './fcpxml.js';

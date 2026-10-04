@@ -174,7 +174,7 @@ async function setup() {
   cleanup.push(() => media.close());
   const originals = join(directory, 'originals');
   await mkdir(originals);
-  return { directory, paths, store, library, media, originals };
+  return { directory, paths, store, library, media, originals, db };
 }
 
 it('reprocesses a change received after copying an earlier snapshot', async () => {
@@ -375,6 +375,72 @@ it('rebuilds retained trashed versions and persists new cache paths', async () =
   const rebuilt = store.getVersionFile(asset.currentVersionId);
   expect(rebuilt.thumbnailPath?.startsWith(paths.cache)).toBe(true);
   expect((await readFile(rebuilt.thumbnailPath!)).length).toBeGreaterThan(0);
+});
+
+it('rebuilds only newly synced retained versions without registering managed roots or changing metadata', async () => {
+  const { media, originals, paths, library, store, db } = await setup();
+  const root = store.addRoot(library.id, originals);
+  const assets = [];
+  for (const color of ['red', 'blue']) {
+    const name = `${color}.svg`,
+      path = join(originals, name);
+    await writeFile(
+      path,
+      `<svg xmlns="http://www.w3.org/2000/svg" width="3" height="2"><rect width="3" height="2" fill="${color}"/></svg>`,
+    );
+    const processed = await processFile({
+      filePath: path,
+      dataDir: paths.data,
+      cacheDir: paths.cache,
+    });
+    assets.push(
+      store.ingest({
+        libraryId: library.id,
+        rootId: root.id,
+        relativePath: name,
+        actualRelativePath: name,
+        processed,
+      }).asset,
+    );
+  }
+  const asset = assets[0]!;
+  store.updateAsset(asset.id, {
+    prompt: 'Retained authored prompt',
+    note: 'Keep this note',
+    displayName: 'Synced label.svg',
+  });
+  db.sqlite
+    .prepare('UPDATE library_roots SET managed=1 WHERE id=?')
+    .run(root.id);
+  db.sqlite.prepare('DELETE FROM asset_sources WHERE root_id=?').run(root.id);
+  for (const item of assets)
+    store.updateVersionPreview(item.currentVersionId, null);
+  await rm(originals, { recursive: true });
+  const before = store.listVersions(asset.id)[0]!;
+  const events: CatalogEvent[] = [];
+  media.subscribe((event) => events.push(event));
+  await media.rebuildVersions([asset.currentVersionId, asset.currentVersionId]);
+  expect(
+    store.getVersionFile(asset.currentVersionId).thumbnailPath,
+  ).not.toBeNull();
+  expect(
+    store.getVersionFile(assets[1]!.currentVersionId).thumbnailPath,
+  ).toBeNull();
+  expect(store.listVersions(asset.id)[0]).toMatchObject({
+    name: before.name,
+    hash: before.hash,
+    prompt: before.prompt,
+    width: before.width,
+    height: before.height,
+  });
+  expect(store.getAsset(asset.id)).toMatchObject({
+    note: 'Keep this note',
+    displayName: 'Synced label.svg',
+    missing: false,
+  });
+  expect(store.listRoots(library.id)).toEqual([]);
+  expect(watchers).toHaveLength(0);
+  expect(events.filter((event) => event.type === 'thumbnail')).toHaveLength(1);
 });
 
 it('rechecks source containment when the real worker executes a queued file', async () => {

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { useTranslation } from 'react-i18next';
-import type { Asset } from '@cura/shared';
+import { assetDisplayName, type Asset } from '@cura/shared';
 import { assetUrl } from './api';
 import { formatBytes } from './format';
 
@@ -86,7 +86,9 @@ export function AssetGrid({
                 <button
                   key={asset.id}
                   className={`asset-card ${selected.has(asset.id) ? 'selected' : ''}`}
-                  aria-label={t('selectAsset', { name: asset.name })}
+                  aria-label={t('selectAsset', {
+                    name: assetDisplayName(asset),
+                  })}
                   aria-pressed={selected.has(asset.id)}
                   onClick={(e) =>
                     onSelect(asset, e.metaKey || e.ctrlKey, e.shiftKey)
@@ -112,7 +114,9 @@ export function AssetGrid({
                     {asset.finalized && <span className="final-badge">✓</span>}
                   </span>
                   <span className="asset-caption">
-                    <strong title={asset.name}>{asset.name}</strong>
+                    <strong title={asset.name}>
+                      {assetDisplayName(asset)}
+                    </strong>
                     <span>
                       {asset.width && asset.height
                         ? `${asset.width} × ${asset.height}`

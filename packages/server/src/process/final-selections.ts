@@ -75,6 +75,12 @@ export function setFinalSelection(
         return invalid('Final selection version does not belong to this asset');
       if (version.library_id !== owner.libraryId)
         invalid('Final selection asset belongs to another library');
+      const restoredAt = new Date().toISOString();
+      sqlite
+        .prepare(
+          "UPDATE assets SET payload=json_set(payload,'$.archivedAt',NULL,'$.updatedAt',?),updated_at=? WHERE id=? AND json_extract(payload,'$.archivedAt') IS NOT NULL",
+        )
+        .run(restoredAt, restoredAt, pin.assetId);
     }
     const previous = sqlite
       .prepare(

@@ -30,6 +30,8 @@ export function assetsCsv(manifest: ExportManifest): string {
   const columns = [
     'id',
     'name',
+    'displayName',
+    'archivedAt',
     'currentVersionId',
     'hash',
     'type',

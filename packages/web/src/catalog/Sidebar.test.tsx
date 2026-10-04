@@ -61,7 +61,7 @@ const collections = [
     id: 'collection-1',
     libraryId: 'library-1',
     name: 'Favorites',
-    rules: { rating: 5, trash: false, offset: 0, limit: 100 },
+    rules: { rating: 5, trash: false, archived: false, offset: 0, limit: 100 },
   },
 ];
 const fetchMock = vi.fn<typeof fetch>();
@@ -107,6 +107,46 @@ beforeEach(async () => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('catalog sidebar', () => {
+  it('opens archived assets and restores archived filters from a saved search', () => {
+    const callbacks = mount({
+      filters: { archived: true },
+      collections: [
+        {
+          ...collections[0],
+          rules: { ...collections[0]!.rules, archived: true },
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Archived assets' }));
+    expect(callbacks.onFilterChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ archived: true, trash: false, q: undefined }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'All assets' }));
+    expect(callbacks.onFilterChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ archived: false, trash: false }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Favorites' }));
+    expect(callbacks.onFilterChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ archived: true, rating: 5 }),
+    );
+  });
+
+  it('retains the archive filter when saving and editing a smart folder', async () => {
+    mount({ filters: { archived: true, q: 'hero' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save search' }));
+    const dialog = within(screen.getByRole('dialog'));
+    fireEvent.change(dialog.getByLabelText('Name'), {
+      target: { value: 'Archived heroes' },
+    });
+    expect(dialog.getByLabelText('Search archived assets')).toBeChecked();
+    fireEvent.click(dialog.getByRole('button', { name: 'Create' }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const options = fetchMock.mock.calls[0]?.[1];
+    expect(JSON.parse(String(options?.body))).toMatchObject({
+      name: 'Archived heroes',
+      rules: { archived: true, q: 'hero' },
+    });
+  });
   it('switches libraries and creates a named library in an accessible dialog', async () => {
     const callbacks = mount();
     fireEvent.change(screen.getByLabelText('Library'), {
@@ -383,6 +423,7 @@ describe('catalog sidebar', () => {
         q: undefined,
         tagId: undefined,
         trash: false,
+        archived: false,
       }),
     );
   });

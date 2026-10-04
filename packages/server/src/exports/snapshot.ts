@@ -4,6 +4,8 @@ import { CatalogError, CatalogStore } from '../catalog-store.js';
 import { BoardStore } from '../boards/store.js';
 import { readBrandExport } from '../brands/store.js';
 import { readProcessExport } from '../process/store.js';
+import { readAutomationExport } from '../automation/export.js';
+import { readFcpxmlExport } from '../fcpxml/snapshot.js';
 import { portableName } from './portable.js';
 type Row = Record<string, unknown>;
 const camel = (row: Row): Row =>
@@ -41,6 +43,14 @@ export function readExportSnapshot(
     const boards = new BoardStore(database).exportLibrary(libraryId),
       brands = readBrandExport(database, libraryId),
       process = readProcessExport(database, libraryId);
+    const automation = readAutomationExport(database, libraryId);
+    const fcpxml = readFcpxmlExport(database, libraryId);
+    const syncConflicts = rows(
+      'SELECT c.payload FROM sync_conflicts c JOIN sync_links l ON l.id=c.link_id WHERE l.library_id=? ORDER BY c.created_at,c.id',
+      libraryId,
+    ).map((row) =>
+      C.SyncConflictDetailSchema.parse(JSON.parse(String(row.payload))),
+    );
     const allIds = rows(
       'SELECT id FROM assets WHERE library_id=? ORDER BY created_at,id',
       libraryId,
@@ -60,8 +70,30 @@ export function readExportSnapshot(
       ...boards.items,
       ...boards.slots.map((slot) => slot.currentPin),
       ...boards.revisions.map((revision) => revision.pin),
+      ...automation.pins,
+      ...fcpxml.flatMap((job) => job.request.clips),
     ])
       if (pin?.assetId) chosen.add(pin.assetId);
+    // Conflict snapshots remain historical metadata. Include referenced live assets
+    // when they still exist; deleted historical records remain in the snapshots.
+    const conflictDependencies = (value: unknown): void => {
+      if (Array.isArray(value)) {
+        value.forEach(conflictDependencies);
+        return;
+      }
+      if (!value || typeof value !== 'object') return;
+      const record = value as Record<string, unknown>;
+      if (
+        record.kind === 'asset' &&
+        typeof record.id === 'string' &&
+        allIds.includes(record.id)
+      )
+        chosen.add(record.id);
+      if (typeof record.assetId === 'string' && allIds.includes(record.assetId))
+        chosen.add(record.assetId);
+      for (const child of Object.values(record)) conflictDependencies(child);
+    };
+    syncConflicts.forEach(conflictDependencies);
     const collections = catalog.listCollections(libraryId);
     for (const collection of collections)
       if (collection.rules.similarTo) chosen.add(collection.rules.similarTo);
@@ -96,7 +128,7 @@ export function readExportSnapshot(
       let file = byHash.get(version.hash);
       if (!file) {
         file = {
-          path: `files/${version.hash}/${portableName(version.name)}`,
+          path: `files/${version.hash}/${C.versionExportName(assets.find((asset) => asset.id === version.assetId)?.displayName, version.name)}`,
           source: catalog.getVersionFile(version.id).snapshotPath,
           hash: version.hash,
           size: version.size,
@@ -121,7 +153,9 @@ export function readExportSnapshot(
       libraryId,
     ).map((row) => ({
       ...camel(row),
-      path: row.kind === 'inbox' ? 'Inbox' : row.path,
+      managed: row.managed === 1,
+      path:
+        row.managed === 1 ? 'Sync' : row.kind === 'inbox' ? 'Inbox' : row.path,
     }));
     const sources = rows(
       'SELECT s.* FROM asset_sources s JOIN assets a ON a.id=s.asset_id WHERE a.library_id=? ORDER BY s.created_at,s.id',
@@ -186,6 +220,9 @@ export function readExportSnapshot(
       },
       boards,
       brands,
+      automation,
+      syncConflicts,
+      fcpxml,
       activity,
       files: files.map((file) => ({
         path: file.path,

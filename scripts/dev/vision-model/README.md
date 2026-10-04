@@ -1,0 +1,13 @@
+# Optional genuine model verification harness
+
+These Python files are development tools, outside Cura's Node runtime and normal install/start path. No weights, virtual environment, account, or hosted endpoint are shipped. The harness returns genuine neural model output unchanged. It is not a mock or a recommended production inference server.
+
+For reproduction, copy this directory to a disposable workspace with at least 2 GiB disk and about 2 GiB RAM available. Create a Python 3.12 virtual environment there. Install CPU `torch==2.7.1+cpu` and `torchvision==0.22.1+cpu` from the PyTorch CPU wheel index, then `transformers==4.53.3`, `huggingface-hub==0.34.4`, `safetensors==0.6.2`, `tokenizers==0.21.4`, and `pillow==12.3.0`. The exact inspected development environment is recorded in requirements-frozen.txt; this file is evidence, not a Cura dependency lock.
+
+Download the public `HuggingFaceTB/SmolVLM-256M-Instruct` repository at revision `7e3e67edbbed1bf9888184d9df282b700a323964` into `model/` beside engine.py. `huggingface_hub.snapshot_download(repo_id=..., revision=..., local_dir='model')` can do this without an account. Verify every downloaded file against docs/evidence/v0.3.0/vision/model-inventory.json. In particular model.safetensors must be 513,028,808 bytes and SHA-256 `74dea5904032e5ae99a2e0eef5179e6ac0f1dedc3ab0c7c2a5d4d387c843203e`. Downloading an unpinned revision is not this reproduction.
+
+Run `python fixture.py`, verify the PNG SHA-256 is `4a089d8d728e201c9dc0780988f14f10b4781b526f0d8a83563102f9bb331339`, then `python serve.py --port 8898`. The process binds loopback only, accepts one inline PNG, performs one CPU inference at a time, and caps input/output. It uses local files, `trust_remote_code=False`, float32, four threads, SDPA and greedy decoding. It never fetches request-supplied URLs or paths. Once an inference starts, this development harness cannot interrupt the neural kernel; Cura can cancel its own HTTP request and discard the result.
+
+Configure Cura with CURA_VISION_URL=http://127.0.0.1:8898/v1/chat/completions, CURA_VISION_MODEL=HuggingFaceTB/SmolVLM-256M-Instruct and CURA_VISION_MODE=caption. Import only the synthetic fixture, analyze it, inspect the raw caption and derived-field provenance, apply selected changes, then undo. Check the retained original hash again. Strict JSON mode rejects the model's non-JSON response; do not convert that failure into a fake structured success. Stop the Python endpoint when finished.
+
+The model's pinned card declares Apache-2.0. Torch/torchvision use BSD licenses; transformers, tokenizer and serialization tools use Apache-2.0. Pillow is MIT-CMU. Exact license-file hashes are in the evidence inventory. These development dependencies are not bundled into Cura.

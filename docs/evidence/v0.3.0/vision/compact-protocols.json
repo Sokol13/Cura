@@ -1,0 +1,135 @@
+{
+  "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+  "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+  "image_sha256": "4a089d8d728e201c9dc0780988f14f10b4781b526f0d8a83563102f9bb331339",
+  "results": [
+    {
+      "case": "five_tags",
+      "prompt": "Give five comma-separated visual tags only. No sentences.",
+      "raw_output": " (1) A small red house with a dark blue roof.",
+      "seconds": 2.5495869819988,
+      "response": {
+        "id": "chatcmpl-2e83bd5b7a5745779c0eb45ebfc19048",
+        "object": "chat.completion",
+        "created": 1791118588,
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": " (1) A small red house with a dark blue roof."
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 88,
+          "completion_tokens": 14,
+          "total_tokens": 102
+        }
+      },
+      "validation": {
+        "exact_five_plain_tags": false,
+        "hyphenated_filename_stem": false,
+        "two_labelled_lines": false
+      }
+    },
+    {
+      "case": "filename",
+      "prompt": "What is a short descriptive filename for this image? Reply with lowercase words separated by hyphens, without a file extension.",
+      "raw_output": " What is a short descriptive filename for this image?",
+      "seconds": 1.7436609489996044,
+      "response": {
+        "id": "chatcmpl-b283e794610248ed9db50f69fa74fb59",
+        "object": "chat.completion",
+        "created": 1791118590,
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": " What is a short descriptive filename for this image?"
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 100,
+          "completion_tokens": 11,
+          "total_tokens": 111
+        }
+      },
+      "validation": {
+        "exact_five_plain_tags": false,
+        "hyphenated_filename_stem": false,
+        "two_labelled_lines": false
+      }
+    },
+    {
+      "case": "two_lines",
+      "prompt": "Describe this image with exactly two lines:\nTags: three comma-separated visual tags\nName: a short descriptive filename without an extension",
+      "raw_output": " This image is a simple, flat, two-dimensional graphic. The background is a very light blue, and there is a single sun in the upper right corner. The house is red with a dark blue peaked roof. There are two white windows on the front of the house, and a dark brown door. The house",
+      "seconds": 5.486205089000578,
+      "response": {
+        "id": "chatcmpl-26a48471d4fa4befa63e694e826afbfa",
+        "object": "chat.completion",
+        "created": 1791118595,
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": " This image is a simple, flat, two-dimensional graphic. The background is a very light blue, and there is a single sun in the upper right corner. The house is red with a dark blue peaked roof. There are two white windows on the front of the house, and a dark brown door. The house"
+            },
+            "finish_reason": "length"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 103,
+          "completion_tokens": 64,
+          "total_tokens": 167
+        }
+      },
+      "validation": {
+        "exact_five_plain_tags": false,
+        "hyphenated_filename_stem": false,
+        "two_labelled_lines": false
+      }
+    },
+    {
+      "case": "simple_list",
+      "prompt": "What are the main objects and colors? Answer as a short comma-separated list.",
+      "raw_output": " House with blue roof and brown door.",
+      "seconds": 1.7969651029998204,
+      "response": {
+        "id": "chatcmpl-7d9e34a3bf204788a4c922bd8689dc1b",
+        "object": "chat.completion",
+        "created": 1791118597,
+        "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+        "choices": [
+          {
+            "index": 0,
+            "message": {
+              "role": "assistant",
+              "content": " House with blue roof and brown door."
+            },
+            "finish_reason": "stop"
+          }
+        ],
+        "usage": {
+          "prompt_tokens": 93,
+          "completion_tokens": 9,
+          "total_tokens": 102
+        }
+      },
+      "validation": {
+        "exact_five_plain_tags": false,
+        "hyphenated_filename_stem": false,
+        "two_labelled_lines": false
+      }
+    }
+  ]
+}

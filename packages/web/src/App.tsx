@@ -558,7 +558,10 @@ export function App() {
     });
   };
   const hasFilters = Object.entries(filters).some(
-    ([key, value]) => key !== 'trash' && value !== undefined && value !== '',
+    ([key, value]) =>
+      !['trash', 'archived'].includes(key) &&
+      value !== undefined &&
+      value !== '',
   );
   const errorMessage =
     error instanceof ApiError
@@ -652,11 +655,14 @@ export function App() {
                 <h2>
                   {filters.trash
                     ? t('trash')
-                    : (folders.find((folder) => folder.id === filters.folderId)
-                        ?.name ??
-                      libraries.find((library) => library.id === libraryId)
-                        ?.name ??
-                      t('library'))}
+                    : filters.archived
+                      ? t('archivedAssets')
+                      : (folders.find(
+                          (folder) => folder.id === filters.folderId,
+                        )?.name ??
+                        libraries.find((library) => library.id === libraryId)
+                          ?.name ??
+                        t('library'))}
                 </h2>
               </div>
               <button
@@ -738,7 +744,12 @@ export function App() {
               <FilterPanel
                 filters={filters}
                 onChange={changeFilters}
-                onClear={() => setFilters({ trash: filters.trash })}
+                onClear={() =>
+                  setFilters({
+                    trash: filters.trash,
+                    archived: filters.archived,
+                  })
+                }
               />
             )}
             {error !== null && (
@@ -777,6 +788,7 @@ export function App() {
                 folders={folders}
                 tags={tags}
                 trash={Boolean(filters.trash)}
+                archived={Boolean(filters.archived)}
                 onBatch={(patch) => {
                   void batch(patch);
                 }}
@@ -824,7 +836,9 @@ export function App() {
                       ? 'emptyTrash'
                       : hasFilters
                         ? 'noResults'
-                        : 'emptyLibrary',
+                        : filters.archived
+                          ? 'emptyArchive'
+                          : 'emptyLibrary',
                   )}
                 </h2>
                 <p>
@@ -833,15 +847,25 @@ export function App() {
                       ? 'emptyTrashHint'
                       : hasFilters
                         ? 'noResultsHint'
-                        : 'emptyLibraryHint',
+                        : filters.archived
+                          ? 'emptyArchiveHint'
+                          : 'emptyLibraryHint',
                   )}
                 </p>
                 {hasFilters ? (
-                  <button onClick={() => setFilters({ trash: filters.trash })}>
+                  <button
+                    onClick={() =>
+                      setFilters({
+                        trash: filters.trash,
+                        archived: filters.archived,
+                      })
+                    }
+                  >
                     {t('clearFilters')}
                   </button>
                 ) : (
-                  !filters.trash && (
+                  !filters.trash &&
+                  !filters.archived && (
                     <button
                       className="button-primary"
                       onClick={() => uploadRef.current?.click()}

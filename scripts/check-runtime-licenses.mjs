@@ -15,6 +15,7 @@ const allowed = new Set([
   'MIT',
   'ISC',
   'Apache-2.0',
+  '0BSD',
   'BSD-2-Clause',
   'BSD-3-Clause',
   '(MIT OR WTFPL)',

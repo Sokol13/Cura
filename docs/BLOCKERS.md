@@ -6,6 +6,8 @@
 - Initial Node 24 did not meet the project requirement. Official Node 22.23.3 was installed with TLS and SHA-256 verification; all project validation uses Node 22. The draft requests CODEX_ENV_NODE_VERSION=22.
 - Initial GitHub API requests were denied by the proxy. GitHub authentication and API access subsequently recovered and the repository's push permission was confirmed. No token replacement was needed.
 
+- During P2 the injected shell GitHub token expired. Existing connected GitHub app access still permits exact-tree Git commits and non-force main updates; public fetch and remote CI inspection work. Development and publication continue through that verified route without requesting credentials.
+
 No phase-0 release blocker remains: local acceptance, GitHub CI and the automatic v0.0.1 Release were verified.
 
 ## Current-container limitations

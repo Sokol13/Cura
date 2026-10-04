@@ -1,6 +1,8 @@
 import { PreviewStatus } from '../media/PreviewStatus';
 import {
   ErrorResponseSchema,
+  assetDisplayName,
+  versionExportName,
   type Annotation,
   type Asset,
   type AssetVersion,
@@ -575,7 +577,7 @@ function AssetPreviewDialog({
         <header className="preview-header">
           <div className="preview-heading">
             <span className="preview-eyebrow">{t('title')}</span>
-            <h2>{asset.name}</h2>
+            <h2>{assetDisplayName(asset)}</h2>
           </div>
           <div className="preview-actions">
             {onNavigate && (
@@ -652,7 +654,10 @@ function AssetPreviewDialog({
               {t(compare ? 'single' : 'compare')}
             </button>
             {selected && (
-              <a href={assetUrl(selected.id, 'file')} download={selected.name}>
+              <a
+                href={assetUrl(selected.id, 'file')}
+                download={versionExportName(asset.displayName, selected.name)}
+              >
                 {t('download')}
               </a>
             )}

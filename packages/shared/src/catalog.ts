@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { DisplayNameSchema } from './asset-names.js';
 
 export const IdSchema = z.uuid();
 export const TimestampSchema = z.iso.datetime();
@@ -114,6 +115,8 @@ export const AssetSchema = z.object({
   rootId: IdSchema,
   relativePath: z.string(),
   name: z.string(),
+  displayName: DisplayNameSchema.nullable().default(null),
+  archivedAt: TimestampSchema.nullable().default(null),
   ...fileFields,
   currentVersionId: IdSchema,
   missing: z.boolean().optional(),
@@ -156,6 +159,13 @@ export const AssetQuerySchema = z
         z.boolean(),
       )
       .default(false),
+    archived: z
+      .preprocess(
+        (value) =>
+          value === 'true' ? true : value === 'false' ? false : value,
+        z.boolean(),
+      )
+      .default(false),
     offset: z.coerce.number().int().nonnegative().default(0),
     limit: z.coerce.number().int().min(1).max(200).default(100),
   })
@@ -170,6 +180,8 @@ export const UpdateAssetSchema = GenerationSchema.partial()
     note: z.string().max(100000).optional(),
     folderId: IdSchema.nullable().optional(),
     finalized: z.boolean().optional(),
+    displayName: DisplayNameSchema.nullable().optional(),
+    archivedAt: TimestampSchema.nullable().optional(),
     tagIds: z.array(IdSchema).max(1000).optional(),
   })
   .strict();
@@ -177,7 +189,7 @@ export const BatchAssetsSchema = z
   .object({
     assetIds: z.array(IdSchema).min(1).max(1000),
     patch: UpdateAssetSchema.optional(),
-    action: z.enum(['trash', 'restore']).optional(),
+    action: z.enum(['trash', 'restore', 'archive', 'unarchive']).optional(),
     addTagIds: z.array(IdSchema).max(1000).optional(),
     removeTagIds: z.array(IdSchema).max(1000).optional(),
   })

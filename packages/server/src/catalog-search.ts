@@ -57,6 +57,10 @@ export function assetSearch(
     q.trash ? 'a.deleted_at IS NOT NULL' : 'a.deleted_at IS NULL',
   ];
   const params: Array<string | number> = [libraryId];
+  if (!q.trash)
+    clauses.push(
+      `json_extract(a.payload, '$.archivedAt') IS ${q.archived ? 'NOT ' : ''}NULL`,
+    );
   const orders: string[] = [];
   const orderParams: Array<string | number> = [];
   if (q.q) {

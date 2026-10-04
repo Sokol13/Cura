@@ -2,6 +2,18 @@ import { createInstance } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 const en = {
+  displayName: 'Display name',
+  displayNameHint:
+    'A display label; the original filename, path and retained versions stay unchanged. Clear it to use the original name.',
+  invalidDisplayName:
+    'Use a portable name without path separators, reserved device names or unsupported filename characters.',
+  archivedAssets: 'Archived assets',
+  emptyArchive: 'No archived assets',
+  emptyArchiveHint:
+    'Archived assets appear here. Select an asset and choose Restore from archive to return it to the library.',
+  searchArchived: 'Search archived assets',
+  archiveSelected: 'Archive selected assets',
+  unarchiveSelected: 'Restore from archive',
   workspaces: 'Workspaces',
   neutralExport: 'Neutral export',
   exportSelection: 'Export selected assets',
@@ -201,6 +213,18 @@ const en = {
   importFailed: 'Import failed. Please retry the remaining files.',
 };
 const zh: Record<keyof typeof en, string> = {
+  displayName: '显示名称',
+  displayNameHint:
+    '仅修改显示标签，原始文件名、路径和保留版本不会改变。清空后使用原始名称。',
+  invalidDisplayName:
+    '名称不能包含路径分隔符、保留的设备名或不支持的文件名字符。',
+  archivedAssets: '已归档资产',
+  emptyArchive: '没有已归档资产',
+  emptyArchiveHint:
+    '归档后的资产会显示在这里。选中资产后，点击“从归档中恢复”即可放回资产库。',
+  searchArchived: '搜索已归档资产',
+  archiveSelected: '归档所选资产',
+  unarchiveSelected: '从归档中恢复',
   workspaces: '工作区',
   neutralExport: '中立导出',
   exportSelection: '导出所选资产',

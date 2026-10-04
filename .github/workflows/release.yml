@@ -24,10 +24,19 @@ jobs:
         with:
           node-version-file: .node-version
           cache: pnpm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare independent FCPXML grammar validation
+        run: |
+          python3 -m pip install lxml==6.1.1
+          python3 scripts/validate-fcpxml.py --prepare
       - name: Install locked dependencies and verify SQLite prebuilt binary
         run: pnpm install --frozen-lockfile
-      - name: Install Chromium and system dependencies
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Install Chromium and codec-capable Chrome
+        run: pnpm exec playwright install --with-deps chromium chrome
+      - name: Verify browser rendering and declared video capability
+        run: pnpm exec node scripts/check-chromium.mjs
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test

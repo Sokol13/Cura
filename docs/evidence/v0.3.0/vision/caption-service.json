@@ -1,0 +1,119 @@
+{
+  "executedAt": "2026-10-04T13:39:25.195Z",
+  "applicationCommit": "d3adbfd",
+  "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+  "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+  "license": "Apache-2.0",
+  "device": "CPU float32",
+  "input": {
+    "file": "synthetic-house.png",
+    "sha256": "4a089d8d728e201c9dc0780988f14f10b4781b526f0d8a83563102f9bb331339",
+    "synthetic": true
+  },
+  "mode": "caption",
+  "seconds": 2.836572314,
+  "job": {
+    "id": "94285e04-24ce-4575-b7e6-afd96aeeded9",
+    "libraryId": "892d95f6-f28d-4326-83e9-764f9ae98899",
+    "createdAt": "2026-10-04T13:39:22.359Z",
+    "updatedAt": "2026-10-04T13:39:25.150Z",
+    "kind": "analysis",
+    "providerId": "http-vision",
+    "status": "completed",
+    "pins": [
+      {
+        "assetId": "9e8c876a-e92b-4fc7-b3c8-89468a5f1d51",
+        "versionId": "0d699f5f-3e3a-4249-a08d-b00ff83eb6d6"
+      }
+    ],
+    "total": 1,
+    "processed": 1,
+    "results": [
+      {
+        "assetId": "9e8c876a-e92b-4fc7-b3c8-89468a5f1d51",
+        "versionId": "0d699f5f-3e3a-4249-a08d-b00ff83eb6d6",
+        "proposalId": "dd617093-2846-437d-9a25-3d2543b6173d",
+        "errorCode": null
+      }
+    ],
+    "errorCode": null,
+    "ruleId": null,
+    "scriptId": null
+  },
+  "proposal": {
+    "id": "dd617093-2846-437d-9a25-3d2543b6173d",
+    "libraryId": "892d95f6-f28d-4326-83e9-764f9ae98899",
+    "createdAt": "2026-10-04T13:39:25.147Z",
+    "updatedAt": "2026-10-04T13:39:25.147Z",
+    "jobId": "94285e04-24ce-4575-b7e6-afd96aeeded9",
+    "assetId": "9e8c876a-e92b-4fc7-b3c8-89468a5f1d51",
+    "versionId": "0d699f5f-3e3a-4249-a08d-b00ff83eb6d6",
+    "sourceName": "synthetic-house.png",
+    "sourceHash": "4a089d8d728e201c9dc0780988f14f10b4781b526f0d8a83563102f9bb331339",
+    "caption": "The main object is a red house with a dark brown door. The sun is in the upper right.",
+    "provenance": {
+      "providerId": "http-vision",
+      "kind": "http-vision",
+      "mode": "caption",
+      "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+      "rawText": " The main object is a red house with a dark brown door. The sun is in the upper right.",
+      "derivation": "caption-vocabulary-v1",
+      "inputKind": "original-raster",
+      "sourceHash": "4a089d8d728e201c9dc0780988f14f10b4781b526f0d8a83563102f9bb331339"
+    },
+    "changeIds": [
+      "ba0026b6-b5e0-43ed-9790-78255e61d60b",
+      "de40483e-fbf0-48ec-b189-adc7f96a375e"
+    ],
+    "changes": [
+      {
+        "id": "ba0026b6-b5e0-43ed-9790-78255e61d60b",
+        "libraryId": "892d95f6-f28d-4326-83e9-764f9ae98899",
+        "createdAt": "2026-10-04T13:39:25.147Z",
+        "updatedAt": "2026-10-04T13:39:25.147Z",
+        "proposalId": "dd617093-2846-437d-9a25-3d2543b6173d",
+        "assetId": "9e8c876a-e92b-4fc7-b3c8-89468a5f1d51",
+        "versionId": "0d699f5f-3e3a-4249-a08d-b00ff83eb6d6",
+        "field": "tagIds",
+        "beforeValue": [],
+        "afterValue": null,
+        "suggestedTagNames": ["house", "door", "sun", "red", "brown"],
+        "beforeTagLabels": [],
+        "afterTagLabels": [],
+        "status": "pending",
+        "appliedAt": null,
+        "undoneAt": null
+      },
+      {
+        "id": "de40483e-fbf0-48ec-b189-adc7f96a375e",
+        "libraryId": "892d95f6-f28d-4326-83e9-764f9ae98899",
+        "createdAt": "2026-10-04T13:39:25.147Z",
+        "updatedAt": "2026-10-04T13:39:25.147Z",
+        "proposalId": "dd617093-2846-437d-9a25-3d2543b6173d",
+        "assetId": "9e8c876a-e92b-4fc7-b3c8-89468a5f1d51",
+        "versionId": "0d699f5f-3e3a-4249-a08d-b00ff83eb6d6",
+        "field": "displayName",
+        "beforeValue": null,
+        "afterValue": "main-object-red-house-dark-brown-door-sun-upper-right.png",
+        "suggestedTagNames": [],
+        "beforeTagLabels": [],
+        "afterTagLabels": [],
+        "status": "pending",
+        "appliedAt": null,
+        "undoneAt": null
+      }
+    ]
+  },
+  "appliedCatalog": {
+    "displayName": "main-object-red-house-dark-brown-door-sun-upper-right.png",
+    "tags": ["brown", "door", "house", "red", "sun"],
+    "originalName": "synthetic-house.png"
+  },
+  "applyConflicts": [],
+  "undoConflicts": [],
+  "restored": {
+    "displayName": null,
+    "tags": []
+  },
+  "sourceUnchanged": true
+}

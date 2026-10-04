@@ -1,3 +1,4 @@
+import { AutomationService } from '../src/automation/service.js';
 import { createHash, randomUUID } from 'node:crypto';
 import {
   chmod,
@@ -367,4 +368,57 @@ test('filesystem generation failures export useful errors without private manage
       item.error?.includes('library directory'),
     ),
   ).toBe(true);
+});
+
+test('exports complete automation dependencies and logical metadata without private managed root paths', async () => {
+  const f = await fixture();
+  const automation = new AutomationService({
+    database: f.database,
+    store: f.catalog,
+    media: f.media,
+    paths: f.paths,
+    providers: [],
+    schedule: false,
+  });
+  cleanup.push(() => automation.close());
+  const script = await automation.content.importScript(
+    f.library.id,
+    '剧本.fountain',
+    Buffer.from('INT. STUDIO - DAY\n\nALICE\nHello.\n@prop: copper lamp'),
+  );
+  const document = automation.content.createDocument(f.library.id, {
+    title: 'Alice reference',
+    pins: [script.sourcePin],
+    scriptId: script.id,
+  });
+  f.catalog.updateAsset(script.sourcePin.assetId, {
+    displayName: 'Reviewed script.txt',
+    archivedAt: new Date().toISOString(),
+  });
+  f.database.sqlite
+    .prepare('UPDATE library_roots SET managed=1,path=? WHERE id=?')
+    .run(join(f.paths.data, 'private-sync'), f.original.rootId);
+  const snapshot = readExportSnapshot(f.database, f.library.id, {
+    scope: 'selection',
+    assetIds: [f.original.id],
+  });
+  expect(snapshot.manifest.automation.scripts[0]?.id).toBe(script.id);
+  expect(snapshot.manifest.automation.documents[0]?.id).toBe(document.id);
+  expect(
+    snapshot.manifest.assets.find((a) => a.id === script.sourcePin.assetId),
+  ).toMatchObject({
+    displayName: 'Reviewed script.txt',
+    archivedAt: expect.any(String),
+  });
+  const version = snapshot.manifest.versions.find(
+    (v) => v.id === script.sourcePin.versionId,
+  )!;
+  expect(version.name).toBe('剧本.fountain');
+  expect(version.file).toMatch(/Reviewed script\.fountain$/);
+  expect(snapshot.manifest.roots[0]).toMatchObject({
+    managed: true,
+    path: 'Sync',
+  });
+  expect(JSON.stringify(snapshot.manifest)).not.toContain('private-sync');
+  expect(snapshot.manifest.syncConflicts).toEqual([]);
 });

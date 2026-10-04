@@ -21,7 +21,7 @@ import {
   type CatalogEvent,
   type LibraryRoot,
 } from '@cura/shared';
-import type { CatalogStore } from '../catalog-store.js';
+import type { CatalogStore, VersionFile } from '../catalog-store.js';
 import type { UserPaths } from '../paths.js';
 import type { ProcessedFile } from './types.js';
 import { normalizeRelativePath } from './path-utils.js';
@@ -670,9 +670,22 @@ export class MediaService {
     });
   }
   rebuildCache(): Promise<void> {
+    return this.rebuildPreviews(this.store.listAllVersions());
+  }
+  rebuildVersions(versionIds: readonly string[]): Promise<void> {
+    return this.rebuildPreviews(
+      [...new Set(versionIds)].map((id) => ({
+        id,
+        ...this.store.getVersionFile(id),
+      })),
+    );
+  }
+  private rebuildPreviews(
+    versions: ReadonlyArray<VersionFile & { id: string }>,
+  ): Promise<void> {
     return this.track(async () => {
       const root = await realpath(this.paths.data);
-      for (const version of this.store.listAllVersions()) {
+      for (const version of versions) {
         if (this.closed) throw stopped();
         if (richPreviewFormat(version.name, version.type)) {
           this.store.updateVersionPreview(version.id, null);

@@ -1,0 +1,84 @@
+{
+  "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+  "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 16400,
+      "sha256": "0b687c656b2587d84cb85003825746f8b3a08497dff4ed51b54b1090719fa512",
+      "upstreamGitOid": "66dd9eda6724c2e696a44a05dba796bb707de9ff"
+    },
+    {
+      "path": "added_tokens.json",
+      "bytes": 4739,
+      "sha256": "74135b8664b56088c0006f1c8e848d79a8eba003411f72ebf1dc2ee96227be3a",
+      "upstreamGitOid": "71dc811700b6aa9274d3697ee7d4fb2d5375e766"
+    },
+    {
+      "path": "chat_template.json",
+      "bytes": 429,
+      "sha256": "a68ad1a42681ae44eacd109ff8dd56a840f761c03d72f4ff4c515d092f882168",
+      "upstreamGitOid": "214a30563adf9598b26cdd3ad3bbafca9d7af45d"
+    },
+    {
+      "path": "config.json",
+      "bytes": 7353,
+      "sha256": "b70fb4bfde88df9eeebc9d8ff523733b8bf70d6c9b06c610325960e06ae9db52",
+      "upstreamGitOid": "1c09d62975f946e7e07f62ec4db3f16c9c701144"
+    },
+    {
+      "path": "generation_config.json",
+      "bytes": 136,
+      "sha256": "067a2a54e5f87162ecac6e0e911cc4665fc8f7f3324794ecbac0f76badb56636",
+      "upstreamGitOid": "14051e31eab5938a09976bf8c3e4769491f53a80"
+    },
+    {
+      "path": "merges.txt",
+      "bytes": 466391,
+      "sha256": "0b54e8aa4e53d5383e2e4bc635a56b43f9647f7b13832d5d9ecd8f82dac4f510",
+      "upstreamGitOid": "69503b13f727ba3812b6803e97442a6de05ef5eb"
+    },
+    {
+      "path": "model.safetensors",
+      "bytes": 513028808,
+      "sha256": "74dea5904032e5ae99a2e0eef5179e6ac0f1dedc3ab0c7c2a5d4d387c843203e",
+      "upstreamGitOid": "78287ef1548dfe243932903a67750122b2e7cf2c"
+    },
+    {
+      "path": "preprocessor_config.json",
+      "bytes": 486,
+      "sha256": "6cb6e36d6fcb88ca1502c4a26750715dc3e7dedddc9a8f17b27d8d167d1457e7",
+      "upstreamGitOid": "893236748032d4bf033823d6a4a0d62b78b6bc0e"
+    },
+    {
+      "path": "processor_config.json",
+      "bytes": 68,
+      "sha256": "e7bff42da73ae9eec9042ef20e066e11f1ee20f025358ff79131e3c0fb549b46",
+      "upstreamGitOid": "b3b1deadd0e6e18c2070fdb0c29074892ea58ffe"
+    },
+    {
+      "path": "special_tokens_map.json",
+      "bytes": 1069,
+      "sha256": "aa0ff906077086dfa9734a7f97f68c825877a48f9468807be65504495cdeef09",
+      "upstreamGitOid": "647565708c361dc42350b5c7b79c46a4ff153b18"
+    },
+    {
+      "path": "tokenizer.json",
+      "bytes": 3548256,
+      "sha256": "5ece781dc8d2b2f3e2f289ca0ae50b17cfc27dd27bfe7971bb8241e0b964331a",
+      "upstreamGitOid": "a4005d1cf3170a31600a5c96f95768166cbc2b28"
+    },
+    {
+      "path": "tokenizer_config.json",
+      "bytes": 28249,
+      "sha256": "36c6fd44d07d10fd8180ee6b46dcccf69fb7c06753968ff0d7e17b8bfe17b777",
+      "upstreamGitOid": "c85c07d72e6ffca6b6ff138a8e8f09ae65740bfb"
+    },
+    {
+      "path": "vocab.json",
+      "bytes": 800662,
+      "sha256": "82b84012e3add4d01d12ba14442026e49b8cbbaead1f79ecf3d919784f82dc79",
+      "upstreamGitOid": "0ad5ecc2035b7031b88afb544ee95e2d49baa484"
+    }
+  ]
+}

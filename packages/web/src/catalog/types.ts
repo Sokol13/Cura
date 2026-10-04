@@ -12,4 +12,5 @@ export type Filters = {
   minHeight?: number | undefined;
   similarTo?: string | undefined;
   trash?: boolean | undefined;
+  archived?: boolean | undefined;
 };

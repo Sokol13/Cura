@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { AutomationExportSchema } from './automation.js';
+import { SyncConflictDetailSchema } from './sync.js';
+import { FcpxmlJobSchema } from './fcpxml.js';
 import {
   AnnotationSchema,
   AssetSchema,
@@ -53,7 +56,10 @@ export const ExportManifestSchema = z.object({
   includedDependencyAssetIds: z.array(IdSchema),
   library: LibrarySchema,
   roots: z.array(
-    LibraryRootSchema.extend({ removedAt: TimestampSchema.nullable() }),
+    LibraryRootSchema.extend({
+      removedAt: TimestampSchema.nullable(),
+      managed: z.boolean().default(false),
+    }),
   ),
   assets: z.array(AssetSchema),
   versions: z.array(AssetVersionSchema.extend({ file: z.string().nullable() })),
@@ -90,6 +96,17 @@ export const ExportManifestSchema = z.object({
   }),
   boards: JsonRecordSchema,
   brands: JsonRecordSchema,
+  automation: AutomationExportSchema.default({
+    jobs: [],
+    proposals: [],
+    changes: [],
+    rules: [],
+    scripts: [],
+    documents: [],
+    pins: [],
+  }),
+  syncConflicts: z.array(SyncConflictDetailSchema).default([]),
+  fcpxml: z.array(FcpxmlJobSchema).default([]),
   activity: z.array(JsonRecordSchema),
   files: z.array(ExportFileSchema),
   exceptions: z.array(ExportExceptionSchema),

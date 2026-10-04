@@ -6,6 +6,7 @@ export function BatchBar({
   folders,
   tags,
   trash,
+  archived = false,
   onBatch,
   onClear,
   onSelectAll,
@@ -15,6 +16,7 @@ export function BatchBar({
   folders: Folder[];
   tags: Tag[];
   trash: boolean;
+  archived?: boolean;
   onBatch: (patch: Omit<BatchAssets, 'assetIds'>) => void;
   onClear: () => void;
   onSelectAll: () => void;
@@ -81,6 +83,15 @@ export function BatchBar({
         </select>
       ))}
       <button onClick={onExport}>{t('exportSelection')}</button>
+      {!trash && (
+        <button
+          onClick={() =>
+            onBatch({ action: archived ? 'unarchive' : 'archive' })
+          }
+        >
+          {t(archived ? 'unarchiveSelected' : 'archiveSelected')}
+        </button>
+      )}
       <button
         className={trash ? '' : 'danger-text'}
         onClick={() => onBatch({ action: trash ? 'restore' : 'trash' })}

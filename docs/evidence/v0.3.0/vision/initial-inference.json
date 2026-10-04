@@ -1,0 +1,40 @@
+{
+  "model": "HuggingFaceTB/SmolVLM-256M-Instruct",
+  "revision": "7e3e67edbbed1bf9888184d9df282b700a323964",
+  "license": "Apache-2.0 per pinned upstream model card",
+  "weights_sha256": "74dea5904032e5ae99a2e0eef5179e6ac0f1dedc3ab0c7c2a5d4d387c843203e",
+  "device": "CPU float32",
+  "attention": "sdpa",
+  "torch_threads": 4,
+  "trust_remote_code": false,
+  "offline_runtime": true,
+  "load_seconds": 1.2540777689991955,
+  "python": "3.12.14",
+  "input": {
+    "path": "synthetic-house.png",
+    "sha256": "4a089d8d728e201c9dc0780988f14f10b4781b526f0d8a83563102f9bb331339",
+    "dimensions": [512, 384],
+    "provenance": "Original Pillow geometric drawing of a red house, dark blue roof, pale windows, brown door, green ground and yellow sun."
+  },
+  "results": [
+    {
+      "text": " A house is red with blue roof and brown door.",
+      "seconds": 1.8002752039992629,
+      "prompt_tokens": 87,
+      "completion_tokens": 12,
+      "pixel_values_shape": [1, 1, 3, 512, 512],
+      "prompt": "Describe the main object and its visible colors in one sentence.",
+      "parsed_json": null
+    },
+    {
+      "text": " The image displays a simple house with a blue peaked roof. The house is primarily red with white windows and a dark brown door. The door is simple and rectangular, with a single door knob visible. The roof is a dark blue color, matching the color of the house.\n\nThe house is situated on a flat, green lawn, which is a common feature in many residential homes. The lawn is well-maintained, with a few patches of grass and a few trees visible. The sky is a clear blue, with no visible clouds or rain.\n\nThe house is simple in design, with a few notable features. The",
+      "seconds": 8.579059359000894,
+      "prompt_tokens": 119,
+      "completion_tokens": 128,
+      "pixel_values_shape": [1, 1, 3, 512, 512],
+      "prompt": "Return only a JSON object with fields \"description\" (one sentence), \"tags\" (three short strings), and \"suggestedName\" (a filename stem). Describe the supplied image; do not include markdown.",
+      "parsed_json": null
+    }
+  ],
+  "max_rss_kib": 1986868
+}

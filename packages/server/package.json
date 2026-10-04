@@ -14,6 +14,7 @@
   "dependencies": {
     "@cura/shared": "workspace:*",
     "@fastify/websocket": "11.2.0",
+    "@supabase/supabase-js": "2.117.2",
     "better-sqlite3": "12.4.1",
     "chokidar": "4.0.3",
     "drizzle-orm": "0.44.6",

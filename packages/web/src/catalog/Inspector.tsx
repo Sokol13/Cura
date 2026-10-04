@@ -1,4 +1,9 @@
-import { richPreviewFormat } from '@cura/shared';
+import {
+  assetDisplayName,
+  DisplayNameSchema,
+  richPreviewFormat,
+  versionExportName,
+} from '@cura/shared';
 import { PreviewStatus } from '../media/PreviewStatus';
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -109,7 +114,7 @@ function InspectorForm({
             'thumbnail',
             asset.previewRevision,
           )}
-          alt={asset.name}
+          alt={assetDisplayName(asset)}
         />
         {richPreviewFormat(asset.name, asset.type) && (
           <PreviewStatus
@@ -119,8 +124,32 @@ function InspectorForm({
         )}
         <span>⤢</span>
       </button>
-      <h3 className="asset-title">{asset.name}</h3>
+      <h3 className="asset-title">{assetDisplayName(asset)}</h3>
       <p className="asset-path">{asset.relativePath}</p>
+      <label>
+        {t('displayName')}
+        <input
+          disabled={saving}
+          maxLength={255}
+          placeholder={asset.name}
+          value={
+            (draft.displayName === undefined
+              ? asset.displayName
+              : draft.displayName) ?? ''
+          }
+          onChange={(event) => {
+            const value = event.target.value;
+            event.target.setCustomValidity(
+              !value.trim() || DisplayNameSchema.safeParse(value).success
+                ? ''
+                : t('invalidDisplayName'),
+            );
+            change({ displayName: value.trim() ? value : null });
+          }}
+        />
+      </label>
+      <p className="field-hint">{t('displayNameHint')}</p>
+      {asset.archivedAt && <p role="status">{t('archivedAssets')}</p>}
       {'missing' in asset && asset.missing === true && (
         <p className="source-warning" role="status">
           {t('originalUnavailable')}
@@ -277,7 +306,7 @@ function InspectorForm({
         )}
         <a
           href={assetUrl(asset.currentVersionId, 'file')}
-          download={asset.name}
+          download={versionExportName(asset.displayName, asset.name)}
         >
           {t('openOriginal')}
         </a>

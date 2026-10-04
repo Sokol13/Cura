@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+import { setFinalSelection } from '../src/process/final-selections.js';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -745,5 +747,130 @@ describe('reviewed catalog editing and similarity', () => {
     expect(
       f.store.listAnnotations(asset.id, replacement.currentVersionId),
     ).toEqual([]);
+  });
+});
+
+describe('P2 catalog metadata and managed roots', () => {
+  it('changes searchable display metadata while keeping source and version names exact', async () => {
+    const f = await fixture();
+    const a = f.ingest('original.png', 'display').asset;
+    const changed = f.store.updateAsset(a.id, {
+      displayName: 'Hero-e\u0301.png',
+    });
+    expect(changed).toMatchObject({
+      name: 'original.png',
+      relativePath: 'original.png',
+      displayName: 'Hero-é.png',
+      archivedAt: null,
+    });
+    expect(
+      f.store.listAssets(f.library.id, { q: 'Hero' }).items.map((x) => x.id),
+    ).toEqual([a.id]);
+    f.store.replaceAsset(a.id, file('replacement'), 'new.jpg');
+    expect(f.store.getAsset(a.id).displayName).toBe('Hero-é.png');
+    expect(f.store.listVersions(a.id).map((v) => v.name)).toEqual([
+      'new.jpg',
+      'original.png',
+    ]);
+    f.store.updateAsset(a.id, { displayName: null });
+    expect(f.store.listAssets(f.library.id, { q: 'Hero' }).total).toBe(0);
+  });
+
+  it('archives atomically with any historical final owner protected and keeps Trash independent', async () => {
+    const f = await fixture();
+    const a = f.ingest('a.png', 'archive-a').asset;
+    const b = f.ingest('b.png', 'archive-b').asset;
+    setFinalSelection(
+      f.db,
+      { libraryId: f.library.id, ownerKind: 'slot', ownerId: randomUUID() },
+      { assetId: b.id, versionId: b.currentVersionId },
+    );
+    f.store.replaceAsset(b.id, file('next-b'), 'next-b.png');
+    expect(f.store.getAsset(b.id).finalized).toBe(false);
+    expect(() =>
+      f.store.batchAssets(f.library.id, {
+        assetIds: [a.id, b.id],
+        action: 'archive',
+      }),
+    ).toThrow(/final/i);
+    expect(f.store.getAsset(a.id).archivedAt).toBeNull();
+    f.store.batchAssets(f.library.id, { assetIds: [a.id], action: 'archive' });
+    expect(f.store.listAssets(f.library.id).items.map((x) => x.id)).toEqual([
+      b.id,
+    ]);
+    expect(
+      f.store
+        .listAssets(f.library.id, { archived: true })
+        .items.map((x) => x.id),
+    ).toEqual([a.id]);
+    f.store.batchAssets(f.library.id, { assetIds: [a.id], action: 'trash' });
+    expect(
+      f.store.listAssets(f.library.id, { trash: true }).items.map((x) => x.id),
+    ).toEqual([a.id]);
+    f.store.batchAssets(f.library.id, { assetIds: [a.id], action: 'restore' });
+    f.store.batchAssets(f.library.id, {
+      assetIds: [a.id],
+      action: 'unarchive',
+    });
+    expect(f.store.getAsset(a.id).archivedAt).toBeNull();
+  });
+
+  it('restores an archived asset when a historical version becomes final', async () => {
+    const f = await fixture();
+    const a = f.ingest('old.png', 'old-archive').asset;
+    f.store.replaceAsset(a.id, file('new-archive'), 'new.png');
+    f.store.updateAsset(a.id, { archivedAt: new Date().toISOString() });
+    setFinalSelection(
+      f.db,
+      { libraryId: f.library.id, ownerKind: 'slot', ownerId: randomUUID() },
+      { assetId: a.id, versionId: a.currentVersionId },
+    );
+    expect(f.store.getAsset(a.id)).toMatchObject({
+      archivedAt: null,
+      finalized: false,
+    });
+  });
+
+  it('hides managed roots from registrations and considers retained incoming assets available', async () => {
+    const f = await fixture();
+    const a = f.ingest('incoming.png', 'managed').asset;
+    f.db.sqlite
+      .prepare('UPDATE library_roots SET managed=1 WHERE id=?')
+      .run(f.root.id);
+    f.db.sqlite.prepare('DELETE FROM asset_sources WHERE asset_id=?').run(a.id);
+    expect(f.store.listRoots(f.library.id)).toEqual([]);
+    expect(() => f.store.getRoot(f.root.id)).toThrow();
+    expect(() => f.store.deleteRoot(f.root.id)).toThrow();
+    expect(f.store.getAsset(a.id).missing).toBe(false);
+    expect(
+      f.db.sqlite
+        .prepare('SELECT removed_at FROM library_roots WHERE id=?')
+        .get(f.root.id),
+    ).toEqual({ removed_at: null });
+  });
+
+  it('refreshes replayed search fields without changing identity, timestamps or activity', async () => {
+    const f = await fixture();
+    const a = f.ingest('source.png', 'index').asset;
+    const count = f.db.sqlite
+      .prepare('SELECT count(*) AS n FROM activity')
+      .get();
+    f.db.sqlite
+      .prepare(
+        "UPDATE assets SET payload=json_set(payload,'$.displayName','Synced hero.png') WHERE id=?",
+      )
+      .run(a.id);
+    f.store.refreshAssetSearch([a.id]);
+    expect(
+      f.store.listAssets(f.library.id, { q: 'Synced' }).items.map((x) => x.id),
+    ).toEqual([a.id]);
+    expect(f.store.getAsset(a.id)).toMatchObject({
+      id: a.id,
+      createdAt: a.createdAt,
+      updatedAt: a.updatedAt,
+    });
+    expect(
+      f.db.sqlite.prepare('SELECT count(*) AS n FROM activity').get(),
+    ).toEqual(count);
   });
 });

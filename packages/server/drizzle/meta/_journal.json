@@ -43,6 +43,27 @@
       "when": 1791104000000,
       "tag": "0005_brands",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1791105000000,
+      "tag": "0006_automation",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1791106000000,
+      "tag": "0007_sync",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1791107000000,
+      "tag": "0008_fcpxml",
+      "breakpoints": true
     }
   ]
 }

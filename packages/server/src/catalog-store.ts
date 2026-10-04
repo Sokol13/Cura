@@ -191,13 +191,14 @@ export class CatalogStore {
   listRoots(libraryId: string): C.LibraryRoot[] {
     this.getLibrary(libraryId);
     return this.rows(
-      'SELECT * FROM library_roots WHERE library_id=? AND removed_at IS NULL ORDER BY created_at,id',
+      'SELECT * FROM library_roots WHERE library_id=? AND removed_at IS NULL AND managed=0 ORDER BY created_at,id',
       libraryId,
     ).map((row) => C.LibraryRootSchema.parse(camel(row)));
   }
   getRoot(id: string): C.LibraryRoot {
     const row = this.require('library_roots', id);
-    if (row.removed_at) throw new CatalogError('Root is no longer registered');
+    if (row.removed_at || row.managed === 1)
+      throw new CatalogError('Root is not registered for local files');
     return C.LibraryRootSchema.parse(camel(row));
   }
   addRoot(
@@ -216,7 +217,7 @@ export class CatalogStore {
     const id = randomUUID(),
       date = now();
     this.run(
-      'INSERT INTO library_roots VALUES (?,?,?,?,NULL,?,?)',
+      'INSERT INTO library_roots(id,library_id,path,kind,removed_at,created_at,updated_at) VALUES (?,?,?,?,NULL,?,?)',
       id,
       libraryId,
       path,
@@ -325,10 +326,15 @@ export class CatalogStore {
       'SELECT t.* FROM tags t JOIN asset_tags at ON at.tag_id=t.id WHERE at.asset_id=? ORDER BY t.name,t.id',
       id,
     ).map((row) => C.TagSchema.parse(camel(row)));
-    const missing = !this.row(
-      'SELECT 1 FROM asset_sources s JOIN library_roots r ON r.id=s.root_id WHERE s.asset_id=? AND s.available=1 AND r.removed_at IS NULL LIMIT 1',
-      id,
-    );
+    const missing =
+      !this.row(
+        'SELECT 1 FROM asset_sources s JOIN library_roots r ON r.id=s.root_id WHERE s.asset_id=? AND s.available=1 AND r.removed_at IS NULL LIMIT 1',
+        id,
+      ) &&
+      !this.row(
+        'SELECT 1 FROM library_roots WHERE id=? AND managed=1 AND removed_at IS NULL',
+        String(row.root_id),
+      );
     return C.AssetSchema.parse({
       ...Object(payload),
       ...camel(row),
@@ -396,6 +402,7 @@ export class CatalogStore {
     ).map((row) => String(row.relative_path));
     const text = [
       asset.name,
+      asset.displayName ?? '',
       asset.relativePath,
       ...aliases,
       asset.note,
@@ -411,6 +418,12 @@ export class CatalogStore {
     this.run('UPDATE assets SET search_text=? WHERE id=?', text, id);
     this.run('DELETE FROM asset_fts WHERE asset_id=?', id);
     this.run('INSERT INTO asset_fts(asset_id,text) VALUES (?,?)', id, text);
+  }
+  /** Refresh replayed fields without minting domain timestamps or activity. */
+  refreshAssetSearch(assetIds: readonly string[]): void {
+    this.sqlite.transaction(() => {
+      for (const id of new Set(assetIds)) this.refreshSearch(id);
+    })();
   }
   private setTags(assetId: string, tagIds: string[]): void {
     this.run('DELETE FROM asset_tags WHERE asset_id=?', assetId);
@@ -433,6 +446,15 @@ export class CatalogStore {
     return this.sqlite.transaction(() => {
       const asset = this.getAsset(id);
       this.checkPatch(asset.libraryId, patch);
+      if (
+        patch.archivedAt &&
+        this.row('SELECT 1 FROM final_selections WHERE asset_id=? LIMIT 1', id)
+      )
+        throw new CatalogError(
+          'An asset with an active final selection cannot be archived',
+          'FINAL_ASSET_PROTECTED',
+          409,
+        );
       const { tagIds, finalized, ...fields } = patch;
       if (tagIds) this.setTags(id, tagIds);
       const generation = C.GenerationSchema.partial().parse(fields);
@@ -496,8 +518,13 @@ export class CatalogStore {
         const updated = this.updateAsset(asset.id, {
           ...data.patch,
           tagIds: tags,
+          ...(data.action === 'archive'
+            ? { archivedAt: now() }
+            : data.action === 'unarchive'
+              ? { archivedAt: null }
+              : {}),
         });
-        if (data.action) {
+        if (data.action === 'trash' || data.action === 'restore') {
           updated.deletedAt = data.action === 'trash' ? now() : null;
           updated.updatedAt = now();
           this.writeAsset(updated);

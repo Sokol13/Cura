@@ -275,3 +275,11 @@ Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate cor
 - Independent FCPXML validation downloads and caches Apple's pinned official 1.7 DTD as a development prerequisite. The Apple DTD is not redistributed in Cura or a runtime dependency; ordinary export remains offline.
 
 - Supabase JavaScript SDK is pinned to 2.117.2. Its transitive tslib 2.8.1 uses SPDX `0BSD`; the installed license text grants unrestricted use/copy/modify/distribution with warranty disclaimer. Zero-Clause BSD is within AGENTS.md's permitted BSD family, so the explicit automated allowlist now includes `0BSD`; this is not a new copyleft exception.
+
+## GitHub publishing after shell-token expiry
+
+**Decision:** Continue authorized main publication through the existing connected GitHub app. Create Git blobs/trees/commits from the tested immutable local tree, compare the resulting tree SHA, verify the expected main parent, and advance main without force. Fetch through the public repository and align clean local histories afterward.
+
+**Reason:** The injected shell token expired during P2, while the connected app retains repository write access. The user already authorized main pushes and uninterrupted work. This preserves the exact tested content and avoids exposing, replacing or requesting credentials.
+
+**Alternatives rejected:** Force-pushing unrelated history, publishing an unverified tree, stopping development for a token request, or treating local tests as a substitute for actual remote CI.

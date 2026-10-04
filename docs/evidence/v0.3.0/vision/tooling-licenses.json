@@ -1,0 +1,107 @@
+[
+  {
+    "name": "torch",
+    "version": "2.7.1+cpu",
+    "license": "BSD-3-Clause",
+    "project_urls": null,
+    "license_files": [
+      {
+        "path": "torch-2.7.1+cpu.dist-info/LICENSE",
+        "sha256": "8bec2abc72ca3d9657b2781f4b235f72908c3e40d1c3a22f4764772588590b06",
+        "prefix": "From PyTorch:\n\nCopyright (c) 2016-     Facebook, Inc            (Adam Paszke)\nCopyright (c) 2014-     Facebook, Inc            (Soumith Chintala)\nCopyright (c) 2011-2014 Idiap Research Institute (Ronan Collobert)\nCopyright (c) 2012-2014 Deepmind Technologies    (Koray Kavukcuoglu)\nCopyright (c) 2011"
+      }
+    ]
+  },
+  {
+    "name": "torchvision",
+    "version": "0.22.1+cpu",
+    "license": "BSD",
+    "project_urls": null,
+    "license_files": [
+      {
+        "path": "torchvision-0.22.1+cpu.dist-info/LICENSE",
+        "sha256": "6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d",
+        "prefix": "BSD 3-Clause License\n\nCopyright (c) Soumith Chintala 2016, \nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification, are permitted provided that the following conditions are met:\n\n* Redistributions of source code must retain the above copyright notice, t"
+      }
+    ]
+  },
+  {
+    "name": "transformers",
+    "version": "4.53.3",
+    "license": "Apache 2.0 License",
+    "project_urls": null,
+    "license_files": [
+      {
+        "path": "transformers-4.53.3.dist-info/licenses/LICENSE",
+        "sha256": "77fd4710def9ec3c0f6225800e0235f15a425abd4a8b03559127fcd782612049",
+        "prefix": "Copyright 2018- The Hugging Face team. All rights reserved.\n\n                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definition"
+      }
+    ]
+  },
+  {
+    "name": "huggingface-hub",
+    "version": "0.34.4",
+    "license": "Apache",
+    "project_urls": null,
+    "license_files": [
+      {
+        "path": "huggingface_hub-0.34.4.dist-info/LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "prefix": "                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for u"
+      }
+    ]
+  },
+  {
+    "name": "safetensors",
+    "version": "0.6.2",
+    "license": null,
+    "project_urls": [
+      "Homepage, https://github.com/huggingface/safetensors",
+      "Source, https://github.com/huggingface/safetensors"
+    ],
+    "license_files": [
+      {
+        "path": "safetensors-0.6.2.dist-info/licenses/LICENSE",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "prefix": "                                 Apache License\n                           Version 2.0, January 2004\n                        http://www.apache.org/licenses/\n\n   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION\n\n   1. Definitions.\n\n      \"License\" shall mean the terms and conditions for u"
+      }
+    ],
+    "license_classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  {
+    "name": "tokenizers",
+    "version": "0.21.4",
+    "license": null,
+    "project_urls": [
+      "Homepage, https://github.com/huggingface/tokenizers",
+      "Source, https://github.com/huggingface/tokenizers"
+    ],
+    "license_files": [],
+    "license_classifiers": [
+      "License :: OSI Approved :: Apache Software License"
+    ]
+  },
+  {
+    "name": "pillow",
+    "version": "12.3.0",
+    "license": "MIT-CMU",
+    "project_urls": [
+      "Release notes, https://pillow.readthedocs.io/en/stable/releasenotes/index.html",
+      "Changelog, https://github.com/python-pillow/Pillow/releases",
+      "Documentation, https://pillow.readthedocs.io",
+      "Funding, https://tidelift.com/subscription/pkg/pypi-pillow?utm_source=pypi-pillow&utm_medium=pypi",
+      "Homepage, https://python-pillow.github.io",
+      "Mastodon, https://fosstodon.org/@pillow",
+      "Source, https://github.com/python-pillow/Pillow"
+    ],
+    "license_files": [
+      {
+        "path": "pillow-12.3.0.dist-info/licenses/LICENSE",
+        "sha256": "dda12a98c1979cf3d94df1cff45d27a4cb3f04a60c76f76902ac54cac03ec0ce",
+        "prefix": "The Python Imaging Library (PIL) is\n\n    Copyright \u00a9 1997-2011 by Secret Labs AB\n    Copyright \u00a9 1995-2011 by Fredrik Lundh and contributors\n\nPillow is the friendly PIL fork. It is\n\n    Copyright \u00a9 2010 by Jeffrey 'Alex' Clark and contributors\n\nLike PIL, Pillow is licensed under the open source M"
+      }
+    ]
+  }
+]

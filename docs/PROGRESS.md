@@ -24,6 +24,16 @@ The user accepted phase 0 on 2026-10-04 and authorized uninterrupted development
 - Final Linux acceptance: 1,000 distinct image ingestion 10.07 seconds, all thumbnails decoded, 70 queries at most 56.4 ms, browser search 93.9–103.4 ms, watched asset 874 ms, scroll frame p95 16.8 ms. Synthetic 10,000-record UI virtualization also passed. Physical Mac/Windows checks remain in SMOKE_TEST.md.
 - Clean clone at exact production source 179ec28 passed frozen install in 1.9 seconds, native prebuilts, NODE_PATH-empty resolution without optional canvas, automatic default-browser opening and Chinese library persistence. Source-tree hashes match the tag. Real v0.1 upgrade and 190-file browser audit are retained under evidence/v0.2.0/.
 
+## P2 foundation checkpoint
+
+- Integrated all three shared contracts and migrations (nine total), logical display names/archive controls, guarded final-selection restoration, managed cloud roots, FTS refresh and portable metadata/dependency closure. Original filenames and retained version bytes remain unchanged.
+- Automation server routes, bounded worker processing, persisted proposal/apply/undo history, script references/documents and scheduled rules are integrated. A genuine pinned local SmolVLM model completed production caption-to-proposal/apply/undo; malformed strict JSON was correctly rejected. Exact raw evidence and limitations are under evidence/v0.3.0/vision/.
+- FCPXML server exports support ordered historical pins, rational timing, retained-media packages and relinking. Independent official Apple 1.7 DTD validation is a pinned development/CI prerequisite; it is not distributed or required at runtime.
+- Supabase cloud SQL/RLS and strict portable graph/replay/merge foundations are integrated. Eleven separately executed real local Auth/PostgREST/Storage tests passed. These tests remain explicitly skipped in the default suite without a private local fixture; no hosted deployment is claimed.
+- Full integrated foundation gate at 21dc4fd passed lint, typecheck, 342 unit tests (226 server + 116 web), and all 22 real-server Chromium E2Es in 2.0 minutes. This includes every inherited P0/P1 scenario and the new display-name/archive scenario. Heavy parallel workloads were paused during browser performance acceptance.
+- Independent review found a catalog/automation tag-limit mismatch. A scoped fix now retains valid 255-character catalog tag labels in proposal history and setting documents; two new integration regressions and all 14 affected tests pass. The complete foundation gate above predates this narrowly scoped fix. Review also identified a measurable archive event-loop delay at 1,000 assets; bounded asynchronous processing is in progress before the automation completion gate.
+- Foundation publication uses the connected GitHub app because the shell token expired; exact Git tree equality and non-force main advancement are verified. Remote CI status will be recorded after the run finishes. New workspaces are still being completed and are not yet exposed in the main navigation.
+
 ## In progress
 
 - P2 root integration is `/workspace/cura-p2` (`feat-p2`), starting from v0.2.0. Detailed plan: P2-IMPLEMENTATION.md. No P2 omission is justified; missing hosted credentials do not block the disposable real local Supabase acceptance stack.
@@ -34,9 +44,9 @@ The user accepted phase 0 on 2026-10-04 and authorized uninterrupted development
 
 ## Next
 
-1. Complete the shared P2 contracts and catalog integration hooks.
-2. Integrate P2 contracts/migrations and core catalog hooks; run the complete foundation gate, push main and verify CI. Keep progress current for every completed task.
-3. Finish each complete P2 slice, real provider/Supabase/DTD/browser acceptance, independent review and all inherited gates. Publish v0.3.0 only after every implemented item is complete. Incoming desktop bugs take priority.
+1. Observe foundation main CI, then integrate completed automation/FCPXML workspaces and the cloud service/session/blob layers.
+2. Finish actual two-device Supabase service and browser acceptance, including interruption, revocation, account switches and local-wins conflicts.
+3. Finish independent P2 review and all inherited gates. Publish v0.3.0 only after every implemented item is complete. Incoming desktop bugs take priority.
 
 ## Resume
 
