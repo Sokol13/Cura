@@ -313,7 +313,7 @@ test('SVG preview uses a raster thumbnail and unsupported files remain downloada
     .dblclick();
   const dialog = page.getByRole('dialog', { name: 'Asset preview' });
   const svgImage = dialog.getByRole('img', { name: 'preview-vector.svg — V1' });
-  await expect(svgImage).toHaveAttribute('src', /\/thumbnail$/);
+  await expect(svgImage).toHaveAttribute('src', /\/thumbnail\?revision=\d+$/);
   await expect
     .poll(async () =>
       svgImage.evaluate((element) =>

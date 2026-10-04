@@ -117,7 +117,9 @@ test('all six P0 image formats upload, retain their bytes and render meaningful 
         await expect(image).toBeVisible();
         await expect(image).toHaveAttribute(
           'src',
-          fixture.mimeType === 'image/svg+xml' ? /\/thumbnail$/ : /\/file$/,
+          fixture.mimeType === 'image/svg+xml'
+            ? /\/thumbnail\?revision=\d+$/
+            : /\/file$/,
         );
         const pixels = await image.evaluate(async (element) => {
           const image = element as HTMLImageElement;
