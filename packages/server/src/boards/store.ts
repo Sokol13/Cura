@@ -34,7 +34,12 @@ const pin = (row: Row): S.BoardPin | null =>
     : { assetId: String(row.asset_id), versionId: String(row.version_id) };
 
 export class BoardStore {
-  constructor(private readonly db: AppDatabase) {}
+  constructor(
+    private readonly db: AppDatabase,
+    private readonly actorProvider: () => S.SlotActor = () => ({
+      kind: 'local',
+    }),
+  ) {}
   private row(sql: string, ...params: Value[]): Row | undefined {
     return this.db.sqlite.prepare(sql).get(...params) as Row | undefined;
   }
@@ -83,7 +88,15 @@ export class BoardStore {
     });
   }
   private revision(row: Row): S.SlotRevision {
-    return S.SlotRevisionSchema.parse({ ...camel(row), pin: pin(row) });
+    return S.SlotRevisionSchema.parse({
+      ...camel(row),
+      pin: pin(row),
+      ...(row.actor_json == null
+        ? {}
+        : {
+            actor: S.SlotActorSchema.parse(JSON.parse(String(row.actor_json))),
+          }),
+    });
   }
   private checkPin(libraryId: string, value: S.BoardPin): void {
     const row = this.row(
@@ -407,7 +420,7 @@ export class BoardStore {
       libraryId = String(slot.library_id),
       id = String(slot.id);
     this.run(
-      'INSERT INTO slot_revisions VALUES (?,?,?,?,?,?,?,?)',
+      'INSERT INTO slot_revisions (id,library_id,slot_id,ordinal,asset_id,version_id,created_at,updated_at,actor_json) VALUES (?,?,?,?,?,?,?,?,?)',
       randomUUID(),
       libraryId,
       id,
@@ -416,6 +429,7 @@ export class BoardStore {
       value?.versionId ?? null,
       date,
       date,
+      JSON.stringify(S.SlotActorSchema.parse(this.actorProvider())),
     );
     this.run(
       'UPDATE slots SET asset_id=?,version_id=?,revision=?,updated_at=? WHERE id=?',
@@ -484,12 +498,31 @@ export class BoardStore {
       return this.getBoard(String(slot.board_id));
     })();
   }
-  listSlotHistory(id: string): S.SlotRevision[] {
+  listSlotHistory(id: string): S.SlotHistoryEntry[] {
     this.required('slots', id);
     return this.rows(
-      'SELECT * FROM slot_revisions WHERE slot_id=? ORDER BY ordinal DESC',
+      `SELECT r.*,v.payload AS version_payload,v.ordinal AS version_ordinal FROM slot_revisions r
+      LEFT JOIN asset_versions v ON v.id=r.version_id AND v.asset_id=r.asset_id
+      WHERE r.slot_id=? ORDER BY r.ordinal DESC`,
       id,
-    ).map((row) => this.revision(row));
+    ).map((row) => {
+      const version =
+        row.version_payload == null
+          ? null
+          : S.AssetVersionSchema.parse(JSON.parse(String(row.version_payload)));
+      return S.SlotHistoryEntrySchema.parse({
+        ...this.revision(row),
+        source: version
+          ? {
+              assetId: String(row.asset_id),
+              versionId: String(row.version_id),
+              name: version.name,
+              type: version.type,
+              versionOrdinal: Number(row.version_ordinal),
+            }
+          : null,
+      });
+    });
   }
   private reconcileCells(board: S.Board): void {
     const cells = this.rows('SELECT * FROM slots WHERE board_id=?', board.id);

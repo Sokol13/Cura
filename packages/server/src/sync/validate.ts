@@ -1,7 +1,7 @@
 import * as S from '@cura/shared';
 import type { AppDatabase } from '../database.js';
 import { invalidGraph } from './errors.js';
-import { recordKey } from './portable.js';
+import { canonical, recordKey } from './portable.js';
 
 /** Validate the complete staged graph, including dependencies outside the current change batch. */
 export function validateGraph(
@@ -278,13 +278,14 @@ export function validateGraph(
           pin(revision.pin);
           const old = database.sqlite
             .prepare(
-              'SELECT asset_id,version_id,slot_id FROM slot_revisions WHERE id=?',
+              'SELECT asset_id,version_id,slot_id,actor_json FROM slot_revisions WHERE id=?',
             )
             .get(revision.id) as
             | {
                 asset_id: string | null;
                 version_id: string | null;
                 slot_id: string;
+                actor_json: string | null;
               }
             | undefined;
           if (
@@ -294,6 +295,16 @@ export function validateGraph(
               old.version_id !== (revision.pin?.versionId ?? null))
           )
             invalidGraph('An immutable slot revision pin changed');
+          if (
+            old &&
+            canonical(revision.actor) !==
+              canonical(
+                old.actor_json === null
+                  ? undefined
+                  : S.SlotActorSchema.parse(JSON.parse(old.actor_json)),
+              )
+          )
+            invalidGraph('An immutable slot revision actor changed');
         }
         for (const old of database.sqlite
           .prepare(

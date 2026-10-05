@@ -33,7 +33,9 @@ An asset version and a slot version describe different events:
 
 Assigning a slot creates its next immutable history entry and makes that exact asset version a final selection. Replacing the slot with another pin creates another entry. Assigning the same pin with the current revision is a no-op: it does not change timestamps, history or board revision. Clearing an assigned slot records a clearing entry.
 
-Replacing an asset's file in the library does not move existing board items, slots or slot history to the new bytes. Their exact version references stay intact. Use the tray's version chooser and assign again to select the replacement. The slot's history shows prior versions and offers their retained originals for download.
+Replacing an asset's file in the library does not move existing board items, slots or slot history to the new bytes. Their exact version references stay intact. Use the tray's version chooser and assign again to select the replacement. The slot's history offers two comparison panes, initially the previous and newest slot revisions. Select distinct revision records; two separate assignments of the same asset version can still be compared. Each pane and list entry shows its historical source filename, asset-version number, actor and time, and offers the exact retained original for download. Cleared entries, unsupported previews and unavailable thumbnails have explicit placeholders. Narrow windows stack the panes.
+
+New assignments and clearing events record the server's currently verified, unexpired signed-in account, or **Local user** for offline use. Older entries show **Not recorded**; they are never attributed to whoever opens the dialog. Synthetic sync resolutions show **System**. This is historical provenance, not an authentication credential. Viewing or changing the comparison does not write history.
 
 Each slot owns its own final selection. Clearing one slot does not clear a selection owned by another slot or by a manual asset selection. `Asset.finalized` indicates whether the asset's **current** version has an active final selection; an old version can remain selected in a board while a newly replaced current version is not finalized.
 
@@ -66,11 +68,13 @@ All IDs are UUIDs. Creation names are trimmed and normalized to NFC. Request obj
 | `POST /api/boards/:id/slots`                    | `CreateBoardSlot`                               | `BoardDocument`, 201                                               |
 | `PUT /api/slots/:id/assignment`                 | `{ expectedRevision, pin }` using slot revision | `BoardDocument`                                                    |
 | `DELETE /api/slots/:id`                         | `{ expectedRevision }` using slot revision      | `BoardDocument`                                                    |
-| `GET /api/slots/:id/history`                    | —                                               | `SlotRevision[]`, newest first, including archived slots           |
+| `GET /api/slots/:id/history`                    | —                                               | `SlotHistoryEntry[]`, newest first, including archived slots       |
 | `GET /api/libraries/:libraryId/slot-templates`  | —                                               | `SlotTemplate[]`, four stable presets plus active custom templates |
 | `POST /api/libraries/:libraryId/slot-templates` | `CreateSlotTemplate`                            | `SlotTemplate`, 201                                                |
 | `PATCH /api/slot-templates/:id`                 | `UpdateSlotTemplate`                            | `SlotTemplate`                                                     |
 | `DELETE /api/slot-templates/:id`                | —                                               | `{ ok: true }`                                                     |
+
+History entries extend portable `SlotRevision` records with a view-only nullable `source`: `{ assetId, versionId, name, type, versionOrdinal }`, joined to the exact retained version. An optional `actor` is `{ kind: "local" }`, `{ kind: "account", id, email }`, or `{ kind: "system", reason: "sync-resolution" }`. Legacy entries omit `actor`. No mutation accepts client-supplied attribution.
 
 A pin is `{ assetId, versionId }`; `null` clears a slot. No endpoint accepts a filename or private snapshot path in place of a pin.
 
@@ -85,6 +89,8 @@ Board notifications have `{ type: 'board', libraryId, boardId? }`. An omitted `b
 ## Persistence and export
 
 Migration `0004_boards.sql` adds `boards`, `board_items`, `board_edges`, `slot_templates`, `slots` and `slot_revisions`. Process migration `0003_process.sql` provides `final_selections`; boards use the shared `setFinalSelection` helper rather than maintaining a second final-selection table.
+
+Migration `0011_slot_revision_actors.sql` adds nullable attribution without rewriting old rows. Portable export and sync preserve actor snapshots but omit the history API’s source display view. Legacy records keep their original semantic hashes. Upgrade all participating sync devices before exchanging newly attributed history; old strict-contract clients do not understand the additive actor field.
 
 `BoardStore.exportLibrary(libraryId): BoardsExport` reads the complete domain in a SQLite transaction. Its arrays are `boards`, `items`, `edges`, `templates`, `slots` and `revisions`. They include board/template/slot tombstones and historical pins. These records contain no private snapshot or cache paths. A neutral export must also include the referenced asset/version bytes and final-selection records; exporting only current public asset pages would omit historical dependencies.
 

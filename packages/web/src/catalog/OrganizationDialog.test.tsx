@@ -46,3 +46,25 @@ describe('organization dialog keyboard navigation', () => {
     },
   );
 });
+
+it('includes original download links in modal focus navigation', () => {
+  render(
+    <OrganizationDialog
+      title="Slot history"
+      submitLabel="Close"
+      onClose={vi.fn()}
+      onSubmit={async () => undefined}
+    >
+      <a href="/api/versions/pinned/file" download>
+        Download original
+      </a>
+    </OrganizationDialog>,
+  );
+  const download = screen.getByRole('link', { name: 'Download original' });
+  const close = screen.getByRole('button', { name: 'Close' });
+  expect(download).toHaveFocus();
+  fireEvent.keyDown(download, { key: 'Tab', shiftKey: true });
+  expect(close).toHaveFocus();
+  fireEvent.keyDown(close, { key: 'Tab' });
+  expect(download).toHaveFocus();
+});

@@ -169,13 +169,39 @@ export const AssignBoardSlotSchema = z
     pin: BoardPinSchema.nullable(),
   })
   .strict();
+export const SlotActorSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('local') }).strict(),
+  z
+    .object({
+      kind: z.literal('account'),
+      id: IdSchema,
+      email: z.string().max(320).nullable(),
+    })
+    .strict(),
+  z
+    .object({ kind: z.literal('system'), reason: z.literal('sync-resolution') })
+    .strict(),
+]);
 export const SlotRevisionSchema = z.object({
   ...entity,
   slotId: IdSchema,
   ordinal: z.number().int().positive(),
   pin: BoardPinSchema.nullable(),
+  actor: SlotActorSchema.optional(),
 });
-export const SlotHistorySchema = z.array(SlotRevisionSchema);
+export const SlotHistorySourceSchema = z
+  .object({
+    assetId: IdSchema,
+    versionId: IdSchema,
+    name: z.string(),
+    type: z.string(),
+    versionOrdinal: z.number().int().positive(),
+  })
+  .strict();
+export const SlotHistoryEntrySchema = SlotRevisionSchema.extend({
+  source: SlotHistorySourceSchema.nullable(),
+});
+export const SlotHistorySchema = z.array(SlotHistoryEntrySchema);
 export const BoardDocumentSchema = z.object({
   board: BoardSchema,
   items: z.array(BoardItemSchema),
@@ -231,6 +257,9 @@ export type BoardItem = z.infer<typeof BoardItemSchema>;
 export type BoardEdge = z.infer<typeof BoardEdgeSchema>;
 export type BoardSlot = z.infer<typeof BoardSlotSchema>;
 export type BoardDocument = z.infer<typeof BoardDocumentSchema>;
+export type SlotActor = z.infer<typeof SlotActorSchema>;
+export type SlotHistorySource = z.infer<typeof SlotHistorySourceSchema>;
+export type SlotHistoryEntry = z.infer<typeof SlotHistoryEntrySchema>;
 export type SlotRevision = z.infer<typeof SlotRevisionSchema>;
 export type SlotTemplate = z.infer<typeof SlotTemplateSchema>;
 export type TemplateSlot = z.infer<typeof TemplateSlotSchema>;

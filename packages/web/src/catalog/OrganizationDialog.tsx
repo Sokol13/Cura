@@ -47,7 +47,7 @@ export function OrganizationDialog({
     const focusableControls = () => {
       const controls = Array.from(
         node?.querySelectorAll<HTMLElement>(
-          ':is(button, input, select, textarea, [tabindex="0"]):not(:disabled)',
+          ':is(button, input, select, textarea, a[href], [tabindex="0"]):not(:disabled):not([tabindex="-1"])',
         ) ?? [],
       );
       return controls.filter((control) => {

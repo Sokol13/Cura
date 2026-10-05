@@ -85,8 +85,20 @@ export async function createApp(options: AppOptions = {}) {
     });
     await registerPreviewRoutes(app, media);
     registerBrandRoutes(app, options.database, store, options.paths);
-    registerBoardRoutes(app, new BoardStore(options.database), (event) =>
-      media.notify(event),
+    const sync = new SyncService(options.database, options.paths, {
+      notify: (event) => media.notify(event),
+      rebuildVersions: (ids) => media.rebuildVersions(ids),
+    });
+    registerBoardRoutes(
+      app,
+      new BoardStore(options.database, () => {
+        // status() checks expiry; a cached offline/restoring account is not verified.
+        const status = sync.auth.status();
+        return status.auth === 'signed-in' && status.account
+          ? { kind: 'account', ...status.account }
+          : { kind: 'local' };
+      }),
+      (event) => media.notify(event),
     );
     app.addHook('onReady', () => media.resume());
     app.addHook('onClose', async () => {
@@ -104,10 +116,6 @@ export async function createApp(options: AppOptions = {}) {
     });
     app.addHook('onClose', () => automation.close());
     registerFcpxmlRoutes(app, options.database, options.paths);
-    const sync = new SyncService(options.database, options.paths, {
-      notify: (event) => media.notify(event),
-      rebuildVersions: (ids) => media.rebuildVersions(ids),
-    });
     registerSyncRoutes(app, sync);
     app.addHook('onClose', () => sync.close());
     void sync.initialize().catch(() => {

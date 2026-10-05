@@ -100,6 +100,7 @@ function unionHistory<
     ordinal: number;
     createdAt: string;
     updatedAt: string;
+    actor?: S.SlotRevision['actor'];
   },
 >(
   base: T[],
@@ -110,7 +111,14 @@ function unionHistory<
 ): T[] {
   const values = new Map<string, T>();
   for (const value of [...remote, ...local]) {
-    const previous = values.get(value.id);
+    const previous = values.get(value.id),
+      original = base.find((v) => v.id === value.id),
+      l = local.find((v) => v.id === value.id),
+      r = remote.find((v) => v.id === value.id);
+    if (kind === 'slotRevision')
+      for (const retained of [original, l, r])
+        if (retained && !equal(retained.actor, value.actor))
+          invalidGraph('Conflicting immutable slot history actor');
     if (previous) {
       if ('hash' in value && 'hash' in previous && value.hash !== previous.hash)
         invalidGraph('Conflicting immutable version hash');
@@ -121,9 +129,6 @@ function unionHistory<
       )
         invalidGraph('Conflicting immutable slot history pin');
     }
-    const original = base.find((v) => v.id === value.id),
-      l = local.find((v) => v.id === value.id),
-      r = remote.find((v) => v.id === value.id);
     values.set(
       value.id,
       mergeValue(original, l ?? r, r ?? l, '', new Set()) as T,
@@ -631,6 +636,7 @@ export function mergeGraphs(
             slotId: slot.id,
             ordinal: history.length + 1,
             pin: slot.currentPin,
+            actor: { kind: 'system', reason: 'sync-resolution' },
             createdAt: date,
             updatedAt: date,
           });

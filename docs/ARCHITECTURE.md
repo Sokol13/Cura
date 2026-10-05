@@ -123,6 +123,8 @@ Migrations 0003–0005 add recorded generation identity, independent final-selec
 
 Existing free canvas items can copy their captured exact pin into a uniquely hit, visible slot. The gesture retains the original item layout and edges, sends the slot revision seen at drag start, and uses the same atomic assignment transaction as the tray; it never races a second layout save against that transaction.
 
+Migration `0011_slot_revision_actors.sql` adds optional immutable slot actors. The server samples verified session state when creating a revision; old rows retain absent attribution and unchanged portable hashes. The history API separately joins exact version metadata for comparison, while portable export/sync preserve pure revision records and reject changes to existing actor snapshots. See BOARDS.md for sync-client compatibility.
+
 `Asset.finalized` is a projection for the current version. Manual and slot owners retain their own selections; replacing a source does not finalize the replacement. `generationId` survives source-divergence history cloning. Legacy backfill uses deterministic identities/canonical metadata while retaining each raw version. Timeline selection updates carry the displayed version and previous manual pin so stale screens receive 409 instead of selecting or clearing an unseen replacement.
 
 PSD preview extraction first runs in the media worker over retained snapshots: preferred embedded resources 1036/1033, then bounded sampled/streamed composite pixels without a layer tree. Original dimensions, hashes and version identities remain unchanged; old missing/failed PSD previews retry in the background on startup. Other rich formats and unsupported PSD encodings retain the bounded browser pipeline.

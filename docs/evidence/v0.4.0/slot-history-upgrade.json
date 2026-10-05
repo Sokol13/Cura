@@ -1,0 +1,81 @@
+{
+  "released": {
+    "commit": "a078429110b64e99b4358e709de6657f84ccd9ab",
+    "node": "v22.23.3",
+    "platform": "linux",
+    "runtimeTrees": {
+      "packages/server": "7fd4d872f1b6910e08c54cc36cb2902e182efc6b",
+      "packages/shared": "f2096978e6c6cd3ee3373c93ad67b5b4d1c28230",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615"
+    },
+    "builtEntrypointSha256": "d7f023be0eaeeb459d5328c1fa05b4a1330193081a269cb3e75942c7c72086f6"
+  },
+  "candidate": {
+    "commit": "f8c4c470a197124f964d3af799ca6e6b8ad6a68f",
+    "node": "v22.23.3",
+    "platform": "linux",
+    "runtimeTrees": {
+      "packages/server": "21a32575e208a2dac3073af8aea71ea55f381f44",
+      "packages/shared": "f5f94da3b379669eb2e4c0792bd212e75a2d8d46",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615"
+    },
+    "builtEntrypointSha256": "84c68371932b4fac84cfbda0f4e78a76be7e786d10e2b906b91b359cfbae2605"
+  },
+  "counts": {
+    "assets": 2,
+    "versions": 4,
+    "oldSlotRevisions": 3,
+    "newSlotRevisions": 1
+  },
+  "migrationCounts": {
+    "released": 10,
+    "candidate": 12
+  },
+  "initialSemanticHash": "2882f9a08f032ba075917d52be7c794a5f3b81442dcb3a727cc312e0ed71990d",
+  "afterAssignmentSemanticHash": "fbd538a6a86e4303bef0e088e7395593cc6a71f3b0266a1710a3b065ff059b12",
+  "passedChecks": 40,
+  "checks": [
+    "Four immutable asset-version SQL rows and retained/thumbnail bytes stay exact",
+    "Authored folders SQL rows remain byte-for-byte unchanged",
+    "Authored tags SQL rows remain byte-for-byte unchanged",
+    "Authored asset_tags SQL rows remain byte-for-byte unchanged",
+    "Authored annotations SQL rows remain byte-for-byte unchanged",
+    "All legacy slot revision fields remain exact and new actor column stays NULL",
+    "Legacy portable history omits actor and presentation-only source",
+    "Complete portable graph and semantic hash are unchanged on upgrade",
+    "Existing boards SQL state stays exact before new assignment",
+    "Existing board_items SQL state stays exact before new assignment",
+    "Existing board_edges SQL state stays exact before new assignment",
+    "Existing slots SQL state stays exact before new assignment",
+    "Existing final_selections SQL state stays exact before new assignment",
+    "Real HTTP history preserves old entries without actor and enriches source from exact version, including A/V1 while A/V2 is current",
+    "Every retained V1/V2 downloads over real HTTP with its original SHA-256",
+    "New assignment increments the slot once and pins exact B/V2",
+    "Real HTTP history preserves old entries without actor and enriches source from exact version, including A/V1 while A/V2 is current",
+    "New real-HTTP assignment records explicit local actor",
+    "Four immutable asset-version SQL rows and retained/thumbnail bytes stay exact",
+    "Authored folders SQL rows remain byte-for-byte unchanged",
+    "Authored tags SQL rows remain byte-for-byte unchanged",
+    "Authored asset_tags SQL rows remain byte-for-byte unchanged",
+    "Authored annotations SQL rows remain byte-for-byte unchanged",
+    "All legacy slot revision fields remain exact and new actor column stays NULL",
+    "Legacy portable history omits actor and presentation-only source",
+    "New assignment preserves every old portable record except board state and affected asset updatedAt",
+    "Exactly one new SQL history row stores the local actor",
+    "Real HTTP history preserves old entries without actor and enriches source from exact version, including A/V1 while A/V2 is current",
+    "History including local actor survives closed-database restart exactly",
+    "Every retained V1/V2 downloads over real HTTP with its original SHA-256",
+    "Four immutable asset-version SQL rows and retained/thumbnail bytes stay exact",
+    "Authored folders SQL rows remain byte-for-byte unchanged",
+    "Authored tags SQL rows remain byte-for-byte unchanged",
+    "Authored asset_tags SQL rows remain byte-for-byte unchanged",
+    "Authored annotations SQL rows remain byte-for-byte unchanged",
+    "All legacy slot revision fields remain exact and new actor column stays NULL",
+    "Legacy portable history omits actor and presentation-only source",
+    "New assignment preserves every old portable record except board state and affected asset updatedAt",
+    "Reopen is idempotent for complete portable graph and slot SQL history",
+    "Frozen released-runtime backup is unchanged"
+  ],
+  "fixture": "/tmp/cura-item13-upgrade-archive-WtkRmE",
+  "boundary": "Actual old and candidate runtime using real HTTP and SQLite on Linux. No browser, physical Windows/macOS, or authenticated-account attribution claim."
+}

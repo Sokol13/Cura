@@ -154,8 +154,8 @@
 **Files:** shared/boards contracts; server/boards/store.ts/history migration; web/boards/SlotHistory.tsx and comparison component.
 **Interfaces:** Select two revision identities, display immutable version previews and originating asset/actor/time. Legacy unknown actor is explicit.
 
-- [ ] Write and observe a failing regression covering two different assets plus historical versions, exact source bytes after replacement, actor/time persistence/cloud/export, deleted-source history and accessible side-by-side UI.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Write and observe a failing regression covering two different assets plus historical versions, exact source bytes after replacement, actor/time persistence/cloud/export, deleted-source history and accessible side-by-side UI.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 14: Explain export dependencies before download

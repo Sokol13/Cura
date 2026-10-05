@@ -341,6 +341,7 @@ export function replayPortableGraph(
           ordinal: r.ordinal,
           asset_id: r.pin?.assetId ?? null,
           version_id: r.pin?.versionId ?? null,
+          actor_json: r.actor === undefined ? null : JSON.stringify(r.actor),
         });
     }
     for (const { data: d } of byKind('brand')) {
