@@ -30,6 +30,34 @@ const en = {
   originalUnavailable:
     'Original unavailable; the retained version is still available.',
   scanStarted: 'Library scan started',
+  scanNoHistory: 'No scan result yet',
+  scanEnumerating: 'Scanning folders…',
+  scanCompleted: 'Scan completed',
+  scanPartial: 'Scan completed with errors',
+  scanFailed: 'Scan failed',
+  scanInterrupted: 'Scan interrupted',
+  scanSummaryCounts:
+    '{{supported}} supported · {{skipped}} skipped · {{errors}} read errors',
+  scanRecursive:
+    'Subfolders are scanned recursively. Symbolic links are skipped.',
+  scanFileCounts:
+    'Files found: {{found}} · Processed successfully: {{succeeded}}',
+  scanExistingGeneric: 'Previously tracked generic files: {{count}}',
+  scanOtherSkipped:
+    'Other skipped entries: {{symlinks}} symbolic links · {{special}} special files',
+  scanStartedAt: 'Started: {{time}}',
+  scanFinishedAt: 'Finished: {{time}}',
+  scanExtensions: 'File extensions',
+  scanNoExtension: 'No extension',
+  scanExtensionCounts:
+    'Found {{found}} · Supported {{supported}} · Previously tracked {{existing}} · Skipped {{skipped}} · Read errors {{errors}}',
+  scanOtherExtensions: '{{count}} files have other extensions not listed here.',
+  scanReadErrors: 'Read errors',
+  scanStageEnumerate: 'Read directory',
+  scanStageRead: 'Read file',
+  scanRootPath: 'Registered directory',
+  scanOmittedErrors: '{{count}} more errors are not listed.',
+
   allFolders: 'All folders',
   allTags: 'All tags',
   collectionRulesHint:
@@ -253,6 +281,32 @@ const zh: Record<keyof typeof en, string> = {
   cacheCleared: '已清空缩略图缓存',
   originalUnavailable: '原文件不可用；保留的版本仍然可用。',
   scanStarted: '已开始扫描资产库',
+  scanNoHistory: '尚无扫描结果',
+  scanEnumerating: '正在遍历目录…',
+  scanCompleted: '扫描完成',
+  scanPartial: '扫描完成，部分文件读取出错',
+  scanFailed: '扫描失败',
+  scanInterrupted: '扫描已中断',
+  scanSummaryCounts:
+    '支持 {{supported}} 个 · 跳过 {{skipped}} 个 · 读取错误 {{errors}} 个',
+  scanRecursive: '会递归扫描所有子目录，跳过符号链接。',
+  scanFileCounts: '找到文件 {{found}} 个 · 成功处理 {{succeeded}} 个',
+  scanExistingGeneric: '继续更新已登记的通用文件：{{count}} 个',
+  scanOtherSkipped:
+    '其他跳过项：符号链接 {{symlinks}} 个 · 特殊文件 {{special}} 个',
+  scanStartedAt: '开始时间：{{time}}',
+  scanFinishedAt: '结束时间：{{time}}',
+  scanExtensions: '扩展名统计',
+  scanNoExtension: '无扩展名',
+  scanExtensionCounts:
+    '找到 {{found}} 个 · 支持 {{supported}} 个 · 已登记 {{existing}} 个 · 跳过 {{skipped}} 个 · 读取错误 {{errors}} 个',
+  scanOtherExtensions: '另有 {{count}} 个文件的扩展名未在此列出。',
+  scanReadErrors: '读取错误',
+  scanStageEnumerate: '读取目录',
+  scanStageRead: '读取文件',
+  scanRootPath: '已登记目录',
+  scanOmittedErrors: '另有 {{count}} 条错误未在此列出。',
+
   allFolders: '全部文件夹',
   allTags: '全部标签',
   collectionRulesHint: '符合全部筛选条件的资产会自动显示在此处。',

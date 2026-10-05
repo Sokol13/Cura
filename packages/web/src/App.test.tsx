@@ -10,6 +10,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Asset } from '@cura/shared';
 import { App } from './App';
 import { i18n } from './i18n';
+import { scanRootId, scanSummary } from './catalog/scan-test-fixtures';
 
 vi.mock('./media/RichPreviewQueue', () => ({ RichPreviewQueue: () => null }));
 vi.mock('./boards/BoardsWorkspace', () => ({
@@ -167,6 +168,118 @@ beforeEach(async () => {
 });
 
 describe('Cura catalog', () => {
+  it('loads directory scan outcomes, finishes empty scans and refreshes after socket reconnection', async () => {
+    const channels: {
+      onopen?: (() => void) | undefined;
+      onclose?: (() => void) | undefined;
+      onmessage?: ((event: { data: string }) => void) | undefined;
+    }[] = [];
+    class LiveChannel {
+      onopen?: () => void;
+      onclose?: () => void;
+      onmessage?: (event: { data: string }) => void;
+      constructor() {
+        channels.push(this);
+      }
+      close() {
+        /* This test never opens a network socket. */
+      }
+    }
+    vi.stubGlobal('WebSocket', LiveChannel);
+    let persisted = scanSummary();
+    let scanRequests = 0;
+    const originalFetch = fetch;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string, options?: RequestInit) => {
+        if (path.endsWith('/roots'))
+          return new Response(
+            JSON.stringify([
+              {
+                id: scanRootId,
+                libraryId,
+                kind: 'reference',
+                path: '/Pictures',
+                createdAt: timestamp,
+                updatedAt: timestamp,
+              },
+            ]),
+          );
+        if (path.endsWith('/scans')) {
+          scanRequests += 1;
+          return new Response(JSON.stringify([persisted]));
+        }
+        return originalFetch(path, options);
+      }),
+    );
+    render(<App />);
+    await waitFor(() =>
+      expect(screen.getAllByText('Scan completed')).toHaveLength(2),
+    );
+    expect(
+      screen.getByText('0 supported · 0 skipped · 0 read errors'),
+    ).toBeVisible();
+    expect(screen.queryByText('Scanning 0 / 0')).not.toBeInTheDocument();
+    const running = scanSummary({
+      scanId: '00000000-0000-4000-8000-000000000004',
+      status: 'running',
+      phase: 'enumerating',
+      startedAt: '2026-10-05T00:00:02.000Z',
+      updatedAt: '2026-10-05T00:00:02.000Z',
+      finishedAt: null,
+    });
+    const emit = (summary: typeof persisted) =>
+      channels.at(-1)?.onmessage?.({
+        data: JSON.stringify({
+          type: 'scan',
+          libraryId,
+          rootId: scanRootId,
+          completed: summary.processed,
+          total: summary.supportedFound,
+          scanSummary: summary,
+        }),
+      });
+    act(() => emit(running));
+    expect(screen.getAllByText('Scanning folders…')).toHaveLength(2);
+    persisted = {
+      ...running,
+      status: 'completed',
+      phase: 'finished',
+      updatedAt: '2026-10-05T00:00:03.000Z',
+      finishedAt: '2026-10-05T00:00:03.000Z',
+    };
+    act(() => emit(persisted));
+    expect(screen.getAllByText('Scan completed')).toHaveLength(2);
+    persisted = scanSummary({
+      scanId: '00000000-0000-4000-8000-000000000005',
+      status: 'failed',
+      readErrors: 1,
+      errors: [{ relativePath: null, stage: 'enumerate', code: 'EACCES' }],
+      startedAt: '2026-10-05T00:00:04.000Z',
+      updatedAt: '2026-10-05T00:00:05.000Z',
+      finishedAt: '2026-10-05T00:00:05.000Z',
+    });
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      act(() => channels.at(-1)?.onclose?.());
+      expect(screen.getByText('Reconnecting to local service…')).toBeVisible();
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2000);
+      });
+      const requestsBeforeOpen = scanRequests;
+      await act(async () => channels.at(-1)?.onopen?.());
+      expect(scanRequests).toBeGreaterThan(requestsBeforeOpen);
+    } finally {
+      vi.useRealTimers();
+    }
+    await waitFor(() =>
+      expect(screen.getAllByText('Scan failed')).toHaveLength(2),
+    );
+    expect(
+      screen.queryByText('Reconnecting to local service…'),
+    ).not.toBeInTheDocument();
+  });
+
   it.each([
     ['missing', 'true'],
     ['available', 'false'],

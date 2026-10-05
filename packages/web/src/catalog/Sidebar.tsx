@@ -3,6 +3,7 @@ import type {
   Folder,
   Library,
   LibraryRoot,
+  ScanSummary,
   Tag,
   TagGroup,
 } from '@cura/shared';
@@ -15,11 +16,13 @@ import {
   OrganizationDialog,
 } from './OrganizationDialog';
 import type { Filters } from './types';
+import { RootScanSummary } from './RootScanSummary';
 
 type SidebarProps = {
   libraries: Library[];
   libraryId: string;
   roots: LibraryRoot[];
+  scans?: ScanSummary[] | undefined;
   folders: Folder[];
   tags: Tag[];
   groups: TagGroup[];
@@ -129,6 +132,7 @@ export function Sidebar({
   libraries,
   libraryId,
   roots,
+  scans = [],
   folders,
   tags,
   groups,
@@ -543,23 +547,28 @@ export function Sidebar({
             )}
           </div>
           {roots.map((root) => (
-            <div className="nav-row" key={root.id}>
-              <span className="root-path" title={root.path}>
-                <span aria-hidden="true">▱ </span>
-                {root.kind === 'inbox' ? t('inbox', 'Inbox') : root.path}
-              </span>
-              {root.kind === 'reference' &&
-                iconButton(
-                  t('unregisterFolder', 'Unregister folder'),
-                  '×',
-                  () =>
-                    setDialog({
-                      kind: 'remove-root',
-                      id: root.id,
-                      path: root.path,
-                      mode: 'trash',
-                    }),
-                )}
+            <div className="registered-root" key={root.id}>
+              <div className="nav-row">
+                <span className="root-path" title={root.path}>
+                  <span aria-hidden="true">▱ </span>
+                  {root.kind === 'inbox' ? t('inbox', 'Inbox') : root.path}
+                </span>
+                {root.kind === 'reference' &&
+                  iconButton(
+                    t('unregisterFolder', 'Unregister folder'),
+                    '×',
+                    () =>
+                      setDialog({
+                        kind: 'remove-root',
+                        id: root.id,
+                        path: root.path,
+                        mode: 'trash',
+                      }),
+                  )}
+              </div>
+              <RootScanSummary
+                summary={scans.find((summary) => summary.rootId === root.id)}
+              />
             </div>
           ))}
           {!roots.length && (

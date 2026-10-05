@@ -337,6 +337,50 @@ a {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+.registered-root + .registered-root {
+  margin-top: 12px;
+}
+.root-scan-empty,
+.root-scan-summary {
+  margin: 4px 9px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.root-scan-summary > summary {
+  cursor: pointer;
+}
+.root-scan-summary > summary > span {
+  display: block;
+}
+.root-scan-status {
+  color: var(--text);
+}
+.root-scan-status[data-scan-status='failed'],
+.root-scan-status[data-scan-status='partial'] {
+  color: var(--accent);
+}
+.root-scan-details {
+  display: grid;
+  gap: 8px;
+  padding: 10px 0;
+  overflow-wrap: anywhere;
+}
+.root-scan-details h3 {
+  color: var(--text);
+  font-weight: 600;
+}
+.root-scan-extensions,
+.root-scan-errors {
+  display: grid;
+  gap: 8px;
+}
+.root-scan-extensions dt {
+  color: var(--text);
+}
+.root-scan-errors span {
+  display: block;
+}
 .sidebar-footer {
   padding: 12px;
   border-top: 1px solid var(--border);

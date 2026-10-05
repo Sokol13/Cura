@@ -39,6 +39,8 @@ import { Inspector } from './catalog/Inspector';
 import { FilterPanel } from './catalog/Filters';
 import { BatchBar } from './catalog/BatchBar';
 import { SettingsDialog } from './catalog/SettingsDialog';
+import { useRootScans } from './catalog/useRootScans';
+import { scanStatusText } from './catalog/scan-status';
 
 const BoardsWorkspace = lazy(() =>
   import('./boards/BoardsWorkspace').then((module) => ({
@@ -127,7 +129,7 @@ export function App() {
     total: number;
   } | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [eventStatus, setEventStatus] = useState('');
+  const [reconnecting, setReconnecting] = useState(false);
   const [preview, setPreview] = useState<Asset | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const uploadRef = useRef<HTMLInputElement>(null);
@@ -139,6 +141,19 @@ export function App() {
   const selectedAsset = assets.find((asset) => selected.has(asset.id));
   const reportError = useCallback((failure: unknown) => setError(failure), []);
   const refresh = useCallback(() => setRevision((value) => value + 1), []);
+  const { scans, receiveScanSummary } = useRootScans(
+    libraryId,
+    revision,
+    reportError,
+  );
+  const visibleScans = scans.filter((summary) =>
+    roots.some((root) => root.id === summary.rootId),
+  );
+  const footerScan = [...visibleScans].sort((left, right) => {
+    if (left.status === 'running' && right.status !== 'running') return -1;
+    if (right.status === 'running' && left.status !== 'running') return 1;
+    return right.updatedAt.localeCompare(left.updatedAt);
+  })[0];
 
   const navigateWorkspace = useCallback(
     (next: Workspace) => {
@@ -316,21 +331,24 @@ export function App() {
   }, [libraryId, queryString, revision, reportError]);
 
   useEffect(() => {
+    setReconnecting(false);
     if (!libraryId || typeof WebSocket === 'undefined') return;
     let disposed = false;
     let socket: WebSocket | undefined;
     let retry: ReturnType<typeof setTimeout> | undefined;
     let invalidation: ReturnType<typeof setTimeout> | undefined;
     const connect = () => {
-      socket = new WebSocket(
+      const channel = new WebSocket(
         `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/api/events`,
       );
-      socket.onopen = () => {
-        if (disposed) return;
-        setEventStatus('');
+      socket = channel;
+      channel.onopen = () => {
+        if (disposed || socket !== channel) return;
+        setReconnecting(false);
         refresh();
       };
-      socket.onmessage = (message) => {
+      channel.onmessage = (message) => {
+        if (disposed || socket !== channel) return;
         let value: unknown;
         try {
           value = JSON.parse(String(message.data));
@@ -340,13 +358,8 @@ export function App() {
         const parsed = CatalogEventSchema.safeParse(value);
         if (!parsed.success || parsed.data.libraryId !== libraryId) return;
         const event = parsed.data;
-        if (event.type === 'scan')
-          setEventStatus(
-            t('scanProgress', {
-              completed: event.completed ?? 0,
-              total: event.total ?? 0,
-            }),
-          );
+        if (event.type === 'scan' && event.scanSummary)
+          receiveScanSummary(event.scanSummary);
         if (event.type === 'error')
           reportError(new ApiError('SCAN_ERROR', event.message ?? ''));
         if (!invalidation)
@@ -355,13 +368,13 @@ export function App() {
             refresh();
           }, 250);
       };
-      socket.onclose = () => {
-        if (!disposed) {
-          setEventStatus(t('reconnecting'));
+      channel.onclose = () => {
+        if (!disposed && socket === channel) {
+          setReconnecting(true);
           retry = setTimeout(connect, 2000);
         }
       };
-      socket.onerror = () => socket?.close();
+      channel.onerror = () => channel.close();
     };
     connect();
     return () => {
@@ -370,7 +383,7 @@ export function App() {
       clearTimeout(invalidation);
       socket?.close();
     };
-  }, [libraryId, refresh, reportError, t]);
+  }, [libraryId, refresh, reportError, receiveScanSummary]);
 
   const previewId = preview?.id;
   const currentPreview = preview
@@ -685,6 +698,7 @@ export function App() {
             libraries={libraries}
             libraryId={libraryId}
             roots={roots}
+            scans={scans}
             folders={folders}
             tags={tags}
             groups={groups}
@@ -961,7 +975,11 @@ export function App() {
               </span>
               <span className="connection-state">
                 <i />
-                {eventStatus || t('offlineReady')}
+                {reconnecting
+                  ? t('reconnecting')
+                  : footerScan
+                    ? scanStatusText(footerScan, t)
+                    : t('offlineReady')}
               </span>
             </footer>
           </section>
