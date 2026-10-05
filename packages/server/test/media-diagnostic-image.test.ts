@@ -98,3 +98,27 @@ it('reports malformed EXIF separately while preserving valid image pixels', asyn
     code: 'EXIF_PARSE_FAILED',
   });
 });
+
+it('accepts valid empty EXIF without logging a metadata warning', async () => {
+  const jpeg = await sharp({
+    create: { width: 8, height: 8, channels: 3, background: '#ff8800' },
+  })
+    .jpeg()
+    .toBuffer();
+  const exif = Buffer.concat([
+    Buffer.from('Exif\0\0'),
+    // Little-endian TIFF header, empty IFD and no following directory.
+    Buffer.from([73, 73, 42, 0, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+  ]);
+  const header = Buffer.alloc(4);
+  header.writeUInt16BE(0xffe1, 0);
+  header.writeUInt16BE(exif.length + 2, 2);
+  const result = await process(
+    'empty-exif.jpg',
+    Buffer.concat([jpeg.subarray(0, 2), header, exif, jpeg.subarray(2)]),
+  );
+  expect(result.thumbnailPath).not.toBeNull();
+  expect(result.diagnostics ?? []).not.toContainEqual(
+    expect.objectContaining({ operation: 'metadata' }),
+  );
+});

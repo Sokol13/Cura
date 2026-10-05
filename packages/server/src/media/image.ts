@@ -355,7 +355,7 @@ export async function processFile(input: {
           result.exif = exif as Record<string, unknown>;
           if (Array.isArray(result.exif.errors) && result.exif.errors.length)
             diagnostic({ operation: 'metadata', code: 'EXIF_PARSE_FAILED' });
-        } else diagnostic({ operation: 'metadata', code: 'EXIF_PARSE_FAILED' });
+        }
       } catch {
         diagnostic({ operation: 'metadata', code: 'EXIF_PARSE_FAILED' });
       }
