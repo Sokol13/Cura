@@ -64,6 +64,13 @@
       "when": 1791107000000,
       "tag": "0008_fcpxml",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1791108000000,
+      "tag": "0009_scan_summaries",
+      "breakpoints": true
     }
   ]
 }

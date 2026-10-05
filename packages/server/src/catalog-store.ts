@@ -9,6 +9,7 @@ import {
   registerSearchFunctions,
 } from './catalog-search.js';
 import { setFinalSelection } from './process/final-selections.js';
+import { ScanStore } from './media/scan-store.js';
 
 type Row = Record<string, unknown>;
 type Parser<T> = { parse: (input: unknown) => T };
@@ -89,8 +90,10 @@ const now = () => new Date().toISOString();
 
 export class CatalogStore {
   private readonly sqlite: Database.Database;
+  readonly scanStore: ScanStore;
   constructor(db: AppDatabase) {
     this.sqlite = db.sqlite;
+    this.scanStore = new ScanStore(db);
     registerSearchFunctions(this.sqlite);
   }
   private row(
@@ -309,6 +312,14 @@ export class CatalogStore {
           available: row.available === 1,
         } as unknown as AssetSource)
       : undefined;
+  }
+
+  listSourcePaths(rootId: string): string[] {
+    this.getRoot(rootId);
+    return this.rows(
+      'SELECT relative_path FROM asset_sources WHERE root_id=? ORDER BY relative_path',
+      rootId,
+    ).map((row) => String(row.relative_path));
   }
 
   markSourceMissing(rootId: string, relativePath: string): C.Asset | null {
