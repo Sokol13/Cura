@@ -1,9 +1,8 @@
-import { createReadStream, readFileSync } from 'node:fs';
-import { open, readdir, realpath } from 'node:fs/promises';
-import { homedir, platform, release, arch } from 'node:os';
+import { createReadStream } from 'node:fs';
+import { readdir, realpath } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import websocket from '@fastify/websocket';
-import { strToU8, zipSync } from 'fflate';
 import type { FastifyInstance } from 'fastify';
 import * as s from '@cura/shared';
 import type { CatalogStore } from './catalog-store.js';
@@ -11,13 +10,12 @@ import type { MediaService } from './media/service.js';
 import { fileOperationMessage } from './media/service.js';
 import { resolveContained } from './media/path-utils.js';
 import type { UserPaths } from './paths.js';
+import {
+  buildDiagnosticsBundle,
+  type DiagnosticsProviders,
+} from './diagnostics/bundle.js';
 
 const assetLimit = 100 * 1024 * 1024;
-const packageVersion = (
-  JSON.parse(
-    readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
-  ) as { version: string }
-).version;
 const id = (params: unknown, key: string): string =>
   s.IdSchema.parse((params as Record<string, unknown>)[key]);
 const success = () => s.SuccessResponseSchema.parse({ ok: true });
@@ -34,6 +32,7 @@ export async function registerCatalogRoutes(
   store: CatalogStore,
   media: MediaService,
   paths: UserPaths,
+  diagnostics: DiagnosticsProviders = {},
 ): Promise<void> {
   app.addContentTypeParser(
     'application/octet-stream',
@@ -413,68 +412,17 @@ export async function registerCatalogRoutes(
     return success();
   });
   app.get('/api/diagnostics', async (_request, reply) => {
-    let log = 'No log file.';
-    try {
-      const handle = await open(join(paths.log, 'cura.log'), 'r');
-      try {
-        const { size } = await handle.stat();
-        const bytes = Buffer.alloc(Math.min(size, 128 * 1024));
-        await handle.read(
-          bytes,
-          0,
-          bytes.length,
-          Math.max(0, size - bytes.length),
-        );
-        log = bytes.toString('utf8');
-      } finally {
-        await handle.close();
-      }
-    } catch {
-      /* Empty logs are normal on first start. */
-    }
-    // Diagnostics intentionally omit arbitrary log fields: metadata and filenames can be private.
-    const entries = log.split('\n').flatMap((line) => {
-      try {
-        const row = JSON.parse(line) as Record<string, unknown>;
-        return [
-          {
-            level: row.level,
-            time: row.time,
-            msg:
-              typeof row.msg === 'string'
-                ? row.msg.replace(/(?:[A-Z]:\\|\/)[^\s"']+/gi, '[path]')
-                : '',
-            code: typeof row.code === 'string' ? row.code : undefined,
-            operation:
-              typeof row.operation === 'string' ? row.operation : undefined,
-            errorName:
-              typeof row.errorName === 'string' ? row.errorName : undefined,
-            rootId: typeof row.rootId === 'string' ? row.rootId : undefined,
-            assetId: typeof row.assetId === 'string' ? row.assetId : undefined,
-          },
-        ];
-      } catch {
-        return [];
-      }
-    });
-    const stats = store.stats();
-    const payload = zipSync({
-      'diagnostics.json': strToU8(
-        JSON.stringify(
-          {
-            version: packageVersion,
-            platform: platform(),
-            release: release(),
-            arch: arch(),
-            node: process.versions.node,
-            createdAt: new Date().toISOString(),
-            stats,
-          },
-          null,
-          2,
-        ),
-      ),
-      'logs.json': strToU8(JSON.stringify(entries, null, 2)),
+    const queueSource = media as MediaService & {
+      getDiagnostics?: () => s.MediaQueueDiagnostics;
+    };
+    const mediaQueueSnapshot =
+      diagnostics.mediaQueueSnapshot ??
+      (queueSource.getDiagnostics
+        ? () => queueSource.getDiagnostics!()
+        : undefined);
+    const payload = await buildDiagnosticsBundle(store, paths, {
+      ...diagnostics,
+      ...(mediaQueueSnapshot ? { mediaQueueSnapshot } : {}),
     });
     return reply
       .type('application/zip')

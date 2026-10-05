@@ -163,6 +163,51 @@ export class CatalogStore {
     );
   }
 
+  diagnosticRoots(): Array<{ rootId: string; libraryId: string }> {
+    return this.rows(
+      'SELECT id,library_id FROM library_roots WHERE removed_at IS NULL AND managed=0 ORDER BY id',
+    ).map((row) => ({
+      rootId: C.IdSchema.parse(row.id),
+      libraryId: C.IdSchema.parse(row.library_id),
+    }));
+  }
+
+  previewStateCounts(): C.PreviewStateCounts {
+    // Explicit persisted states and retained thumbnails apply to all versions.
+    // Infer pending only for the same rich formats as listPendingPreviews;
+    // native raster failures without a persisted state are not browser jobs.
+    const result: C.PreviewStateCounts = {
+      total: 0,
+      ready: 0,
+      pending: 0,
+      failed: 0,
+      unsupported: 0,
+      notApplicable: 0,
+    };
+    for (const row of this.rows(`SELECT state,count(*) AS count FROM (
+      SELECT CASE
+        WHEN json_extract(payload,'$.previewState') IN ('ready','pending','failed','unsupported') THEN json_extract(payload,'$.previewState')
+        WHEN thumbnail_path IS NOT NULL THEN 'ready'
+        WHEN json_extract(payload,'$.type') NOT IN ('image/png','image/jpeg','image/webp','image/gif','image/svg+xml','image/avif')
+          AND (lower(json_extract(payload,'$.name')) GLOB '*.glb'
+          OR lower(json_extract(payload,'$.name')) GLOB '*.obj'
+          OR lower(json_extract(payload,'$.name')) GLOB '*.psd'
+          OR lower(json_extract(payload,'$.name')) GLOB '*.pdf'
+          OR lower(json_extract(payload,'$.name')) GLOB '*.mp4'
+          OR lower(json_extract(payload,'$.name')) GLOB '*.mov') THEN 'pending'
+        ELSE 'notApplicable' END AS state FROM asset_versions
+      ) GROUP BY state`)) {
+      const state = String(row.state) as Exclude<
+        keyof C.PreviewStateCounts,
+        'total'
+      >;
+      const count = Number(row.count);
+      result[state] = count;
+      result.total += count;
+    }
+    return C.PreviewStateCountsSchema.parse(result);
+  }
+
   listLibraries(): C.Library[] {
     return this.rows('SELECT * FROM libraries ORDER BY created_at,id').map(
       (row) => C.LibrarySchema.parse(camel(row)),
