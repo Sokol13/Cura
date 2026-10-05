@@ -1,8 +1,8 @@
 # v0.3.1 desktop feedback acceptance
 
-Release target: [Cura v0.3.1](https://github.com/Sokol13/Cura/releases/tag/v0.3.1). All nine requested fixes are delivered. [Implementation CI 37281381068](https://github.com/Sokol13/Cura/actions/runs/37281381068) passed the full standard and actual-cloud matrices on Node 22 and 24. Final version-bumped runtime acceptance uses `93f7cbd`; later report/evidence commits preserve its production package trees.
+Published release: [Cura v0.3.1](https://github.com/Sokol13/Cura/releases/tag/v0.3.1). All nine requested fixes are delivered. [Implementation CI 37281381068](https://github.com/Sokol13/Cura/actions/runs/37281381068) passed the full standard and actual-cloud matrices on Node 22 and 24. Final version-bumped runtime acceptance uses `93f7cbd`; later report/evidence commits preserve its production package trees.
 
-Publication is gated by green CI for the final main commit, then the annotated tag's full standard/cloud release matrix. The final status is visible in [tag CI](https://github.com/Sokol13/Cura/actions/workflows/ci.yml?query=branch%3Av0.3.1), the [release workflow](https://github.com/Sokol13/Cura/actions/workflows/release.yml?query=branch%3Av0.3.1) and [PROGRESS.md](PROGRESS.md). No tag is created while a required check is pending or failing.
+The annotated tag targets `a078429`; final main [CI 37283207087](https://github.com/Sokol13/Cura/actions/runs/37283207087) passed all four required cells before tagging. [Tag CI 37283924264](https://github.com/Sokol13/Cura/actions/runs/37283924264) and [Release 37283924308](https://github.com/Sokol13/Cura/actions/runs/37283924308) also passed all Node 22/24 standard/cloud gates. The stable, non-draft/non-prerelease GitHub Release was published at 2026-10-05 08:35:47 UTC and independently verified. v0.4.0 work began immediately after the tag.
 
 ## Feedback fixes
 

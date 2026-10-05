@@ -118,17 +118,17 @@
 
 ### v0.3.1 release gate — required before task 10
 
-- [ ] All nine rows delivered on main; fresh install/start and inherited acceptance verified on Node22/24; actual CI green.
+- [x] All nine rows delivered on main; fresh install/start and inherited acceptance verified on Node22/24; actual CI green.
 - [x] Update four package versions, CHANGELOG, SMOKE_TEST and REPORT-v0.3.1.md; review every completion row and physical/file limits.
-- [ ] Publish annotated v0.3.1 and verify tag/release CI and GitHub Release; report in chat and immediately continue task10.
+- [x] Publish annotated v0.3.1 and verify tag/release CI and GitHub Release; report in chat and immediately continue task10.
 
 ### Task 10: Folder-first empty state
 
 **Files:** web/catalog/AssetGrid.tsx, App.tsx, catalog i18n/styles and browser onboarding test.
 **Interfaces:** Primary registration action opens the server directory browser; secondary file import retains current behavior.
 
-- [ ] Write and observe a failing regression covering empty create-library flow, clear original-files explanation, both keyboard-accessible actions and actual folder registration.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Write and observe a failing regression covering empty create-library flow, clear original-files explanation, both keyboard-accessible actions and actual folder registration.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 11: Readable Inbox and migration
