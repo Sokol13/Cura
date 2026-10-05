@@ -329,3 +329,11 @@ Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate cor
 **Alternatives rejected:** Claiming validation of files never received, changing originals, lifting all size/pixel caps, or decoding an entire layer tree for a thumbnail.
 
 **PSD rendering scope:** Composite previews use opaque RGB samples; saved alpha channels are not assumed to represent composite opacity. Embedded 1033 thumbnails are corrected from BGR for both raw and JPEG data. Unsupported CMYK/32-bit composites still benefit from their embedded thumbnail. Keep browser fallback caps unchanged; recovery retries missing PSD previews once during startup in the background, and cache rebuild covers all retained versions. No new runtime dependency is introduced.
+
+## Removing registered directories and source availability
+
+**Decision:** Root removal defaults to logical Trash for assets that lose their last available source. The explicit offline mode keeps them in the library with saved history. Registered originals and retained snapshots are never moved or deleted. Assets still supplied by another registered root, Inbox or a managed cloud copy stay available. Already trashed assets stay trashed. Result counters distinguish all associated assets, newly trashed assets, newly offline retained assets and still-available assets; previously trashed assets need not appear in the three outcome counters.
+
+**Reason:** Multi-source deduplication makes an asset independent from any one folder; removing a folder must not discard another active source. The source-unavailable filter uses the same current alias/managed-root rules as asset details, before pagination/counting; snapshot availability is a separate concern. Re-registering an exact canonical path reuses the removed root and source identities without silently restoring Trash or overwriting unchanged-file/manual version history. Concurrent root removal blocks new registration/rescan work for that root until it drains.
+
+**Alternatives rejected:** Deleting originals, losing historical versions, treating retained snapshots as evidence that an original is online, creating duplicate assets on re-registration, or silently retaining every orphan in the main library.

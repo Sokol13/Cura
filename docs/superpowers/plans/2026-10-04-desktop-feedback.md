@@ -42,7 +42,7 @@
 
 - [x] Write and observe a failing regression covering resource 1036 priority, legacy1033 BGR/raw padding, merged raw/RLE/ZIP, corruption limits, retained hash/dimensions, old-cache recovery; large separate-process RSS/time and actual browser thumbnail.
 - [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
-- [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
+- [x] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 2: Root removal and unavailable-source filter
 
