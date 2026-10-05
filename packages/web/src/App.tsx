@@ -39,6 +39,7 @@ import { Inspector } from './catalog/Inspector';
 import { FilterPanel } from './catalog/Filters';
 import { BatchBar } from './catalog/BatchBar';
 import { SettingsDialog } from './catalog/SettingsDialog';
+import { DirectoryBrowserDialog } from './catalog/OrganizationDialog';
 import { useRootScans } from './catalog/useRootScans';
 import { scanStatusText } from './catalog/scan-status';
 import { primaryShortcut } from './shortcuts';
@@ -120,6 +121,9 @@ export function App() {
   const [filters, setFilters] = useState<Filters>({});
   const [showFilters, setShowFilters] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [registrationLibraryId, setRegistrationLibraryId] = useState<
+    string | null
+  >(null);
   const [exportSelection, setExportSelection] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [booting, setBooting] = useState(true);
@@ -167,6 +171,7 @@ export function App() {
       setWorkspace(next);
       setPreview(null);
       setShowSettings(false);
+      setRegistrationLibraryId(null);
       setExportSelection(null);
       refresh();
     },
@@ -177,6 +182,7 @@ export function App() {
       setWorkspace(readWorkspace());
       setPreview(null);
       setShowSettings(false);
+      setRegistrationLibraryId(null);
       setExportSelection(null);
     };
     window.addEventListener('popstate', restore);
@@ -407,6 +413,7 @@ export function App() {
 
   const changeLibrary = (id: string) => {
     setExportSelection(null);
+    setRegistrationLibraryId(null);
     setLibraryId(id);
     setAssets([]);
     setTotal(0);
@@ -460,10 +467,12 @@ export function App() {
       if (event.key === 'Escape') {
         setPreview(null);
         setShowSettings(false);
+        setRegistrationLibraryId(null);
         setExportSelection(null);
         return;
       }
-      if (showSettings || preview || exportSelection) return;
+      if (showSettings || registrationLibraryId || preview || exportSelection)
+        return;
       if (
         target instanceof HTMLElement &&
         target.closest('button, a, summary') &&
@@ -502,6 +511,7 @@ export function App() {
     batch,
     filters.trash,
     showSettings,
+    registrationLibraryId,
     exportSelection,
     preview,
     workspace,
@@ -940,12 +950,21 @@ export function App() {
                 ) : (
                   !filters.trash &&
                   !filters.archived && (
-                    <button
-                      className="button-primary"
-                      onClick={() => uploadRef.current?.click()}
-                    >
-                      {t('importFiles')}
-                    </button>
+                    <div className="empty-library-actions">
+                      <button
+                        type="button"
+                        className="button-primary"
+                        onClick={() => setRegistrationLibraryId(libraryId)}
+                      >
+                        {t('registerLocalFolder')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => uploadRef.current?.click()}
+                      >
+                        {t('importFiles')}
+                      </button>
+                    </div>
                   )
                 )}
               </div>
@@ -1011,6 +1030,13 @@ export function App() {
               onUpdate={update}
               onClose={() => setShowSettings(false)}
               onError={reportError}
+            />
+          )}
+          {registrationLibraryId && registrationLibraryId === libraryId && (
+            <DirectoryBrowserDialog
+              libraryId={registrationLibraryId}
+              onClose={() => setRegistrationLibraryId(null)}
+              onRegistered={refresh}
             />
           )}
           {currentPreview && (

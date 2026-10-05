@@ -705,6 +705,12 @@ kbd {
 .empty-state button {
   margin-top: 10px;
 }
+.empty-library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
 .empty-state small {
   color: var(--muted);
   font-size: 10px;
