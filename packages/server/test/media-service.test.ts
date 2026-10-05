@@ -627,6 +627,44 @@ it('retains source availability and history when enumeration is interrupted befo
   ).toBe('immutable original');
 });
 
+it('persists reconciliation failures and releases the scan lock so a later rescan can recover', async () => {
+  const { media, originals, library, store } = await setup();
+  await writeFile(join(originals, 'retained.png'), 'immutable original');
+  const reconciliation = vi
+    .spyOn(store, 'reconcileSources')
+    .mockImplementationOnce(() => {
+      throw Object.assign(new Error('Reconciliation failed once'), {
+        code: 'SQLITE_BUSY',
+      });
+    });
+  const root = await media.registerRoot(library.id, originals);
+  await expect.poll(() => store.scanStore.get(root.id)?.status).toBe('failed');
+  const failed = store.scanStore.get(root.id)!;
+  expect(failed).toMatchObject({
+    phase: 'finished',
+    finishedAt: expect.any(String),
+    readErrors: 1,
+    errors: [{ relativePath: null, stage: 'enumerate', code: 'SQLITE_BUSY' }],
+  });
+  expect(reconciliation).toHaveBeenCalledTimes(1);
+  await media.rescan(library.id);
+  await expect
+    .poll(() => store.scanStore.get(root.id)?.status)
+    .toBe('completed');
+  expect(store.scanStore.get(root.id)).toMatchObject({
+    readErrors: 0,
+    succeeded: 1,
+    processed: 1,
+  });
+  expect(store.scanStore.get(root.id)!.scanId).not.toBe(failed.scanId);
+  expect(reconciliation).toHaveBeenCalledTimes(2);
+  const asset = store.listAssets(library.id).items[0]!;
+  expect(asset.missing).toBe(false);
+  expect(store.listVersions(asset.id)).toHaveLength(1);
+  await media.close();
+  expect(transport.instances[0]!.stopped).toBe(true);
+});
+
 it('does not reactivate a deleted source when an earlier worker result arrives late', async () => {
   const { media, originals, library, store } = await setup();
   const file = join(originals, 'deleted.png');
