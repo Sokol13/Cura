@@ -55,6 +55,9 @@ test('catalog selection opens an isolated export dialog and downloads only selec
       exact: true,
     });
     await expect(dialog).toBeVisible();
+    await expect(
+      dialog.getByRole('combobox', { name: 'Export scope', exact: true }),
+    ).toHaveValue('selection');
     await page.keyboard.press('Delete');
     const unchanged = AssetSchema.parse(
       await (await request.get(`/api/assets/${imported[0]!.id}`)).json(),

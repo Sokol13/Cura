@@ -247,6 +247,9 @@ test('offline user downloads whole and selected portable archives with complete 
       .selectOption(original.id);
     await page.getByRole('button', { name: 'Export', exact: true }).click();
     await page
+      .getByRole('combobox', { name: 'Export scope', exact: true })
+      .selectOption('library');
+    await page
       .getByRole('button', { name: 'Export whole library', exact: true })
       .click();
     const whole = page
@@ -313,7 +316,13 @@ test('offline user downloads whole and selected portable archives with complete 
       '\'=SUM(1,2)\n第二行,"quoted"',
     );
     await page
-      .getByRole('button', { name: 'Export 1 selected asset', exact: true })
+      .getByRole('combobox', { name: 'Export scope', exact: true })
+      .selectOption('selection');
+    await page
+      .getByRole('button', {
+        name: 'Export 1 selected asset + 1 asset referenced by boards',
+        exact: true,
+      })
       .click();
     const selection = page
       .getByRole('region', { name: 'Export: Selected assets', exact: true })

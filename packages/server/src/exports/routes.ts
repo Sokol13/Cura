@@ -16,13 +16,21 @@ export function registerExportRoutes(
   app.get('/api/libraries/:id/exports', (request) =>
     C.ExportJobsSchema.parse(service.list(id(request.params))),
   );
+  app.post('/api/libraries/:id/exports/preview', (request) =>
+    C.ExportPreviewSchema.parse(
+      service.preview(
+        id(request.params),
+        C.ExportRequestSchema.parse(request.body),
+      ),
+    ),
+  );
   app.post('/api/libraries/:id/exports', (request, reply) =>
     reply
       .code(201)
       .send(
         service.start(
           id(request.params),
-          C.ExportRequestSchema.parse(request.body),
+          C.ExportCreateRequestSchema.parse(request.body),
         ),
       ),
   );

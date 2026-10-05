@@ -27,6 +27,7 @@ export interface ExportSnapshot {
   manifest: C.ExportManifest;
   files: SnapshotFile[];
   folder: string;
+  dependencies: { assetId: string; reasons: C.ExportDependencyReason[] }[];
 }
 /** One read transaction, complete domain readers, no public asset pagination. */
 export function readExportSnapshot(
@@ -58,6 +59,16 @@ export function readExportSnapshot(
     const chosen = new Set(
       request.scope === 'library' ? allIds : request.assetIds,
     );
+    const reasons = new Map<string, Set<C.ExportDependencyReason>>();
+    const include = (assetId: string, reason: C.ExportDependencyReason) => {
+      const added = !chosen.has(assetId);
+      chosen.add(assetId);
+      const recorded =
+        reasons.get(assetId) ?? new Set<C.ExportDependencyReason>();
+      recorded.add(reason);
+      reasons.set(assetId, recorded);
+      return added;
+    };
     if (request.assetIds.some((id) => !allIds.includes(id)))
       throw new CatalogError(
         'Selected assets must belong to this library',
@@ -66,14 +77,15 @@ export function readExportSnapshot(
       );
     // Retain complete board/brand structures and every current and historical pin.
     for (const pin of [
-      ...brands.pins,
       ...boards.items,
       ...boards.slots.map((slot) => slot.currentPin),
       ...boards.revisions.map((revision) => revision.pin),
-      ...automation.pins,
-      ...fcpxml.flatMap((job) => job.request.clips),
     ])
-      if (pin?.assetId) chosen.add(pin.assetId);
+      if (pin?.assetId) include(pin.assetId, 'board');
+    for (const pin of brands.pins) include(pin.assetId, 'brand');
+    for (const pin of automation.pins) include(pin.assetId, 'automation');
+    for (const job of fcpxml)
+      for (const clip of job.request.clips) include(clip.assetId, 'fcpxml');
     // Conflict snapshots remain historical metadata. Include referenced live assets
     // when they still exist; deleted historical records remain in the snapshots.
     const conflictDependencies = (value: unknown): void => {
@@ -88,15 +100,16 @@ export function readExportSnapshot(
         typeof record.id === 'string' &&
         allIds.includes(record.id)
       )
-        chosen.add(record.id);
+        include(record.id, 'sync-conflict');
       if (typeof record.assetId === 'string' && allIds.includes(record.assetId))
-        chosen.add(record.assetId);
+        include(record.assetId, 'sync-conflict');
       for (const child of Object.values(record)) conflictDependencies(child);
     };
     syncConflicts.forEach(conflictDependencies);
     const collections = catalog.listCollections(libraryId);
     for (const collection of collections)
-      if (collection.rules.similarTo) chosen.add(collection.rules.similarTo);
+      if (collection.rules.similarTo)
+        include(collection.rules.similarTo, 'similar-to');
     // A multi-output job is one provenance record; retain all of its output references.
     let expanded = true;
     while (expanded) {
@@ -104,10 +117,7 @@ export function readExportSnapshot(
       for (const job of process.jobs)
         if (job.assetIds.some((id) => chosen.has(id)))
           for (const id of job.assetIds)
-            if (!chosen.has(id)) {
-              chosen.add(id);
-              expanded = true;
-            }
+            if (include(id, 'generation-output')) expanded = true;
     }
     const assets = allIds
       .filter((id) => chosen.has(id))
@@ -238,6 +248,12 @@ export function readExportSnapshot(
       manifest,
       files,
       folder: `cura-${portableName(library.name)}-${library.id.slice(0, 8)}`,
+      dependencies: [...manifest.includedDependencyAssetIds]
+        .sort()
+        .map((assetId) => ({
+          assetId,
+          reasons: [...reasons.get(assetId)!].sort(),
+        })),
     };
   })();
 }

@@ -163,8 +163,8 @@
 **Files:** server/exports/snapshot.ts, service/routes; shared/export contracts; web/catalog/ExportDialog.tsx.
 **Interfaces:** Preview endpoint uses actual closure computation and returns selected/dependency IDs/counts with reasons; creation remains authoritative if source changes.
 
-- [ ] Write and observe a failing regression covering 2 selected +2 board dependencies, version-file versus asset-count distinction, other dependency reasons, stale/cancelled preview, ZIP IDs match preview.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Write and observe a failing regression covering 2 selected +2 board dependencies, version-file versus asset-count distinction, other dependency reasons, stale/cancelled preview, ZIP IDs match preview.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 15: Canvas idle performance and screenshot reliability

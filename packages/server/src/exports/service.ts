@@ -9,6 +9,7 @@ import type { AppDatabase } from '../database.js';
 import type { UserPaths } from '../paths.js';
 import { CatalogError } from '../catalog-store.js';
 import { readExportSnapshot, type ExportSnapshot } from './snapshot.js';
+import { exportPreview } from './preview.js';
 const now = () => new Date().toISOString();
 export class ExportService {
   private readonly running = new Map<string, Promise<void>>();
@@ -60,16 +61,29 @@ export class ExportService {
       .run(JSON.stringify(job), job.updatedAt, id);
     return job;
   }
-  start(libraryId: string, input: C.ExportRequest): C.ExportJob {
+  preview(libraryId: string, input: C.ExportRequest): C.ExportPreview {
+    return exportPreview(readExportSnapshot(this.database, libraryId, input));
+  }
+  start(libraryId: string, input: C.ExportCreateRequest): C.ExportJob {
     if (this.closing || this.running.size >= 2)
       throw new CatalogError(
         'Two exports are already running; wait for one to finish.',
         'EXPORT_BUSY',
         409,
       );
-    const request = C.ExportRequestSchema.parse(input),
-      snapshot = readExportSnapshot(this.database, libraryId, request),
-      id = randomUUID(),
+    const { expectedPreviewToken, ...request } =
+      C.ExportCreateRequestSchema.parse(input);
+    const snapshot = readExportSnapshot(this.database, libraryId, request);
+    if (
+      expectedPreviewToken !== undefined &&
+      expectedPreviewToken !== exportPreview(snapshot).previewToken
+    )
+      throw new CatalogError(
+        'Export dependencies changed. Review the refreshed preview and confirm again.',
+        'EXPORT_PREVIEW_STALE',
+        409,
+      );
+    const id = randomUUID(),
       date = now();
     const job = C.ExportJobSchema.parse({
       id,

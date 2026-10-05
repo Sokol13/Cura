@@ -91,9 +91,12 @@ test('Chinese folder-first onboarding registers nested originals through the dir
     await creation.getByLabel('名称', { exact: true }).fill('本机创作素材');
     await creation.getByRole('button', { name: '创建', exact: true }).click();
     await expect(creation).not.toBeVisible();
-    const libraryId = await page
-      .getByRole('combobox', { name: '资产库', exact: true })
-      .inputValue();
+    const librarySelect = page.getByRole('combobox', {
+      name: '资产库',
+      exact: true,
+    });
+    await expect(librarySelect).not.toHaveValue('');
+    const libraryId = await librarySelect.inputValue();
     const empty = page.locator('.catalog-main .empty-state');
     const register = empty.getByRole('button', {
       name: '登记本机文件夹',
@@ -204,9 +207,12 @@ test('English onboarding keeps empty filters distinct and imports through the ke
     await creation.getByLabel('Name', { exact: true }).fill('First uploads');
     await creation.getByRole('button', { name: 'Create', exact: true }).click();
     await expect(creation).not.toBeVisible();
-    const libraryId = await page
-      .getByRole('combobox', { name: 'Library', exact: true })
-      .inputValue();
+    const librarySelect = page.getByRole('combobox', {
+      name: 'Library',
+      exact: true,
+    });
+    await expect(librarySelect).not.toHaveValue('');
+    const libraryId = await librarySelect.inputValue();
     const empty = page.locator('.catalog-main .empty-state');
     const register = empty.getByRole('button', {
       name: 'Register local folder',

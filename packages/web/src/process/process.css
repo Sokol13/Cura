@@ -199,3 +199,29 @@
     flex-wrap: wrap;
   }
 }
+
+.process-export .export-confirmation {
+  flex-wrap: wrap;
+  align-items: end;
+}
+.export-confirmation label {
+  display: grid;
+  gap: 6px;
+}
+.export-confirmation button {
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.export-preview {
+  padding: 0 12px;
+  margin-bottom: 16px;
+  border-left: 2px solid var(--accent);
+}
+.export-preview ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  padding: 0;
+  list-style: none;
+}

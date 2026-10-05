@@ -1,0 +1,46 @@
+{
+  "sourceCommit": "986c48e63cfe5b86d72dc8b137a95c5e551b8b8e",
+  "workflowRunId": 37301015040,
+  "url": "https://github.com/Sokol13/Cura/actions/runs/37301015040",
+  "conclusion": "All four Node 22/24 standard and actual-cloud jobs succeeded",
+  "unchangedLimits": {
+    "previewMs": 200,
+    "queuedMs": 200,
+    "heartbeatGapMs": 250
+  },
+  "measurements": [
+    {
+      "jobId": 111733468132,
+      "node": "v22.23.3",
+      "previewMs": 9.472717000000102,
+      "queuedMs": 14.942007000000103,
+      "maxGap": 181.61658800000032,
+      "maxGapContext": {
+        "fromPhase": "archive",
+        "toPhase": "archive",
+        "observedProcessed": 740,
+        "observedStatus": "running"
+      },
+      "maxJobReadMs": 5.515750999999909,
+      "observedProcessed": 1000,
+      "observedStatus": "completed"
+    },
+    {
+      "jobId": 111733468021,
+      "node": "v24.21.0",
+      "previewMs": 8.23497199999997,
+      "queuedMs": 10.463265999999976,
+      "maxGap": 88.13453199999992,
+      "maxGapContext": {
+        "fromPhase": "settling",
+        "toPhase": "archive",
+        "observedProcessed": 0,
+        "observedStatus": "queued"
+      },
+      "maxJobReadMs": 3.1820140000002084,
+      "observedProcessed": 1000,
+      "observedStatus": "completed"
+    }
+  ],
+  "limitation": "The earlier 313.082 ms CI gap was not reproduced or attributed to a proven cause; production behavior and acceptance thresholds remain unchanged."
+}

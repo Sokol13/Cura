@@ -115,6 +115,8 @@ Original file responses use Content-Disposition attachment and a restrictive san
 
 A fresh `pnpm install && pnpm start` must build missing production artifacts and open the browser. Unit tests cover parsing, normalization, lineage, search, containment and persistence. E2E uses a real server and real Chromium, generated fixture files and offline requests. The milestone stress fixture creates 1000 unique images, checks all thumbnails, watcher latency, search latency and bounded rendered grid elements. UI screenshots go to `docs/screenshots/`. Only passing, reviewed commits are pushed to main; a tag requires the full milestone checklist plus actual green GitHub Actions.
 
+Export previews use the authoritative snapshot closure and count actual unique asset membership, retaining per-asset public dependency reasons internally. The token covers library/scope, selected/included IDs and reason sets rather than versions or timestamps. Creation validates a fresh snapshot before inserting a job and sends that same snapshot to the worker; a stale preview creates no job. See [PROCESS-EXPORT.md](PROCESS-EXPORT.md).
+
 P2 sync is an optional adapter configured through environment variables; local offline flows remain complete without credentials. No mock provider is represented as a real cloud connection. Portable exports carry original files, versions, annotations and human-readable metadata without proprietary lock-in.
 
 ## P1 persisted workflows and portable boundaries
