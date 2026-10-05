@@ -41,6 +41,7 @@ import { BatchBar } from './catalog/BatchBar';
 import { SettingsDialog } from './catalog/SettingsDialog';
 import { useRootScans } from './catalog/useRootScans';
 import { scanStatusText } from './catalog/scan-status';
+import { primaryShortcut } from './shortcuts';
 
 const BoardsWorkspace = lazy(() =>
   import('./boards/BoardsWorkspace').then((module) => ({
@@ -782,7 +783,7 @@ export function App() {
                     changeFilters({ q: e.target.value || undefined })
                   }
                 />
-                <kbd>⌘ F</kbd>
+                <kbd>{primaryShortcut('F')}</kbd>
               </div>
               <button
                 aria-label={t('filters')}
