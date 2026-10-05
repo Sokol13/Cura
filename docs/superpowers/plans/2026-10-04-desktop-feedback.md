@@ -138,7 +138,7 @@
 
 - [x] Write and observe a failing regression covering same-name concurrent upload, Chinese/NFD names, old UUID upgrade, name collision, crash/retry, locked-file recovery and exact version-row/hash comparison.
 - [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
-- [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
+- [x] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 12: Canvas-to-slot drops
 

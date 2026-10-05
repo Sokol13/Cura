@@ -17,3 +17,5 @@ No milestone release blocker remains. All v0.1.0, v0.2.0 and v0.3.0 gates and Re
 - macOS and Windows desktop integration cannot be executed in this Linux container. Follow SMOKE_TEST.md on those platforms.
 
 These limitations do not prevent local development with the documented provisioned-browser configuration. Remote CI and release outcomes are recorded only after actual checks in PROGRESS.md. A saved environment draft alone does not apply or publish it.
+
+- On 2026-10-05, the injected shell GitHub token expired again after item 11 was pushed. The existing connected GitHub app still reads CI and provides Git object/ref writes; public fetch remains available. Continue through exact-tree verified, non-force main updates without asking for credentials. This is a delivery transport change, not a product blocker.
