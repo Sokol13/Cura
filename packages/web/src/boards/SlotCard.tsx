@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BoardPinSchema, type BoardPin, type BoardSlot } from '@cura/shared';
 import { assetUrl } from '../catalog/api';
 import './i18n';
+import { useSlotPresentation } from './template-presentation';
 
 export function SlotCard({
   slot,
@@ -20,13 +21,18 @@ export function SlotCard({
   onHistory: (slot: BoardSlot) => void;
 }) {
   const { t } = useTranslation('boards');
+  const presentSlot = useSlotPresentation();
+  const { label, description } = presentSlot(slot);
+  const descriptionId = useId();
   const [over, setOver] = useState(false);
   const [error, setError] = useState(false);
   return (
     <section
       className={`board-slot ${selected ? 'is-selected' : ''} ${over ? 'is-over' : ''}`}
       role="region"
-      aria-label={t('dropToSlot', { name: slot.label })}
+      aria-label={t('dropToSlot', { name: label })}
+      title={description}
+      aria-describedby={description ? descriptionId : undefined}
       data-slot-id={slot.id}
       onDragOver={(event) => {
         event.preventDefault();
@@ -53,8 +59,13 @@ export function SlotCard({
         }
       }}
     >
+      {description && (
+        <span id={descriptionId} className="sr-only">
+          {description}
+        </span>
+      )}
       <header className="board-slot-heading">
-        <strong>{slot.label}</strong>
+        <strong>{label}</strong>
         <span className="board-version-badge">
           {t('version', { number: slot.revision })}
         </span>
@@ -62,7 +73,7 @@ export function SlotCard({
       <button
         className="board-slot-content nodrag nopan"
         disabled={busy}
-        aria-label={t('chooseForSlot', { name: slot.label })}
+        aria-label={t('chooseForSlot', { name: label })}
         aria-pressed={selected}
         onClick={() => onChoose(slot)}
       >
@@ -85,7 +96,7 @@ export function SlotCard({
         </span>
         <button
           className="nodrag nopan"
-          aria-label={t('slotHistory', { name: slot.label })}
+          aria-label={t('slotHistory', { name: label })}
           onClick={() => onHistory(slot)}
         >
           {t('history')}

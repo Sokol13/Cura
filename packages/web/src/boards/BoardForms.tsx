@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CreateBoard, SlotTemplate } from '@cura/shared';
 import { OrganizationDialog } from '../catalog/OrganizationDialog';
@@ -16,6 +16,10 @@ export function BoardCreateForm({
   const [name, setName] = useState('');
   const [kind, setKind] = useState<'canvas' | 'matrix'>('canvas');
   const [templateId, setTemplateId] = useState('');
+  const descriptionId = useId();
+  const selectedPreset = templates.find(
+    (template) => template.id === templateId,
+  )?.preset;
   const [matrixPreset, setMatrixPreset] = useState<
     'character-angle' | 'scene-option'
   >('character-angle');
@@ -76,22 +80,30 @@ export function BoardCreateForm({
         </select>
       </label>
       {kind === 'canvas' ? (
-        <label>
-          {t('template')}
-          <select
-            value={templateId}
-            onChange={(event) => setTemplateId(event.target.value)}
-          >
-            <option value="">{t('blankCanvas')}</option>
-            {templates.map((template) => (
-              <option key={template.id} value={template.id}>
-                {template.preset
-                  ? t(`preset_${template.preset}`)
-                  : template.name}
-              </option>
-            ))}
-          </select>
-        </label>
+        <>
+          <label>
+            {t('template')}
+            <select
+              aria-describedby={selectedPreset ? descriptionId : undefined}
+              value={templateId}
+              onChange={(event) => setTemplateId(event.target.value)}
+            >
+              <option value="">{t('blankCanvas')}</option>
+              {templates.map((template) => (
+                <option key={template.id} value={template.id}>
+                  {template.preset
+                    ? t(`preset_${template.preset}`)
+                    : template.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          {selectedPreset && (
+            <p id={descriptionId} className="board-muted">
+              {t(`preset_${selectedPreset}_description`)}
+            </p>
+          )}
+        </>
       ) : (
         <label>
           {t('matrixPreset')}

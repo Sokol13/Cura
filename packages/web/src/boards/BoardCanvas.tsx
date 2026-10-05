@@ -38,6 +38,7 @@ import { useTranslation } from 'react-i18next';
 import { assetUrl } from '../catalog/api';
 import { OrganizationDialog } from '../catalog/OrganizationDialog';
 import { SlotCard } from './SlotCard';
+import { useSlotPresentation } from './template-presentation';
 import {
   absolutePosition,
   edgeInput,
@@ -149,6 +150,7 @@ function CanvasContent({
   ref,
 }: CanvasProps) {
   const { t } = useTranslation('boards');
+  const presentSlot = useSlotPresentation();
   const flow = useReactFlow<CuraNode>();
   const container = useRef<HTMLDivElement>(null);
   const [nodes, setNodes] = useState<CuraNode[]>([]);
@@ -193,7 +195,7 @@ function CanvasContent({
           (slot): CuraNode => ({
             id: slot.id,
             type: 'curaSlot',
-            ariaLabel: slot.label,
+            ariaLabel: presentSlot(slot).label,
             position: { x: slot.x, y: slot.y },
             data: { item: null, slot },
             style: { width: slot.width, height: slot.height },
@@ -212,7 +214,7 @@ function CanvasContent({
         style: { stroke: 'var(--accent)' },
       })),
     );
-  }, [document]);
+  }, [document, presentSlot]);
   const layout = useCallback(
     (changedNodes = flow.getNodes()): Layout => ({
       items: document.items.map((item) => {

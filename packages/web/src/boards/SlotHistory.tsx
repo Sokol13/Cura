@@ -6,6 +6,7 @@ import {
 } from '@cura/shared';
 import { useTranslation } from 'react-i18next';
 import { assetUrl, request } from '../catalog/api';
+import { useSlotPresentation } from './template-presentation';
 import { OrganizationDialog } from '../catalog/OrganizationDialog';
 
 export function SlotHistory({
@@ -16,6 +17,7 @@ export function SlotHistory({
   onClose: () => void;
 }) {
   const { t } = useTranslation('boards');
+  const presentSlot = useSlotPresentation();
   const [history, setHistory] = useState<SlotRevision[] | null>(null);
   const [error, setError] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -34,7 +36,7 @@ export function SlotHistory({
   }, [slot.id, retry]);
   return (
     <OrganizationDialog
-      title={t('slotHistory', { name: slot.label })}
+      title={t('slotHistory', { name: presentSlot(slot).label })}
       onClose={onClose}
       onSubmit={async () => onClose()}
       submitLabel={t('close')}

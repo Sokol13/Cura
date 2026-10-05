@@ -72,6 +72,11 @@ export function TemplateManager({
                 {template.slots.length} {t('frames')} ·{' '}
                 {t(template.preset ? 'preset' : 'custom')}
               </small>
+              {template.preset && (
+                <p className="board-muted">
+                  {t(`preset_${template.preset}_description`)}
+                </p>
+              )}
             </div>
             {!template.preset && (
               <div className="board-inline-actions">

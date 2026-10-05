@@ -18,6 +18,8 @@ import { BoardMatrix } from './BoardMatrix';
 import { BoardCreateForm, DeleteConfirm, NameForm } from './BoardForms';
 import { SlotHistory } from './SlotHistory';
 import { TemplateManager } from './TemplateManager';
+import { TemplatePresentationProvider } from './TemplatePresentationProvider';
+import { useBoardSlotPresentation } from './template-presentation';
 import { useBoardDocument } from './useBoardDocument';
 import { useBoardAssetAdder } from './useBoardAssetAdder';
 import './i18n';
@@ -52,6 +54,7 @@ export function BoardsWorkspace({
   const canvas = useRef<BoardCanvasHandle>(null);
   const boardState = useBoardDocument(selected, libraryId);
   const { document, busy, mutate } = boardState;
+  const presentSlot = useBoardSlotPresentation(document?.board, templates);
   const addAsset = useBoardAssetAdder(selected, mutate);
   const selectedSlot =
     document?.slots.find((slot) => slot.id === selectedSlotId) ?? null;
@@ -147,319 +150,323 @@ export function BoardsWorkspace({
   };
   const failure = loadError ? t('loadError') : boardState.error || notice;
   return (
-    <main className="boards-workspace" aria-label={t('title')}>
-      <header className="boards-header">
-        <button className="board-back" onClick={onBack}>
-          <span aria-hidden="true">←</span> {t('back')}
-        </button>
-        <div>
-          <h1>{t('title')}</h1>
-          <p>{t('subtitle')}</p>
-        </div>
-        <div className="board-header-status" aria-live="polite">
-          {busy ? t('saving') : t('saved')}
-          {document && (
-            <small>
-              {t('boardRevision', { number: document.board.revision })}
-            </small>
-          )}
-        </div>
-        <button
-          className="primary"
-          disabled={loading || busy}
-          onClick={() => setDialog('create')}
-        >
-          <span aria-hidden="true">＋</span> {t('newBoard')}
-        </button>
-      </header>
-      {failure && (
-        <div className="board-workspace-alert" role="alert">
-          <span>{failure}</span>
-          <button
-            onClick={() => {
-              if (loadError) {
-                setLoading(true);
-                setRetry((value) => value + 1);
-              } else if (boardState.error) boardState.refresh();
-              else setNotice('');
-            }}
-          >
-            {loadError || boardState.error ? t('retry') : t('close')}
+    <TemplatePresentationProvider board={document?.board} templates={templates}>
+      <main className="boards-workspace" aria-label={t('title')}>
+        <header className="boards-header">
+          <button className="board-back" onClick={onBack}>
+            <span aria-hidden="true">←</span> {t('back')}
           </button>
-          <button
-            aria-label={t('close')}
-            onClick={() => {
-              setLoadError(false);
-              boardState.dismissError();
-              setNotice('');
-            }}
-          >
-            ×
-          </button>
-        </div>
-      )}
-      <div className="boards-body">
-        <nav className="board-navigation" aria-label={t('chooseBoard')}>
-          <div className="board-section-label">
-            {t('title')} <span>{boards.length}</span>
+          <div>
+            <h1>{t('title')}</h1>
+            <p>{t('subtitle')}</p>
           </div>
-          {boards.map((stored) => {
-            const board =
-              document?.board.id === stored.id ? document.board : stored;
-            return (
-              <button
-                key={board.id}
-                className={selected === board.id ? 'is-active' : ''}
-                aria-current={selected === board.id ? 'page' : undefined}
-                disabled={busy}
-                onClick={() => selectBoard(board.id)}
-              >
-                <span>{board.kind === 'canvas' ? '◈' : '▦'}</span>
-                <span>
-                  {board.name}
-                  <small>{t(board.kind)}</small>
-                </span>
-              </button>
-            );
-          })}
+          <div className="board-header-status" aria-live="polite">
+            {busy ? t('saving') : t('saved')}
+            {document && (
+              <small>
+                {t('boardRevision', { number: document.board.revision })}
+              </small>
+            )}
+          </div>
           <button
-            className="board-template-button"
-            onClick={() => setDialog('templates')}
+            className="primary"
+            disabled={loading || busy}
+            onClick={() => setDialog('create')}
           >
-            <span aria-hidden="true">▧</span> {t('templates')}
+            <span aria-hidden="true">＋</span> {t('newBoard')}
           </button>
-        </nav>
-        <div className="board-main">
-          {loading || boardState.loading ? (
-            <div className="board-empty" role="status">
-              {t('loading')}
+        </header>
+        {failure && (
+          <div className="board-workspace-alert" role="alert">
+            <span>{failure}</span>
+            <button
+              onClick={() => {
+                if (loadError) {
+                  setLoading(true);
+                  setRetry((value) => value + 1);
+                } else if (boardState.error) boardState.refresh();
+                else setNotice('');
+              }}
+            >
+              {loadError || boardState.error ? t('retry') : t('close')}
+            </button>
+            <button
+              aria-label={t('close')}
+              onClick={() => {
+                setLoadError(false);
+                boardState.dismissError();
+                setNotice('');
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
+        <div className="boards-body">
+          <nav className="board-navigation" aria-label={t('chooseBoard')}>
+            <div className="board-section-label">
+              {t('title')} <span>{boards.length}</span>
             </div>
-          ) : document ? (
-            <>
-              <div className="board-titlebar">
-                <h2>{document.board.name}</h2>
-                <span className="board-type-badge">
-                  {t(document.board.kind)}
-                </span>
-                <div className="board-title-actions">
-                  <button
-                    disabled={busy}
-                    aria-label={t('renameBoard')}
-                    onClick={() => setDialog('rename')}
-                  >
-                    ✎
-                  </button>
-                  <button
-                    disabled={busy}
-                    aria-label={t('deleteBoard')}
-                    onClick={() => setDialog('delete')}
-                  >
-                    ×
-                  </button>
-                </div>
+            {boards.map((stored) => {
+              const board =
+                document?.board.id === stored.id ? document.board : stored;
+              return (
+                <button
+                  key={board.id}
+                  className={selected === board.id ? 'is-active' : ''}
+                  aria-current={selected === board.id ? 'page' : undefined}
+                  disabled={busy}
+                  onClick={() => selectBoard(board.id)}
+                >
+                  <span>{board.kind === 'canvas' ? '◈' : '▦'}</span>
+                  <span>
+                    {board.name}
+                    <small>{t(board.kind)}</small>
+                  </span>
+                </button>
+              );
+            })}
+            <button
+              className="board-template-button"
+              onClick={() => setDialog('templates')}
+            >
+              <span aria-hidden="true">▧</span> {t('templates')}
+            </button>
+          </nav>
+          <div className="board-main">
+            {loading || boardState.loading ? (
+              <div className="board-empty" role="status">
+                {t('loading')}
               </div>
-              {selectedSlot && (
-                <div className="board-assignment-bar">
-                  <strong>{selectedSlot.label}</strong>
-                  <span>{t('chooseAssetHint')}</span>
-                  <button
-                    disabled={busy || !selectedSlot.currentPin}
-                    onClick={() => void assignSlot(selectedSlot, null)}
-                  >
-                    {t('clearSlot')}
-                  </button>
-                  {document.board.kind === 'canvas' && (
+            ) : document ? (
+              <>
+                <div className="board-titlebar">
+                  <h2>{document.board.name}</h2>
+                  <span className="board-type-badge">
+                    {t(document.board.kind)}
+                  </span>
+                  <div className="board-title-actions">
                     <button
                       disabled={busy}
-                      onClick={() => setDialog('deleteSlot')}
+                      aria-label={t('renameBoard')}
+                      onClick={() => setDialog('rename')}
                     >
-                      {t('deleteSlot')}
+                      ✎
                     </button>
-                  )}
-                  <button
-                    onClick={() => setSelectedSlotId(null)}
-                    aria-label={t('cancelAssignment')}
-                  >
-                    ×
-                  </button>
+                    <button
+                      disabled={busy}
+                      aria-label={t('deleteBoard')}
+                      onClick={() => setDialog('delete')}
+                    >
+                      ×
+                    </button>
+                  </div>
                 </div>
-              )}
-              {document.board.kind === 'canvas' ? (
-                <BoardCanvas
-                  key={document.board.id}
-                  ref={canvas}
-                  document={document}
-                  busy={busy}
-                  selectedSlot={selectedSlotId}
-                  onChoose={chooseSlot}
-                  onAssign={(slot, pin) => void assignSlot(slot, pin)}
-                  onHistory={setHistory}
-                  onSave={saveLayout}
-                  onAddPin={addAsset}
-                  onViewport={saveViewport}
-                  onAddSlot={() => setDialog('slot')}
-                />
-              ) : (
-                <BoardMatrix
-                  key={document.board.id}
-                  document={document}
-                  busy={busy}
-                  selectedSlot={selectedSlotId}
-                  onChoose={chooseSlot}
-                  onAssign={(slot, pin) => void assignSlot(slot, pin)}
-                  onHistory={setHistory}
-                  onAxes={(axis, items) =>
-                    mutate(`/api/boards/${selected}`, 'PATCH', (current) => ({
-                      expectedRevision: current.board.revision,
-                      [axis]: items,
-                    }))
-                  }
-                />
-              )}
-            </>
-          ) : (
-            <div className="board-empty">
-              <div className="board-empty-art">◈</div>
-              <h2>{t('emptyTitle')}</h2>
-              <p>{t('emptyHint')}</p>
-              <button
-                className="primary"
-                disabled={loadError}
-                onClick={() => setDialog('create')}
-              >
-                <span aria-hidden="true">＋</span> {t('noBoard')}
-              </button>
-            </div>
-          )}
+                {selectedSlot && (
+                  <div className="board-assignment-bar">
+                    <strong>{presentSlot(selectedSlot).label}</strong>
+                    <span>{t('chooseAssetHint')}</span>
+                    <button
+                      disabled={busy || !selectedSlot.currentPin}
+                      onClick={() => void assignSlot(selectedSlot, null)}
+                    >
+                      {t('clearSlot')}
+                    </button>
+                    {document.board.kind === 'canvas' && (
+                      <button
+                        disabled={busy}
+                        onClick={() => setDialog('deleteSlot')}
+                      >
+                        {t('deleteSlot')}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setSelectedSlotId(null)}
+                      aria-label={t('cancelAssignment')}
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+                {document.board.kind === 'canvas' ? (
+                  <BoardCanvas
+                    key={document.board.id}
+                    ref={canvas}
+                    document={document}
+                    busy={busy}
+                    selectedSlot={selectedSlotId}
+                    onChoose={chooseSlot}
+                    onAssign={(slot, pin) => void assignSlot(slot, pin)}
+                    onHistory={setHistory}
+                    onSave={saveLayout}
+                    onAddPin={addAsset}
+                    onViewport={saveViewport}
+                    onAddSlot={() => setDialog('slot')}
+                  />
+                ) : (
+                  <BoardMatrix
+                    key={document.board.id}
+                    document={document}
+                    busy={busy}
+                    selectedSlot={selectedSlotId}
+                    onChoose={chooseSlot}
+                    onAssign={(slot, pin) => void assignSlot(slot, pin)}
+                    onHistory={setHistory}
+                    onAxes={(axis, items) =>
+                      mutate(`/api/boards/${selected}`, 'PATCH', (current) => ({
+                        expectedRevision: current.board.revision,
+                        [axis]: items,
+                      }))
+                    }
+                  />
+                )}
+              </>
+            ) : (
+              <div className="board-empty">
+                <div className="board-empty-art">◈</div>
+                <h2>{t('emptyTitle')}</h2>
+                <p>{t('emptyHint')}</p>
+                <button
+                  className="primary"
+                  disabled={loadError}
+                  onClick={() => setDialog('create')}
+                >
+                  <span aria-hidden="true">＋</span> {t('noBoard')}
+                </button>
+              </div>
+            )}
+          </div>
+          <AssetTray
+            key={libraryId}
+            libraryId={libraryId}
+            onPick={pickPin}
+            disabled={busy || !document}
+          />
         </div>
-        <AssetTray
-          key={libraryId}
-          libraryId={libraryId}
-          onPick={pickPin}
-          disabled={busy || !document}
-        />
-      </div>
-      {dialog === 'create' && (
-        <BoardCreateForm
-          templates={templates}
-          onClose={() => setDialog(null)}
-          onCreate={async (input) => {
-            try {
-              const created = BoardDocumentSchema.parse(
-                await request(`/api/libraries/${libraryId}/boards`, {
-                  method: 'POST',
-                  body: input,
-                }),
-              );
-              setBoards((previous) => [created.board, ...previous]);
-              selectBoard(created.board.id);
-            } catch {
-              throw new Error(t('saveError'));
-            }
-          }}
-        />
-      )}
-      {dialog === 'rename' && document && (
-        <NameForm
-          title={t('renameBoard')}
-          label={t('boardName')}
-          initial={document.board.name}
-          onClose={() => setDialog(null)}
-          onSave={async (name) => {
-            if (
-              await mutate(`/api/boards/${selected}`, 'PATCH', (current) => ({
-                expectedRevision: current.board.revision,
-                name,
-              }))
-            )
-              setDialog(null);
-            else throw new Error(t('changeNotSaved'));
-          }}
-        />
-      )}
-      {dialog === 'delete' && document && (
-        <DeleteConfirm
-          name={document.board.name}
-          hint={t('deleteBoardHint')}
-          onClose={() => setDialog(null)}
-          onConfirm={async () => {
-            try {
-              await request(`/api/boards/${selected}`, {
-                method: 'DELETE',
-                body: { expectedRevision: document.board.revision },
-              });
-              const remaining = boards.filter((board) => board.id !== selected);
-              setBoards(remaining);
-              selectBoard(remaining[0]?.id ?? null);
-            } catch (error) {
-              if (error instanceof ApiError && error.status === 409) {
-                setDialog(null);
-                boardState.refresh();
-                setNotice(t('conflict'));
-              } else throw new Error(t('saveError'));
-            }
-          }}
-        />
-      )}
-      {dialog === 'templates' && (
-        <TemplateManager
-          libraryId={libraryId}
-          templates={templates}
-          onClose={() => setDialog(null)}
-          onChanged={refreshTemplates}
-        />
-      )}
-      {dialog === 'slot' && document && (
-        <NameForm
-          title={t('addSlot')}
-          label={t('slotName')}
-          onClose={() => setDialog(null)}
-          onSave={async (label) => {
-            if (
-              await mutate(
-                `/api/boards/${selected}/slots`,
-                'POST',
-                (current) => ({
+        {dialog === 'create' && (
+          <BoardCreateForm
+            templates={templates}
+            onClose={() => setDialog(null)}
+            onCreate={async (input) => {
+              try {
+                const created = BoardDocumentSchema.parse(
+                  await request(`/api/libraries/${libraryId}/boards`, {
+                    method: 'POST',
+                    body: input,
+                  }),
+                );
+                setBoards((previous) => [created.board, ...previous]);
+                selectBoard(created.board.id);
+              } catch {
+                throw new Error(t('saveError'));
+              }
+            }}
+          />
+        )}
+        {dialog === 'rename' && document && (
+          <NameForm
+            title={t('renameBoard')}
+            label={t('boardName')}
+            initial={document.board.name}
+            onClose={() => setDialog(null)}
+            onSave={async (name) => {
+              if (
+                await mutate(`/api/boards/${selected}`, 'PATCH', (current) => ({
                   expectedRevision: current.board.revision,
-                  label,
-                  x: 40 + current.slots.length * 40,
-                  y: 40 + current.slots.length * 40,
-                  width: 240,
-                  height: 220,
-                }),
+                  name,
+                }))
               )
-            )
-              setDialog(null);
-            else throw new Error(t('changeNotSaved'));
-          }}
-        />
-      )}
-      {dialog === 'deleteSlot' && selectedSlot && (
-        <DeleteConfirm
-          name={selectedSlot.label}
-          hint={t('deleteAxisHint')}
-          onClose={() => setDialog(null)}
-          onConfirm={async () => {
-            if (
-              await mutate(
-                `/api/slots/${selectedSlot.id}`,
-                'DELETE',
-                (current) => ({
-                  expectedRevision:
-                    current.slots.find((slot) => slot.id === selectedSlot.id)
-                      ?.revision ?? selectedSlot.revision,
-                }),
+                setDialog(null);
+              else throw new Error(t('changeNotSaved'));
+            }}
+          />
+        )}
+        {dialog === 'delete' && document && (
+          <DeleteConfirm
+            name={document.board.name}
+            hint={t('deleteBoardHint')}
+            onClose={() => setDialog(null)}
+            onConfirm={async () => {
+              try {
+                await request(`/api/boards/${selected}`, {
+                  method: 'DELETE',
+                  body: { expectedRevision: document.board.revision },
+                });
+                const remaining = boards.filter(
+                  (board) => board.id !== selected,
+                );
+                setBoards(remaining);
+                selectBoard(remaining[0]?.id ?? null);
+              } catch (error) {
+                if (error instanceof ApiError && error.status === 409) {
+                  setDialog(null);
+                  boardState.refresh();
+                  setNotice(t('conflict'));
+                } else throw new Error(t('saveError'));
+              }
+            }}
+          />
+        )}
+        {dialog === 'templates' && (
+          <TemplateManager
+            libraryId={libraryId}
+            templates={templates}
+            onClose={() => setDialog(null)}
+            onChanged={refreshTemplates}
+          />
+        )}
+        {dialog === 'slot' && document && (
+          <NameForm
+            title={t('addSlot')}
+            label={t('slotName')}
+            onClose={() => setDialog(null)}
+            onSave={async (label) => {
+              if (
+                await mutate(
+                  `/api/boards/${selected}/slots`,
+                  'POST',
+                  (current) => ({
+                    expectedRevision: current.board.revision,
+                    label,
+                    x: 40 + current.slots.length * 40,
+                    y: 40 + current.slots.length * 40,
+                    width: 240,
+                    height: 220,
+                  }),
+                )
               )
-            ) {
-              setSelectedSlotId(null);
-              setDialog(null);
-            } else throw new Error(t('changeNotSaved'));
-          }}
-        />
-      )}
-      {history && (
-        <SlotHistory slot={history} onClose={() => setHistory(null)} />
-      )}
-    </main>
+                setDialog(null);
+              else throw new Error(t('changeNotSaved'));
+            }}
+          />
+        )}
+        {dialog === 'deleteSlot' && selectedSlot && (
+          <DeleteConfirm
+            name={presentSlot(selectedSlot).label}
+            hint={t('deleteAxisHint')}
+            onClose={() => setDialog(null)}
+            onConfirm={async () => {
+              if (
+                await mutate(
+                  `/api/slots/${selectedSlot.id}`,
+                  'DELETE',
+                  (current) => ({
+                    expectedRevision:
+                      current.slots.find((slot) => slot.id === selectedSlot.id)
+                        ?.revision ?? selectedSlot.revision,
+                  }),
+                )
+              ) {
+                setSelectedSlotId(null);
+                setDialog(null);
+              } else throw new Error(t('changeNotSaved'));
+            }}
+          />
+        )}
+        {history && (
+          <SlotHistory slot={history} onClose={() => setHistory(null)} />
+        )}
+      </main>
+    </TemplatePresentationProvider>
   );
 }
