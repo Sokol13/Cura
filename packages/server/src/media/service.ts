@@ -97,6 +97,7 @@ export class MediaService {
   private readonly rootChanges = new Map<string, number>();
   private readonly operations = new Set<Promise<unknown>>();
   private readonly recentErrors: CatalogEvent[] = [];
+  private readonly nativePreviews = new Map<string, number>();
 
   constructor(
     private readonly store: CatalogStore,
@@ -292,6 +293,33 @@ export class MediaService {
           this.reportError(root, error);
         }
       }
+    // Upgrade failed browser PSD previews from retained bytes without delaying startup.
+    const versions = this.store
+      .listAllVersions()
+      .filter(
+        (version) =>
+          !version.thumbnailPath &&
+          richPreviewFormat(version.name, version.type) === 'psd',
+      );
+    void this.reserveNativePreviews(versions, () =>
+      this.track(async () => {
+        for (const version of versions) {
+          if (this.closed) break;
+          try {
+            await this.rebuildPreviews([version]);
+          } catch (error) {
+            if (!this.closed)
+              this.emit({
+                type: 'error',
+                libraryId: version.libraryId,
+                assetId: version.assetId,
+                code: 'PSD_PREVIEW_RECOVERY',
+                message: fileOperationMessage(error),
+              });
+          }
+        }
+      }),
+    ).catch(() => undefined);
   }
   async registerRoot(libraryId: string, path: string): Promise<LibraryRoot> {
     this.store.getLibrary(libraryId);
@@ -657,7 +685,8 @@ export class MediaService {
     return this.track(async () => {
       await this.job({ kind: 'cache-clear', cacheDir: this.paths.cache });
       const changed = new Map<string, { libraryId: string; assetId: string }>();
-      for (const version of this.store.listAllVersions()) {
+      const versions = this.store.listAllVersions();
+      for (const version of versions) {
         this.store.updateVersionPreview(version.id, null);
         changed.set(version.assetId, version);
       }
@@ -667,6 +696,11 @@ export class MediaService {
           libraryId: asset.libraryId,
           assetId: asset.assetId,
         });
+      await this.rebuildPreviews(
+        versions.filter(
+          (version) => richPreviewFormat(version.name, version.type) === 'psd',
+        ),
+      );
     });
   }
   rebuildCache(): Promise<void> {
@@ -680,38 +714,72 @@ export class MediaService {
       })),
     );
   }
+  listPendingPreviews(libraryId: string) {
+    return this.store.listPendingPreviews(libraryId, [
+      ...this.nativePreviews.keys(),
+    ]);
+  }
+  private async reserveNativePreviews<T>(
+    versions: ReadonlyArray<VersionFile & { id: string }>,
+    operation: () => Promise<T>,
+  ): Promise<T> {
+    const ids = [
+      ...new Set(
+        versions
+          .filter(
+            (version) =>
+              richPreviewFormat(version.name, version.type) === 'psd',
+          )
+          .map((version) => version.id),
+      ),
+    ];
+    for (const id of ids)
+      this.nativePreviews.set(id, (this.nativePreviews.get(id) ?? 0) + 1);
+    try {
+      return await operation();
+    } finally {
+      for (const id of ids) {
+        const count = this.nativePreviews.get(id)! - 1;
+        if (count) this.nativePreviews.set(id, count);
+        else this.nativePreviews.delete(id);
+      }
+    }
+  }
   private rebuildPreviews(
     versions: ReadonlyArray<VersionFile & { id: string }>,
   ): Promise<void> {
-    return this.track(async () => {
-      const root = await realpath(this.paths.data);
-      for (const version of versions) {
-        if (this.closed) throw stopped();
-        if (richPreviewFormat(version.name, version.type)) {
-          this.store.updateVersionPreview(version.id, null);
+    return this.reserveNativePreviews(versions, () =>
+      this.track(async () => {
+        const root = await realpath(this.paths.data);
+        for (const version of versions) {
+          if (this.closed) throw stopped();
+          const format = richPreviewFormat(version.name, version.type);
+          if (format && format !== 'psd') {
+            this.store.updateVersionPreview(version.id, null);
+            this.emit({
+              type: 'thumbnail',
+              libraryId: version.libraryId,
+              assetId: version.assetId,
+            });
+            continue;
+          }
+          const processed = await this.job<ProcessedFile>({
+            kind: 'process',
+            root,
+            relativePath: relative(this.paths.data, version.snapshotPath),
+            dataDir: this.paths.data,
+            cacheDir: this.paths.cache,
+          });
+          if (this.closed) throw stopped();
+          this.store.updateVersionPreview(version.id, processed.thumbnailPath);
           this.emit({
             type: 'thumbnail',
             libraryId: version.libraryId,
             assetId: version.assetId,
           });
-          continue;
         }
-        const processed = await this.job<ProcessedFile>({
-          kind: 'process',
-          root,
-          relativePath: relative(this.paths.data, version.snapshotPath),
-          dataDir: this.paths.data,
-          cacheDir: this.paths.cache,
-        });
-        if (this.closed) throw stopped();
-        this.store.updateVersionPreview(version.id, processed.thumbnailPath);
-        this.emit({
-          type: 'thumbnail',
-          libraryId: version.libraryId,
-          assetId: version.assetId,
-        });
-      }
-    });
+      }),
+    );
   }
   close(): Promise<void> {
     if (this.closing) return this.closing;

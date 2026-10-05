@@ -29,7 +29,7 @@ async function setup() {
   const media = new MediaService(store, paths);
   const app = Fastify();
   await registerCatalogRoutes(app, store, media, paths);
-  await registerPreviewRoutes(app, store, media);
+  await registerPreviewRoutes(app, media);
   app.addHook('onClose', () => media.close());
   cleanup.push(() => app.close());
   const library = store.createLibrary({ name: 'Rich previews' });
@@ -205,6 +205,8 @@ it('keeps 1920×1080 source dimensions after receiving a 1024×576 preview and n
   source.writeUInt16BE(3, 24);
   const asset = await media.upload(library.id, 'full-size.psd', source);
   expect([asset.width, asset.height]).toEqual([1920, 1080]);
+  // Exercise a legacy browser submission even though native PSD rendering is now preferred.
+  store.updateVersionPreview(asset.currentVersionId, null);
   const preview = await sharp({
     create: { width: 1024, height: 576, channels: 3, background: 'red' },
   })

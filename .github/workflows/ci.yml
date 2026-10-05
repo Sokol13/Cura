@@ -48,6 +48,8 @@ jobs:
         run: pnpm test
       - name: Real-server Chromium E2E
         run: pnpm e2e
+      - name: Large PSD time and memory acceptance
+        run: node scripts/psd-benchmark.mjs .tmp/psd-benchmark.json
       - name: Print browser failure context
         if: failure()
         run: node scripts/print-e2e-diagnostics.mjs

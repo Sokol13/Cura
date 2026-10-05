@@ -76,7 +76,7 @@ export async function createApp(options: AppOptions = {}) {
         );
     });
     await registerCatalogRoutes(app, store, media, options.paths);
-    await registerPreviewRoutes(app, store, media);
+    await registerPreviewRoutes(app, media);
     registerBrandRoutes(app, options.database, store, options.paths);
     registerBoardRoutes(app, new BoardStore(options.database), (event) =>
       media.notify(event),

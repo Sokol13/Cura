@@ -583,15 +583,20 @@ export class CatalogStore {
       JSON.parse(String(this.require('asset_versions', versionId).payload)),
     );
   }
-  listPendingPreviews(libraryId: string): C.PreviewCandidate[] {
+  listPendingPreviews(
+    libraryId: string,
+    nativeVersionIds: readonly string[] = [],
+  ): C.PreviewCandidate[] {
     this.getLibrary(libraryId);
     return this.rows(
       `SELECT v.id,v.payload FROM asset_versions v JOIN assets a ON a.id=v.asset_id
       WHERE a.library_id=? AND (json_extract(v.payload,'$.previewState') IS NULL OR json_extract(v.payload,'$.previewState')='pending')
+      AND v.id NOT IN (SELECT value FROM json_each(?))
       AND json_extract(v.payload,'$.type') NOT IN ('image/png','image/jpeg','image/webp','image/gif','image/avif','image/svg+xml')
       AND (lower(json_extract(v.payload,'$.name')) GLOB '*.glb' OR lower(json_extract(v.payload,'$.name')) GLOB '*.obj' OR lower(json_extract(v.payload,'$.name')) GLOB '*.psd' OR lower(json_extract(v.payload,'$.name')) GLOB '*.pdf' OR lower(json_extract(v.payload,'$.name')) GLOB '*.mp4' OR lower(json_extract(v.payload,'$.name')) GLOB '*.mov')
       ORDER BY v.created_at,v.id LIMIT 16`,
       libraryId,
+      JSON.stringify(nativeVersionIds),
     ).flatMap((row) => {
       const version = C.AssetVersionSchema.parse(
         JSON.parse(String(row.payload)),

@@ -7,18 +7,16 @@ import {
   PREVIEW_UPLOAD_LIMIT,
   SuccessResponseSchema,
 } from '@cura/shared';
-import type { CatalogStore } from '../catalog-store.js';
 import type { MediaService } from './service.js';
 export async function registerPreviewRoutes(
   app: FastifyInstance,
-  store: CatalogStore,
   media: MediaService,
 ): Promise<void> {
   const id = (params: unknown, key: string) =>
     IdSchema.parse((params as Record<string, unknown>)[key]);
   app.get('/api/libraries/:libraryId/previews', (request) =>
     PreviewCandidatesSchema.parse({
-      items: store.listPendingPreviews(id(request.params, 'libraryId')),
+      items: media.listPendingPreviews(id(request.params, 'libraryId')),
     }),
   );
   app.post(

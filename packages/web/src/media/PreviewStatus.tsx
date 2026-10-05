@@ -13,7 +13,7 @@ const en = {
   EXTERNAL_RESOURCE:
     'Preview requires a self-contained model with embedded local resources.',
   UNSUPPORTED_FORMAT:
-    'This encoding is not supported for previews. PSD previews require RGB8 raw or RLE composites.',
+    'This encoding is not supported for previews. Save the PSD with an embedded thumbnail or a compatible merged image.',
   VIDEO_CODEC:
     'This browser cannot decode the video. Use an H.264 MP4 or compatible MOV for a preview.',
   WEBGL_UNAVAILABLE:
@@ -35,7 +35,7 @@ const zh = {
   PIXEL_LIMIT: '图像超出预览像素限制，原文件仍可下载。',
   MODEL_LIMIT: '模型超出预览几何数量限制。',
   EXTERNAL_RESOURCE: '模型预览需要内嵌资源，不会加载外部文件。',
-  UNSUPPORTED_FORMAT: '暂不支持此编码。PSD 预览需要 RGB8 原始或 RLE 合成图。',
+  UNSUPPORTED_FORMAT: '暂不支持此编码。请保存带内嵌缩略图或兼容合成图的 PSD。',
   VIDEO_CODEC: '此浏览器无法解码视频。请使用 H.264 MP4 或兼容的 MOV 文件。',
   WEBGL_UNAVAILABLE:
     '3D 预览需要 WebGL。请启用浏览器图形加速，然后重建缩略图。',

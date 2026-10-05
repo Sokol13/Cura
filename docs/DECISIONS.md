@@ -327,3 +327,5 @@ Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate cor
 **Reason:** Raising current whole-file/whole-image browser limits would exceed the 500 MB target. A bounded reader over retained snapshots can skip layer data, prefer thumbnail resources, and sample/stream only the merged composite. Native previews must preserve original dimensions and old versions, repair existing failed-preview records, and keep the prior bounded browser fallback for unsupported encodings.
 
 **Alternatives rejected:** Claiming validation of files never received, changing originals, lifting all size/pixel caps, or decoding an entire layer tree for a thumbnail.
+
+**PSD rendering scope:** Composite previews use opaque RGB samples; saved alpha channels are not assumed to represent composite opacity. Embedded 1033 thumbnails are corrected from BGR for both raw and JPEG data. Unsupported CMYK/32-bit composites still benefit from their embedded thumbnail. Keep browser fallback caps unchanged; recovery retries missing PSD previews once during startup in the background, and cache rebuild covers all retained versions. No new runtime dependency is introduced.

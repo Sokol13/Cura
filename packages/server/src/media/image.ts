@@ -17,6 +17,7 @@ import exifr from 'exifr';
 import sharp from 'sharp';
 
 import { parsePngMetadata } from './metadata.js';
+import { readPsdPreview } from './psd.js';
 import type { ProcessedFile } from './types.js';
 
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -232,6 +233,7 @@ export async function processFile(input: {
   };
   const previews = path.resolve(input.cacheDir, 'thumbnails');
   const temporary = path.join(previews, `${randomUUID()}.tmp`);
+  let psdPixels: Buffer | undefined;
   try {
     const prefix = await open(stored.snapshotPath, 'r');
     let raster = false;
@@ -270,7 +272,12 @@ export async function processFile(input: {
             result.height = height;
           }
         }
-        return result;
+        if (richType !== 'image/vnd.adobe.photoshop') return result;
+        const preview = await readPsdPreview(stored.snapshotPath);
+        if (!preview) return result;
+        psdPixels = preview.png;
+        result.width = preview.width;
+        result.height = preview.height;
       }
       raster =
         header.subarray(0, 8).equals(PNG_SIGNATURE) ||
@@ -284,9 +291,10 @@ export async function processFile(input: {
       await prefix.close();
     }
     // Buffer input has no base URL from which SVG can load adjacent source files.
-    if (!raster && stored.size > 8 * 1024 * 1024) return result;
+    if (!psdPixels && !raster && stored.size > 8 * 1024 * 1024) return result;
     const decoder = sharp(
-      raster ? stored.snapshotPath : await readFile(stored.snapshotPath),
+      psdPixels ??
+        (raster ? stored.snapshotPath : await readFile(stored.snapshotPath)),
       {
         limitInputPixels: 100_000_000,
         failOn: 'error',
@@ -295,7 +303,7 @@ export async function processFile(input: {
     );
     const metadata = await decoder.metadata();
     if (!metadata.format || !MIME_TYPES[metadata.format]) return result;
-    result.type = MIME_TYPES[metadata.format]!;
+    if (!psdPixels) result.type = MIME_TYPES[metadata.format]!;
     if (metadata.exif && metadata.exif.length <= MAX_TEXT_CHUNK) {
       try {
         const tiff = metadata.exif
@@ -340,8 +348,10 @@ export async function processFile(input: {
     ]);
     const swap =
       metadata.orientation !== undefined && metadata.orientation >= 5;
-    result.width = (swap ? metadata.height : metadata.width) ?? null;
-    result.height = (swap ? metadata.width : metadata.height) ?? null;
+    if (!psdPixels) {
+      result.width = (swap ? metadata.height : metadata.width) ?? null;
+      result.height = (swap ? metadata.width : metadata.height) ?? null;
+    }
     result.colors = palette(rgb);
     result.phash = perceptualHash(gray);
     await mkdir(previews, { recursive: true });
@@ -356,8 +366,10 @@ export async function processFile(input: {
     result.thumbnailPath = thumbnailPath;
   } catch {
     // Unsupported, oversized and damaged image files retain their original bytes.
-    result.width = null;
-    result.height = null;
+    if (result.type !== 'image/vnd.adobe.photoshop') {
+      result.width = null;
+      result.height = null;
+    }
     result.colors = [];
     result.phash = '';
   } finally {
