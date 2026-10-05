@@ -121,9 +121,10 @@ export function App() {
   const [filters, setFilters] = useState<Filters>({});
   const [showFilters, setShowFilters] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [registrationLibraryId, setRegistrationLibraryId] = useState<
-    string | null
-  >(null);
+  // Each opening has its own identity, even when the library is unchanged.
+  const [registration, setRegistration] = useState<{
+    libraryId: string;
+  } | null>(null);
   const [exportSelection, setExportSelection] = useState<string[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [booting, setBooting] = useState(true);
@@ -171,7 +172,7 @@ export function App() {
       setWorkspace(next);
       setPreview(null);
       setShowSettings(false);
-      setRegistrationLibraryId(null);
+      setRegistration(null);
       setExportSelection(null);
       refresh();
     },
@@ -182,7 +183,7 @@ export function App() {
       setWorkspace(readWorkspace());
       setPreview(null);
       setShowSettings(false);
-      setRegistrationLibraryId(null);
+      setRegistration(null);
       setExportSelection(null);
     };
     window.addEventListener('popstate', restore);
@@ -413,7 +414,7 @@ export function App() {
 
   const changeLibrary = (id: string) => {
     setExportSelection(null);
-    setRegistrationLibraryId(null);
+    setRegistration(null);
     setLibraryId(id);
     setAssets([]);
     setTotal(0);
@@ -467,12 +468,11 @@ export function App() {
       if (event.key === 'Escape') {
         setPreview(null);
         setShowSettings(false);
-        setRegistrationLibraryId(null);
+        setRegistration(null);
         setExportSelection(null);
         return;
       }
-      if (showSettings || registrationLibraryId || preview || exportSelection)
-        return;
+      if (showSettings || registration || preview || exportSelection) return;
       if (
         target instanceof HTMLElement &&
         target.closest('button, a, summary') &&
@@ -511,7 +511,7 @@ export function App() {
     batch,
     filters.trash,
     showSettings,
-    registrationLibraryId,
+    registration,
     exportSelection,
     preview,
     workspace,
@@ -954,7 +954,7 @@ export function App() {
                       <button
                         type="button"
                         className="button-primary"
-                        onClick={() => setRegistrationLibraryId(libraryId)}
+                        onClick={() => setRegistration({ libraryId })}
                       >
                         {t('registerLocalFolder')}
                       </button>
@@ -1032,10 +1032,14 @@ export function App() {
               onError={reportError}
             />
           )}
-          {registrationLibraryId && registrationLibraryId === libraryId && (
+          {registration && registration.libraryId === libraryId && (
             <DirectoryBrowserDialog
-              libraryId={registrationLibraryId}
-              onClose={() => setRegistrationLibraryId(null)}
+              libraryId={registration.libraryId}
+              onClose={() =>
+                setRegistration((current) =>
+                  current === registration ? null : current,
+                )
+              }
               onRegistered={refresh}
             />
           )}

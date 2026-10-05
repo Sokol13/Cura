@@ -772,3 +772,149 @@ it('restores a workspace URL and follows browser navigation back to the library'
     await screen.findByRole('button', { name: 'Select Forest.png' }),
   ).toBeVisible();
 });
+
+it.each(['same library', 'another library'])(
+  'keeps a reopened registration dialog in %s when an earlier request finishes',
+  async (destination) => {
+    const secondLibraryId = '00000000-0000-4000-8000-000000000003';
+    const originalFetch = fetch;
+    const writes: {
+      path: string;
+      body: unknown;
+      resolve: (response: Response) => void;
+    }[] = [];
+    const rootReads: string[] = [];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (path: string, options?: RequestInit) => {
+        const url = new URL(path, 'http://localhost');
+        if (url.pathname === '/api/libraries')
+          return Response.json(
+            [libraryId, secondLibraryId].map((id) => ({
+              id,
+              name: id === libraryId ? 'Studio library' : 'Second library',
+              createdAt: timestamp,
+              updatedAt: timestamp,
+            })),
+          );
+        if (url.pathname.endsWith('/assets'))
+          return Response.json({ items: [], total: 0 });
+        if (url.pathname === '/api/directories')
+          return Response.json({
+            path: '/Pictures',
+            parent: '/',
+            directories: [],
+          });
+        if (url.pathname.endsWith('/roots')) {
+          if (options?.method === 'POST')
+            return new Promise<Response>((resolve) => {
+              writes.push({
+                path: url.pathname,
+                body: JSON.parse(String(options.body)),
+                resolve,
+              });
+            });
+          rootReads.push(url.pathname);
+          return Response.json([]);
+        }
+        return originalFetch(path, options);
+      }),
+    );
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const flush = async () => {
+      await act(async () => {});
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(60);
+      });
+    };
+    try {
+      render(<App />);
+      await flush();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Register local folder' }),
+      );
+      await flush();
+      fireEvent.change(
+        screen.getByRole('textbox', { name: 'Directory path' }),
+        { target: { value: '/Pictures/First' } },
+      );
+      fireEvent.click(
+        within(screen.getByRole('dialog')).getByRole('button', {
+          name: 'Register directory',
+        }),
+      );
+      expect(writes).toHaveLength(1);
+      expect(writes[0]).toMatchObject({
+        path: `/api/libraries/${libraryId}/roots`,
+        body: { path: '/Pictures/First' },
+      });
+
+      window.history.replaceState({}, '', '/?workspace=boards');
+      fireEvent.popState(window);
+      await flush();
+      expect(
+        screen.getByRole('region', { name: 'Board editor' }),
+      ).toBeInTheDocument();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      window.history.replaceState({}, '', '/');
+      fireEvent.popState(window);
+      await flush();
+      const currentLibraryId =
+        destination === 'another library' ? secondLibraryId : libraryId;
+      if (destination === 'another library') {
+        fireEvent.change(screen.getByRole('combobox', { name: 'Library' }), {
+          target: { value: currentLibraryId },
+        });
+        await flush();
+      }
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Register local folder' }),
+      );
+      await flush();
+      const reopened = screen.getByRole('dialog', {
+        name: 'Register directory',
+      });
+      fireEvent.change(
+        within(reopened).getByRole('textbox', { name: 'Directory path' }),
+        { target: { value: '/Pictures/Second' } },
+      );
+      const readsBeforeCompletion = rootReads.filter(
+        (path) => path === `/api/libraries/${currentLibraryId}/roots`,
+      ).length;
+      await act(async () => {
+        writes[0]!.resolve(Response.json({ ok: true }));
+      });
+      await flush();
+      expect(screen.getByRole('dialog', { name: 'Register directory' })).toBe(
+        reopened,
+      );
+      expect(
+        within(reopened).getByRole('textbox', { name: 'Directory path' }),
+      ).toHaveValue('/Pictures/Second');
+      expect(
+        rootReads.filter(
+          (path) => path === `/api/libraries/${currentLibraryId}/roots`,
+        ).length,
+      ).toBeGreaterThan(readsBeforeCompletion);
+      expect(writes).toHaveLength(1);
+
+      fireEvent.click(
+        within(reopened).getByRole('button', {
+          name: 'Register directory',
+        }),
+      );
+      expect(writes).toHaveLength(2);
+      expect(writes[1]).toMatchObject({
+        path: `/api/libraries/${currentLibraryId}/roots`,
+        body: { path: '/Pictures/Second' },
+      });
+      await act(async () => {
+        writes[1]!.resolve(Response.json({ ok: true }));
+      });
+      await flush();
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  },
+);
