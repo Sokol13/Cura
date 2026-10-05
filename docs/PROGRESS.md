@@ -58,6 +58,8 @@ The user supplied physical macOS/Windows results at `6ed394b` and authorized a n
 
 - Item 14 is in progress: preview the actual export snapshot closure before confirming a job, with unique selected/dependency asset IDs and counts, overlapping public reasons and a membership token. Backend, reused export UI and independent real-browser stale-plan/ZIP acceptance are proceeding in isolated worktrees.
 
+- Archive CI follow-up: docs-only checkpoint `c33e13e` failed Node 22 in [CI 37298894565](https://github.com/Sokol13/Cura/actions/runs/37298894565): the existing serial 1,000-asset archive heartbeat measured 313.082 ms against its unchanged <250 ms limit. All ordinary unit cases, Node 24 and both real-cloud cells passed. Exact-source exclusive probes did not reproduce that result: baseline heartbeat 52.17 ms; supported 100,000-character notes on the first twenty assets increased it to 180.23 ms. Transaction/GC observations and source identities are in [the investigation](evidence/v0.4.0/archive-responsiveness-diagnostics.md). No production fix or runner cause is claimed. The existing test now logs numeric phase/progress/read timing outside its measured window, with no additional polling, changed fixture or relaxed assertion. Its original three cases, server types and scoped lint/format pass; an exact CI recheck is pending. Item 14's isolated 20 backend / 16 component / four browser checks pass after the reviewed job-visibility correction; complete integration checks are underway.
+
 ## Post-release smoke feedback
 
 - User-reported Mac/Windows passes and remaining checks are recorded in DESKTOP-FEEDBACK.md. Do not imply the untested Windows Chinese-directory/locked-file/watcher cases passed.

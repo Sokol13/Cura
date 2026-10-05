@@ -1,0 +1,288 @@
+{
+  "reportedCiFailure": {
+    "url": "https://github.com/Sokol13/Cura/actions/runs/37298894565",
+    "sourceCommit": "c33e13e0161a49b0a3c84d8a2dcedb80f871fddf",
+    "nodeMajor": 22,
+    "maxGapMs": 313.082,
+    "requiredLessThanMs": 250,
+    "reproducedLocally": false,
+    "sourceChangeSincePreviousGreen": "documentation only"
+  },
+  "sourceIdentity": {
+    "commit": "c33e13e0161a49b0a3c84d8a2dcedb80f871fddf",
+    "serverTree": "21a32575e208a2dac3073af8aea71ea55f381f44",
+    "sharedTree": "f5f94da3b379669eb2e4c0792bd212e75a2d8d46",
+    "lockfileBlob": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615",
+    "originalTestBlob": "c77f188670e08f4aaefe519a836017fe12d1164a",
+    "platform": "linux"
+  },
+  "unchangedGates": {
+    "assetCount": 1000,
+    "previewMsLessThan": 200,
+    "queuedMsLessThan": 200,
+    "heartbeatGapMsLessThan": 250,
+    "heartbeatIntervalMs": 5,
+    "jobPollIntervalMs": 5,
+    "firstTestTimeoutMs": 20000
+  },
+  "initialControl": {
+    "startedAtUtc": "2026-10-05T10:56:01Z",
+    "testsPassed": 3,
+    "exclusiveCpuConfirmed": false,
+    "note": "Started before the final all-sibling-processes-stopped confirmation; not cited as isolated performance evidence."
+  },
+  "exclusiveProbes": [
+    {
+      "kind": "unchanged 1000-asset workload",
+      "startedAtUtc": "2026-10-05T10:57:45Z",
+      "node": "v22.23.3",
+      "exclusiveCpuConfirmed": true,
+      "metadataFixture": null,
+      "pragmas": {
+        "synchronous": 1,
+        "walAutocheckpoint": 1000,
+        "pageSize": 4096
+      },
+      "measuredElapsedMs": 1856.1120870000002,
+      "heartbeatMaxMs": 52.17346600000019,
+      "largestHeartbeatGaps": [
+        {
+          "at": 1384.1685810000001,
+          "gap": 52.17346600000019
+        },
+        {
+          "at": 1331.995115,
+          "gap": 50.29829999999993
+        },
+        {
+          "at": 85.88831900000014,
+          "gap": 50.19891000000007
+        }
+      ],
+      "largestTransactions": [
+        {
+          "at": 1281.8419340000003,
+          "ms": 48.199691999999686,
+          "bodyMs": 47.82411699999966,
+          "commitAndBeginMs": 0.3755750000000262
+        },
+        {
+          "at": 1332.149357,
+          "ms": 44.63242500000024,
+          "bodyMs": 43.51974099999961,
+          "commitAndBeginMs": 1.1126840000006268
+        },
+        {
+          "at": 1475.4390580000002,
+          "ms": 44.576220999999805,
+          "bodyMs": 44.148257000000285,
+          "commitAndBeginMs": 0.42796399999951973
+        }
+      ],
+      "transactionCount": 50,
+      "maximumCommitAndBeginMs": 2.174262000000226,
+      "gc": {
+        "entries": 37,
+        "maximumMs": 5.133207991719246
+      },
+      "selectedOperations": {
+        "transaction.outer": {
+          "count": 50,
+          "ms": 1649.9527890000004,
+          "maxMs": 48.199691999999686
+        },
+        "catalog.updateAsset": {
+          "count": 1000,
+          "ms": 941.3305020000053,
+          "maxMs": 6.383143999999902
+        },
+        "catalog.getAsset": {
+          "count": 4000,
+          "ms": 581.4233120000099,
+          "maxMs": 8.265436000000136
+        },
+        "catalog.refreshSearch": {
+          "count": 1000,
+          "ms": 288.2401920000018,
+          "maxMs": 4.698530000000119
+        },
+        "service.job": {
+          "count": 103,
+          "ms": 212.91605899999809,
+          "maxMs": 7.561047000000144
+        },
+        "service.saveJob": {
+          "count": 52,
+          "ms": 134.38686899999925,
+          "maxMs": 7.786595999999918
+        },
+        "service.previewRule": {
+          "count": 1,
+          "ms": 8.834862999999814,
+          "maxMs": 8.834862999999814
+        },
+        "service.runRule": {
+          "count": 1,
+          "ms": 7.790531999999985,
+          "maxMs": 7.790531999999985
+        },
+        "sql.run.DELETE FROM asset_fts WHERE asset_id=?": {
+          "count": 1000,
+          "ms": 71.57168500000512,
+          "maxMs": 3.4433309999999437
+        },
+        "sql.run.INSERT INTO asset_fts(asset_id,text) VALUES (?,?)": {
+          "count": 1000,
+          "ms": 8.216890000004469,
+          "maxMs": 0.10429700000008779
+        }
+      },
+      "originalFirstTestPassed": true,
+      "rawLogSha256": "3e19dccd59816f77c075846039245273d0d6e588824ac6e1b6ccc78cb8f67549"
+    },
+    {
+      "kind": "1000 assets with supported large notes on the first 20-asset batch",
+      "startedAtUtc": "2026-10-05T11:00:53Z",
+      "node": "v22.23.3",
+      "exclusiveCpuConfirmed": true,
+      "metadataFixture": {
+        "assetCount": 20,
+        "noteLength": 100000,
+        "authoredVia": "CatalogStore.updateAsset",
+        "outsideMeasuredWindow": true,
+        "setupMs": 136.45095700000002
+      },
+      "pragmas": {
+        "synchronous": 1,
+        "walAutocheckpoint": 1000,
+        "pageSize": 4096
+      },
+      "measuredElapsedMs": 2070.621976,
+      "heartbeatMaxMs": 180.22686799999997,
+      "largestHeartbeatGaps": [
+        {
+          "at": 221.80657199999996,
+          "gap": 180.22686799999997
+        },
+        {
+          "at": 2057.729821,
+          "gap": 48.26318200000014
+        },
+        {
+          "at": 1974.2381109999997,
+          "gap": 40.30158599999959
+        }
+      ],
+      "largestTransactions": [
+        {
+          "at": 45.53984699999978,
+          "ms": 174.35890300000005,
+          "bodyMs": 166.8608240000001,
+          "commitAndBeginMs": 7.4980789999999615
+        },
+        {
+          "at": 739.111422,
+          "ms": 38.56995299999994,
+          "bodyMs": 37.006349,
+          "commitAndBeginMs": 1.5636039999999412
+        },
+        {
+          "at": 699.1401199999998,
+          "ms": 38.40070700000001,
+          "bodyMs": 38.04201699999999,
+          "commitAndBeginMs": 0.35869000000002416
+        }
+      ],
+      "transactionCount": 50,
+      "maximumCommitAndBeginMs": 7.4980789999999615,
+      "gc": {
+        "entries": 40,
+        "maximumMs": 5.414332002401352
+      },
+      "selectedOperations": {
+        "transaction.outer": {
+          "count": 50,
+          "ms": 1872.1110090000006,
+          "maxMs": 174.35890300000005
+        },
+        "catalog.updateAsset": {
+          "count": 1000,
+          "ms": 1144.4270519999966,
+          "maxMs": 12.872742000000017
+        },
+        "catalog.getAsset": {
+          "count": 4000,
+          "ms": 559.3046530000036,
+          "maxMs": 5.738951000000043
+        },
+        "catalog.refreshSearch": {
+          "count": 1000,
+          "ms": 386.400086000001,
+          "maxMs": 4.418763000000126
+        },
+        "service.job": {
+          "count": 103,
+          "ms": 188.90188000000148,
+          "maxMs": 6.021465000000262
+        },
+        "service.saveJob": {
+          "count": 52,
+          "ms": 121.05679300000156,
+          "maxMs": 6.148757999999816
+        },
+        "service.previewRule": {
+          "count": 1,
+          "ms": 12.01529000000005,
+          "maxMs": 12.01529000000005
+        },
+        "service.runRule": {
+          "count": 1,
+          "ms": 11.903471999999965,
+          "maxMs": 11.903471999999965
+        },
+        "sql.run.DELETE FROM asset_fts WHERE asset_id=?": {
+          "count": 1000,
+          "ms": 172.99848099999463,
+          "maxMs": 2.01155800000015
+        },
+        "sql.run.INSERT INTO asset_fts(asset_id,text) VALUES (?,?)": {
+          "count": 1000,
+          "ms": 19.935523000000785,
+          "maxMs": 0.6780209999999443
+        }
+      },
+      "originalFirstTestPassed": true,
+      "rawLogSha256": "9aca697ffc0799afcef243f0ecdf20ec2bf511f831f2c1959027abb2ef7f9d13"
+    }
+  ],
+  "diagnosticsValidation": {
+    "commit": "93fcc1b3c4dd266d27edc602c90eaa687de549a2",
+    "startedAtUtc": "2026-10-05T11:04:01Z",
+    "testsPassed": 3,
+    "exclusiveCpuConfirmed": true,
+    "metrics": {
+      "node": "v22.23.3",
+      "previewMs": 13.332546999999977,
+      "queuedMs": 11.74679900000001,
+      "maxGap": 50.954791000000114,
+      "maxGapContext": {
+        "fromPhase": "archive",
+        "toPhase": "archive",
+        "observedProcessed": 620,
+        "observedStatus": "running"
+      },
+      "maxJobReadMs": 5.027059999999892,
+      "observedProcessed": 1000,
+      "observedStatus": "completed"
+    },
+    "staticChecks": ["scoped ESLint", "server TypeScript", "scoped Prettier"],
+    "productionChanged": false
+  },
+  "boundaries": [
+    "The 313.082 ms CI stall was not reproduced; this evidence does not identify its root cause or claim a production fix.",
+    "Each exclusive probe was run once. Numeric instrumentation has overhead, so probe timings are diagnostic rather than claims of faster application behavior.",
+    "The metadata probe authored 100000-character notes using real CatalogStore.updateAsset on the 20 lowest asset IDs before the measurement window; no sleeps, timing-limit changes or retry-until-green loops were used.",
+    "Gap phase endpoints and progress in the retained test output describe existing heartbeat/job-poll observations, not a sampled CPU stack.",
+    "No physical Windows/macOS timing or renderer performance measurement was performed."
+  ]
+}

@@ -75,9 +75,15 @@ async function finished(
   service: AutomationService,
   libraryId: string,
   id: string,
+  observed?: (
+    job: ReturnType<AutomationService['job']>,
+    milliseconds: number,
+  ) => void,
 ) {
   for (let i = 0; i < 3000; i++) {
+    const started = observed ? performance.now() : 0;
     const job = service.job(libraryId, id);
+    observed?.(job, performance.now() - started);
     if (!['queued', 'running'].includes(job.status)) return job;
     await new Promise((r) => setTimeout(r, 5));
   }
@@ -88,28 +94,63 @@ describe('archive work yields to the local API', () => {
     const f = await fixture(1000); // All schema-valid fixture creation is outside the measured window.
     let previous = performance.now(),
       maxGap = 0;
+    let phase = 'settling',
+      previousPhase = phase,
+      observedProcessed = 0,
+      observedStatus = 'not-started',
+      maxJobReadMs = 0;
+    let maxGapContext = {
+      fromPhase: phase,
+      toPhase: phase,
+      observedProcessed,
+      observedStatus,
+    };
     const heartbeat = setInterval(() => {
       const current = performance.now();
-      maxGap = Math.max(maxGap, current - previous);
+      const gap = current - previous;
+      if (gap > maxGap) {
+        maxGap = gap;
+        maxGapContext = {
+          fromPhase: previousPhase,
+          toPhase: phase,
+          observedProcessed,
+          observedStatus,
+        };
+      }
       previous = current;
+      previousPhase = phase;
     }, 5);
     let queuedMs = 0,
       previewMs = 0;
     try {
       await new Promise((r) => setTimeout(r, 15));
+      phase = 'preview';
       let start = performance.now();
       const preview = f.service.previewRule(f.library.id, f.rule.id, {
         expectedRevision: 0,
       });
       previewMs = performance.now() - start;
       expect(preview.eligibleTotal).toBe(1000);
+      phase = 'queue';
       start = performance.now();
       const job = f.service.runRule(f.library.id, f.rule.id, {
         expectedRevision: 0,
       });
       queuedMs = performance.now() - start;
-      const completed = await finished(f.service, f.library.id, job.id);
+      phase = 'archive';
+      const completed = await finished(
+        f.service,
+        f.library.id,
+        job.id,
+        (current, milliseconds) => {
+          maxJobReadMs = Math.max(maxJobReadMs, milliseconds);
+          observedProcessed = current.processed;
+          observedStatus = current.status;
+        },
+      );
+      phase = 'completion-drain';
       await new Promise((r) => setTimeout(r, 10));
+      phase = 'completion-assertions';
       expect(completed).toMatchObject({
         status: 'completed',
         total: 1000,
@@ -118,6 +159,21 @@ describe('archive work yields to the local API', () => {
       expect(completed.results.filter((r) => r.proposalId)).toHaveLength(1000);
     } finally {
       clearInterval(heartbeat);
+      // Logging stays outside the original measurement window. Progress is the
+      // last existing poll, not an extra database read inside the heartbeat.
+      console.info(
+        'ARCHIVE_RESPONSIVENESS',
+        JSON.stringify({
+          node: process.version,
+          previewMs,
+          queuedMs,
+          maxGap,
+          maxGapContext,
+          maxJobReadMs,
+          observedProcessed,
+          observedStatus,
+        }),
+      );
     }
     expect(previewMs).toBeLessThan(200);
     expect(queuedMs).toBeLessThan(200);
