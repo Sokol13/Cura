@@ -1,0 +1,62 @@
+{
+  "status": "passed",
+  "originalMeasurement": {
+    "artifact": "inbox-upgrade.json",
+    "verifierSha256": "8b048de1676aa237dc8f7e5470bd0b7ebed54ae7a11575bc78a74ec44a3c1b1e"
+  },
+  "archivedVariant": {
+    "artifact": "inbox-upgrade.mjs",
+    "verifierSha256": "dd3addbef1b106dfd5716a5c4c8edd6d474f56e958bca86a1cb9ecfcdfaea1e5",
+    "changes": [
+      "Replace hardcoded machine directory with CURA_INBOX_ACCEPTANCE_DIR or <cwd>/.tmp/inbox-upgrade",
+      "Apply repository Prettier formatting; acceptance assertions unchanged"
+    ]
+  },
+  "validation": {
+    "method": "Fresh generated seed through exact released createApp, then two candidate starts with the archived verifier",
+    "runtime": "v22.23.3",
+    "platform": "linux",
+    "oldCommit": "a078429110b64e99b4358e709de6657f84ccd9ab",
+    "candidateCommit": "977607d5e0e4adc46cbef622b098d58036e926e5",
+    "sourceTreesMatchOriginal": true,
+    "checksPassed": 54,
+    "checkLabelsMatchOriginal": true,
+    "counts": {
+      "assets": 7,
+      "versions": 8,
+      "sources": 9
+    },
+    "passes": [
+      {
+        "pass": 1,
+        "sourcesInDatedLayout": 7,
+        "collisionSuffixes": 2,
+        "newTables": ["inbox_migrations"],
+        "completedJournalRows": 7,
+        "migrations": 11,
+        "integrity": "ok",
+        "foreignKeyViolations": 0
+      },
+      {
+        "pass": 2,
+        "sourcesInDatedLayout": 7,
+        "collisionSuffixes": 2,
+        "newTables": ["inbox_migrations"],
+        "completedJournalRows": 7,
+        "migrations": 11,
+        "integrity": "ok",
+        "foreignKeyViolations": 0
+      }
+    ],
+    "portableSemanticHash": "9deeff653093abc4bed78858a2341efe3d7111d0f44f971c850cc40780c129e3",
+    "freshSeedClosedBackupIntact": true,
+    "originalMeasuredFixtureUntouched": true,
+    "allOwnedProcessesExited": true,
+    "staticChecks": ["Prettier", "ESLint", "node --check"]
+  },
+  "boundaries": [
+    "Generated fixture on Linux; no macOS/Windows filesystem or file-lock claim",
+    "Missing original remains missing; retained snapshot bytes verified",
+    "Browser/performance not exercised by this upgrade harness"
+  ]
+}

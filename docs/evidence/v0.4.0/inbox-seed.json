@@ -1,0 +1,39 @@
+{
+  "status": "seeded",
+  "source": {
+    "commit": "a078429110b64e99b4358e709de6657f84ccd9ab",
+    "runtimeTrees": {
+      "packages/server": "7fd4d872f1b6910e08c54cc36cb2902e182efc6b",
+      "packages/shared": "f2096978e6c6cd3ee3373c93ad67b5b4d1c28230",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615"
+    },
+    "node": "v22.23.3",
+    "modules": "127"
+  },
+  "generatedFixtureOnly": true,
+  "counts": {
+    "assets": 7,
+    "versions": 8,
+    "sources": 9,
+    "inboxSources": 8,
+    "existingInboxSources": 7,
+    "missingInboxSources": 1,
+    "referenceSources": 1,
+    "dedupAliasSources": 2
+  },
+  "features": [
+    "Chinese and NFD upload request names plus one real physical NFD rename observed by the released runtime",
+    "Two equal-name distinct-content pairs",
+    "V1 alias retained beside manually replaced differently named V2",
+    "Second dedup alias pair",
+    "Trashed Inbox asset",
+    "Missing original with retained snapshot",
+    "External reference control",
+    "Chinese metadata, tags, folder, annotation"
+  ],
+  "portableRecords": 31,
+  "portableSemanticHash": "2b150f9fb83d77f1aa80dfa096b543e1a88c413a4d7f6c448bae10a10c3f6311",
+  "databaseSha256": "40d0b3c81ebfb431aaa7c1c285d5a5cbf3d7eec9ccca34d1764629e3d19dccca",
+  "oldRelease": "v0.3.1",
+  "upgradeRun": false
+}

@@ -1,0 +1,265 @@
+{
+  "status": "passed",
+  "oldRelease": "v0.3.1",
+  "oldSource": {
+    "commit": "a078429110b64e99b4358e709de6657f84ccd9ab",
+    "runtimeTrees": {
+      "packages/server": "7fd4d872f1b6910e08c54cc36cb2902e182efc6b",
+      "packages/shared": "f2096978e6c6cd3ee3373c93ad67b5b4d1c28230",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615"
+    },
+    "node": "v22.23.3",
+    "modules": "127",
+    "productionTrees": {
+      "packages/server/src": "989d9c2e9eaaf83b6019b342c3e7c7e43202935c",
+      "packages/server/drizzle": "2a427cc67de2e2fb01ce58543af3f0198a86f9dd",
+      "packages/server/package.json": "58890dcfbdb4c8968efd98f4a0a35804524f1687",
+      "packages/server/tsconfig.build.json": "6f54fe4ab2b09d96398cecdeb7f812d9dbf85a31",
+      "packages/shared/src": "b423eff34bb56a753177f20059553ae1879a49cb",
+      "packages/shared/package.json": "b735939a96af4382d6c79e770f0d231770618793",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615"
+    }
+  },
+  "candidate": {
+    "commit": "977607d5e0e4adc46cbef622b098d58036e926e5",
+    "runtimeTrees": {
+      "packages/server": "d3dc74fc9890019fd70bcb530b471d5e0f009880",
+      "packages/shared": "bb06db720002ffb100cb62b5a7c5e91a67b20e56",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615"
+    },
+    "node": "v22.23.3",
+    "modules": "127",
+    "productionTrees": {
+      "packages/server/src": "8f086adc6f22c97e45a4ba81232a00a6218a2948",
+      "packages/server/drizzle": "b8eb87760a9ddf9f81e366c94593119ebe59f37e",
+      "packages/server/package.json": "58890dcfbdb4c8968efd98f4a0a35804524f1687",
+      "packages/server/tsconfig.build.json": "6f54fe4ab2b09d96398cecdeb7f812d9dbf85a31",
+      "packages/shared/src": "c0c154f159d5eae4caa6dd3e5d1dfe72eacb5746",
+      "packages/shared/package.json": "b735939a96af4382d6c79e770f0d231770618793",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615"
+    }
+  },
+  "counts": {
+    "assets": 7,
+    "versions": 8,
+    "sources": 9
+  },
+  "passes": [
+    {
+      "pass": 1,
+      "sourcesInDatedLayout": 7,
+      "collisionSuffixes": 2,
+      "newTables": ["inbox_migrations"],
+      "completedJournalRows": 7,
+      "migrations": 11,
+      "integrity": "ok",
+      "foreignKeyViolations": 0
+    },
+    {
+      "pass": 2,
+      "sourcesInDatedLayout": 7,
+      "collisionSuffixes": 2,
+      "newTables": ["inbox_migrations"],
+      "completedJournalRows": 7,
+      "migrations": 11,
+      "integrity": "ok",
+      "foreignKeyViolations": 0
+    }
+  ],
+  "portableSemanticHash": "2b150f9fb83d77f1aa80dfa096b543e1a88c413a4d7f6c448bae10a10c3f6311",
+  "checks": [
+    "Real HTTP catalog search finds every dated alias and Trash source, rejects moved UUID locators, and retains missing/reference locator search",
+    "Every immutable asset_versions SQL row, including payload, hashes, ordinals, snapshot paths and timestamps, is identical",
+    "All retained snapshot bytes, thumbnail bytes and existing source bytes remain identical; missing source remains missing",
+    "Asset metadata, logical names, manual V2 selection, hashes and timestamps are unchanged",
+    "Source IDs, root/asset IDs, last_hash, availability and creation times are unchanged",
+    "Derived search_text changes are exactly the source-locator substitutions and nothing else",
+    "FTS logical records match the same precise locator-only substitutions",
+    "Legacy table activity unchanged",
+    "Legacy table annotations unchanged",
+    "Legacy table app_metadata unchanged",
+    "Legacy table archive_rules unchanged",
+    "Legacy table asset_tags unchanged",
+    "Legacy table asset_versions unchanged",
+    "Legacy table automation_changes unchanged",
+    "Legacy table automation_jobs unchanged",
+    "Legacy table automation_proposals unchanged",
+    "Legacy table board_edges unchanged",
+    "Legacy table board_items unchanged",
+    "Legacy table boards unchanged",
+    "Legacy table brand_colors unchanged",
+    "Legacy table brand_fonts unchanged",
+    "Legacy table brand_logos unchanged",
+    "Legacy table brands unchanged",
+    "Legacy table cmf_boards unchanged",
+    "Legacy table cmf_entries unchanged",
+    "Legacy table collections unchanged",
+    "Legacy table export_jobs unchanged",
+    "Legacy table fcpxml_jobs unchanged",
+    "Legacy table final_selections unchanged",
+    "Legacy table folders unchanged",
+    "Legacy table generation_jobs unchanged",
+    "Legacy table libraries unchanged",
+    "Legacy table library_roots unchanged",
+    "Legacy table recorded_generations unchanged",
+    "Legacy table script_breakdowns unchanged",
+    "Legacy table setting_documents unchanged",
+    "Legacy table settings unchanged",
+    "Legacy table slot_revisions unchanged",
+    "Legacy table slot_templates unchanged",
+    "Legacy table slots unchanged",
+    "Legacy table sync_baselines unchanged",
+    "Legacy table sync_conflicts unchanged",
+    "Legacy table sync_links unchanged",
+    "Legacy table sync_outbox unchanged",
+    "Legacy table sync_staged_commits unchanged",
+    "Legacy table tag_groups unchanged",
+    "Legacy table tags unchanged",
+    "Portable graph records remain byte-for-byte logically identical and semantic hashes match",
+    "SQLite integrity_check and foreign_key_check pass",
+    "External reference and missing legacy source locators stay unchanged",
+    "Missing source row remains exactly unchanged, including unavailable state and timestamps",
+    "Each asset locator follows only its original primary source; aliases never replace primary identity",
+    "Only migration 0010 and its local Inbox journal were added; seven real relocations completed",
+    "Second startup retains the identical Inbox path mapping, immutable rows and portable graph"
+  ],
+  "sources": [
+    {
+      "sourceId": "04bff4f3-7b71-4018-9630-5f85bc3bb34f",
+      "assetId": "b65c8bc8-224d-49a5-8126-0c24aa473109",
+      "kind": "inbox",
+      "available": true,
+      "lastHash": "f7418d8d91d827830913a81984117b71e62bb9a33be079880e441b5557b90d17",
+      "beforeRelativePath": "5a105cb3-7c0e-400f-9f4b-66df826591c2/待回收.png",
+      "beforeActualRelativePath": "5a105cb3-7c0e-400f-9f4b-66df826591c2/待回收.png",
+      "afterRelativePath": "2026-10-05/待回收.png",
+      "afterActualRelativePath": "2026-10-05/待回收.png"
+    },
+    {
+      "sourceId": "4d55eab1-497c-4d7c-a055-3c73b5927cdd",
+      "assetId": "deb87915-e930-4e62-b3b9-dfe199c1a3e2",
+      "kind": "inbox",
+      "available": true,
+      "lastHash": "748e7b8538ce413565729002ec231efddeace66501f3eff5665dc61268a7558d",
+      "beforeRelativePath": "03412243-609f-461c-a575-6ad41a589281/同名.png",
+      "beforeActualRelativePath": "03412243-609f-461c-a575-6ad41a589281/同名.png",
+      "afterRelativePath": "2026-10-05/同名-90c63a9d.png",
+      "afterActualRelativePath": "2026-10-05/同名-90c63a9d.png"
+    },
+    {
+      "sourceId": "4d8e696e-9122-4fae-bba6-7b0c99a51b3f",
+      "assetId": "eeeb7dd8-5406-425b-9d6f-087f4a95a1a0",
+      "kind": "inbox",
+      "available": true,
+      "lastHash": "72bb9388dec66155a420eb2da09ef782754c88d2e5bffed70f0bc1d505798fad",
+      "beforeRelativePath": "312f210c-9d62-4506-97a9-07fd753c9536/角色 é 中文.png",
+      "beforeActualRelativePath": "312f210c-9d62-4506-97a9-07fd753c9536/角色 é 中文.png",
+      "afterRelativePath": "2026-10-05/角色 é 中文-2c44a1f4.png",
+      "afterActualRelativePath": "2026-10-05/角色 é 中文-2c44a1f4.png"
+    },
+    {
+      "sourceId": "6f0e5574-da0f-4952-a6d8-20e9d5c948b6",
+      "assetId": "8cc488de-e3ba-410b-ba44-4cb5e13bb8af",
+      "kind": "inbox",
+      "available": true,
+      "lastHash": "6e4147c6cc2294e895c48bb67e8aaf443e9758e03c0c24c582f69f8fdf7727ea",
+      "beforeRelativePath": "de17c889-af92-4468-ab79-de8429c50ea3/角色原始别名.png",
+      "beforeActualRelativePath": "de17c889-af92-4468-ab79-de8429c50ea3/角色原始别名.png",
+      "afterRelativePath": "2026-10-05/角色原始别名.png",
+      "afterActualRelativePath": "2026-10-05/角色原始别名.png"
+    },
+    {
+      "sourceId": "79a0d49a-0b51-4ac7-9e67-85737742c6c4",
+      "assetId": "11adc4b4-d1b5-48d5-836e-4ff2f2051286",
+      "kind": "inbox",
+      "available": true,
+      "lastHash": "44fd7be94594c061fc1e8c58840f710e9437dc8086a0b81035fc4a0b6c7742db",
+      "beforeRelativePath": "e9224349-371d-4739-958e-506d360b966b/别名副本.png",
+      "beforeActualRelativePath": "e9224349-371d-4739-958e-506d360b966b/别名副本.png",
+      "afterRelativePath": "2026-10-05/别名副本.png",
+      "afterActualRelativePath": "2026-10-05/别名副本.png"
+    },
+    {
+      "sourceId": "7b3416bf-fbf7-4240-9c38-8f4f4425559b",
+      "assetId": "bfae9897-34f6-438b-8dc4-2560863ac458",
+      "kind": "reference",
+      "available": true,
+      "lastHash": "52b7411bcf42062adbc7e34d4e21ecd453de6559c8e63f6be9ebc7d39848fad5",
+      "beforeRelativePath": "资料/参考图.png",
+      "beforeActualRelativePath": "资料/参考图.png",
+      "afterRelativePath": "资料/参考图.png",
+      "afterActualRelativePath": "资料/参考图.png"
+    },
+    {
+      "sourceId": "ab409f83-4a3d-4ca7-9132-170211dab864",
+      "assetId": "11adc4b4-d1b5-48d5-836e-4ff2f2051286",
+      "kind": "inbox",
+      "available": true,
+      "lastHash": "44fd7be94594c061fc1e8c58840f710e9437dc8086a0b81035fc4a0b6c7742db",
+      "beforeRelativePath": "a9fdd735-3ec3-4888-ba4f-a4cefbbd8e5e/同名.png",
+      "beforeActualRelativePath": "a9fdd735-3ec3-4888-ba4f-a4cefbbd8e5e/同名.png",
+      "afterRelativePath": "2026-10-05/同名.png",
+      "afterActualRelativePath": "2026-10-05/同名.png"
+    },
+    {
+      "sourceId": "dd6a75f0-2a84-41f1-b998-4e5e2a04371b",
+      "assetId": "3d91ae27-e3b6-4f0d-8f4b-8c5b14aec455",
+      "kind": "inbox",
+      "available": false,
+      "lastHash": "91bea7ebbd470edfe77092ef020e85cc5ae52dd2f8fcda18e7568a576fcf1ebe",
+      "beforeRelativePath": "e7e545ed-2040-4e5a-857e-e7080fa488ca/已移走.png",
+      "beforeActualRelativePath": "e7e545ed-2040-4e5a-857e-e7080fa488ca/已移走.png",
+      "afterRelativePath": "e7e545ed-2040-4e5a-857e-e7080fa488ca/已移走.png",
+      "afterActualRelativePath": "e7e545ed-2040-4e5a-857e-e7080fa488ca/已移走.png"
+    },
+    {
+      "sourceId": "e036014c-01f6-4d2d-a849-45f12e459627",
+      "assetId": "8cc488de-e3ba-410b-ba44-4cb5e13bb8af",
+      "kind": "inbox",
+      "available": true,
+      "lastHash": "6e4147c6cc2294e895c48bb67e8aaf443e9758e03c0c24c582f69f8fdf7727ea",
+      "beforeRelativePath": "7b6cab69-1e1c-4d5b-bc1c-c536d0ae0c65/角色 é 中文.png",
+      "beforeActualRelativePath": "7b6cab69-1e1c-4d5b-bc1c-c536d0ae0c65/角色 é 中文.png",
+      "afterRelativePath": "2026-10-05/角色 é 中文.png",
+      "afterActualRelativePath": "2026-10-05/角色 é 中文.png"
+    }
+  ],
+  "operationalExceptions": [
+    "Derived search_text and FTS change only by verified source-locator substitutions; real HTTP old/new path searches checked",
+    "Automatic scan summaries change on startup/rescan",
+    "Normal source observation can update asset_sources.updated_at",
+    "Expected SQL migration registration and local Inbox relocation journal"
+  ],
+  "boundaries": [
+    "Generated fixture on Linux; no macOS/Windows filesystem or file-lock claim",
+    "Missing original remains missing; retained snapshot bytes verified",
+    "Browser/performance not exercised by this upgrade harness"
+  ],
+  "integration": {
+    "commit": "977607d5e0e4adc46cbef622b098d58036e926e5",
+    "productionTreesEqual": true,
+    "paths": [
+      "packages/server/src",
+      "packages/server/drizzle",
+      "packages/server/package.json",
+      "packages/server/tsconfig.build.json",
+      "packages/shared/src",
+      "packages/shared/package.json",
+      "pnpm-lock.yaml"
+    ]
+  },
+  "harnessRefinements": [
+    "Replaced initial strict derived search equality with exact locator substitutions and live API searches.",
+    "Match historical migration registrations by hash/full row; SQLite Drizzle ids are null."
+  ],
+  "provenance": {
+    "oldFrozenInstallLogSha256": "e30656041a80f3bc71a2fea5679a2fe366304daa0fa68f61d094ee0910292f4a",
+    "oldSharedServerBuildLogSha256": "f5123583e10b186fd7266000908ba71a26b67678a7721548de935aba5ad04401",
+    "candidateFrozenInstallLogSha256": "a8f5706bdea1f99f82d318745252a9067b1680db067f00a6f887dc977d2f049e",
+    "candidateSharedServerBuildLogSha256": "97a2c9d9409843e699587e8bbcc78e2155589bba1f5420a565b65962fd11eb25",
+    "frozenInstallSourceCommit": "7369051f87e12666dfad5b49bc499e09cc0eb4b0",
+    "frozenInstallDependenciesUnchanged": true,
+    "closedReleasedBackupIntact": true,
+    "verifierSha256": "8b048de1676aa237dc8f7e5470bd0b7ebed54ae7a11575bc78a74ec44a3c1b1e"
+  }
+}
