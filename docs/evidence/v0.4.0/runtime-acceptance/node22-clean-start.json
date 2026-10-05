@@ -1,0 +1,144 @@
+{
+  "milestone": "v0.4.0 final Node 22 acceptance",
+  "version": "0.4.0",
+  "status": "passed",
+  "verifiedAt": "2026-10-05T11:35:40.994Z",
+  "implementationCommit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+  "clone": {
+    "method": "git clone --no-local; independent Git objects, no alternates",
+    "nodeModulesAbsentBeforeInstall": true,
+    "packageVersions": {
+      "package.json": "0.4.0",
+      "packages/server/package.json": "0.4.0",
+      "packages/shared/package.json": "0.4.0",
+      "packages/web/package.json": "0.4.0"
+    },
+    "frozenLockfile": true,
+    "installSeconds": 3.229,
+    "preStartInstallVerificationSeconds": 1,
+    "installEvidence": "node22-install.json",
+    "lockfileSha256": "1acacdc731edb87266e63fe035bf4826dfe538dec5544d499cba3b1934d3be40"
+  },
+  "dependencies": {
+    "productionLicensePackages": 159,
+    "licenseCheckPassed": true,
+    "sharpNativeLicenseException": "Documented mandated Sharp/libvips exception; bundled notices are audited separately.",
+    "sqlitePrebuiltVerified": true,
+    "sharpPrebuiltVerified": true,
+    "nodeGypInvoked": false,
+    "optionalCanvasInInstalledGraph": false,
+    "optionalCanvasPhysicallyInstalled": false,
+    "optionalCanvasResolvableWithEmptyNodePath": false
+  },
+  "environment": {
+    "os": "linux x64",
+    "node": "v22.23.3",
+    "pnpm": "10.34.6",
+    "installNodePath": "",
+    "startupNodePath": "",
+    "browserVerificationNodePath": "",
+    "chromium": "151.0.7922.173"
+  },
+  "startup": {
+    "command": "NODE_PATH= PORT=<isolated-port> pnpm start (default browser opening)",
+    "startupSeconds": 20.7,
+    "emptyDataCacheLogDirectories": true,
+    "buildPassed": true,
+    "health": {
+      "status": "ok"
+    },
+    "host": "127.0.0.1",
+    "defaultBrowserOpened": true,
+    "defaultBrowserMethod": "Isolated XDG HTTP/HTTPS desktop association invoked headless Chromium; global associations unchanged.",
+    "freshBrowserProfile": true,
+    "attachedWith": "Playwright connectOverCDP to the already automatically opened page",
+    "pageGotoCalled": false,
+    "newPageCalled": false
+  },
+  "persistence": {
+    "language": "zh-CN",
+    "libraryName": "v0.4.0 Node 22 启动验证 · 设计资料库",
+    "createdThroughChineseUI": true,
+    "sameLibraryIdAfterReload": true,
+    "activeLibraryIdAfterReload": true,
+    "closedDatabaseContainsLibrary": true,
+    "closedDatabaseIntegrityCheck": "ok",
+    "closedDatabaseForeignKeyViolations": 0,
+    "migrationCount": 12
+  },
+  "cleanup": {
+    "privateServerStopped": true,
+    "privateBrowserStopped": true,
+    "serverAndCdpPortsReleased": true
+  },
+  "sourceTrees": {
+    "packages/web/src": "47621e05c65325762a5c0b200794dd4cad4f8abe",
+    "packages/server/src": "43a580022dba102c0e83266e29949faa600c2548",
+    "packages/shared/src": "709b0ab85dfeef8221dbc04dc72d769a1ee505d2",
+    "packages/server/drizzle": "38a6f4fa83dfd6ff41236c80ea7b5393c63cef74"
+  },
+  "artifacts": {
+    "packages/shared/dist": {
+      "files": 28,
+      "bytes": 707269,
+      "sortedFileHashManifestSha256": "021f1c5ba47b048b8a52188ad96d02878432fbce675960a40a1d346dfc5e07f5",
+      "entrypoints": [
+        {
+          "file": "index.js",
+          "size": 619,
+          "sha256": "1b03c711ecdbb771b410c0cfaa36ece4ac0336ca77458ad04efbccdf986ee101"
+        }
+      ]
+    },
+    "packages/server/dist": {
+      "files": 246,
+      "bytes": 1287545,
+      "sortedFileHashManifestSha256": "2fb8324e08ecd113e6afe7015c3ff0153ca08cd204caad64a27cc975ba2eb4d4",
+      "entrypoints": [
+        {
+          "file": "index.js",
+          "size": 1921,
+          "sha256": "c137f82e517d09ec499368fcd2dbd9e620bef932f4a516452768035668d00bdc"
+        }
+      ]
+    },
+    "packages/web/dist": {
+      "files": 196,
+      "bytes": 4388083,
+      "sortedFileHashManifestSha256": "36ce5bc0df3fc20bffcba9b4b6ace7e5e05fecdf66c46a2fd7590d82b7de6507",
+      "entrypoints": [
+        {
+          "file": "assets/index-DiV89SIb.js",
+          "size": 102800,
+          "sha256": "e8ef6969146cc5ce01bd846288e651f044a8b4ab2159b8aa47848a38915b0b0b"
+        },
+        {
+          "file": "assets/index-QLNNd0LR.css",
+          "size": 33311,
+          "sha256": "e988c063ce40bf2f5a36897116aa59f17431dc77e9a775e146408714238c2a28"
+        },
+        {
+          "file": "assets/index-XB0BSBZg.js",
+          "size": 445821,
+          "sha256": "7953470c319b3de261209fda250ad96ec1959457d2a3afabd903c160332427f2"
+        },
+        {
+          "file": "index.html",
+          "size": 473,
+          "sha256": "001d7154dd1c76a9bc4c7582dc162b0b1f47edee8541148102e1a6cc172c5893"
+        }
+      ]
+    }
+  },
+  "screenshot": {
+    "file": "node22-clean-start.png",
+    "sha256": "b5d120a69701db73349544415046322b3f468a8bc1e928eb0b700ddfaffbc623",
+    "contentOnly": true
+  },
+  "scope": {
+    "physicalMacOSVerified": false,
+    "physicalWindowsVerified": false,
+    "fullUnitSuiteIncluded": false,
+    "notes": "Fresh clone/install/start and real Chinese browser persistence on Linux. XDG association launches a headless browser; no physical desktop or cloud-account claim."
+  }
+}

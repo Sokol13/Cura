@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "source": {
+    "kind": "local-runtime-checkpoint",
+    "commit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+    "unitInputTrees": {
+      "package.json": "a4d939ff1410cf61c69d6b70e63ea8125008bd00",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615",
+      "pnpm-workspace.yaml": "b8a6126ff8a3a973d3989dcd591d8d6756b1c344",
+      ".npmrc": "d9ca8860b092f4d36ea10a4883343019566769fb",
+      "packages/server": "29dbdd46db0d263f90518be34c6d6a7239d8662f",
+      "packages/shared": "1ab30e200ca9757f055beb5ab5a5ff6ced13f3f5",
+      "packages/web": "8a5706b425c63077dfb951a69df8039a5c01c121",
+      "scripts": "b6a5ea0d521d49d3de127cd50e8cc9575a544790",
+      "supabase": "96bf9d40081f9f35117106d4e54714dcf7f2aaf2",
+      "tsconfig.base.json": "6de09af12143e0f8ad26381e5b1002689791323b",
+      "tsconfig.tools.json": "5c7701d1464520e86f9f48830dfffa468e597952",
+      "eslint.config.js": "584cae2b21e7d5a3efcdd696a9c36d6a08ef98f8",
+      ".prettierrc.json": "a20502b7f06d848452da0d93ce8830c1d86b05dd"
+    }
+  },
+  "runs": {
+    "22": {
+      "node": "v22.23.3",
+      "nativeAbi": "127",
+      "seconds": 57.307,
+      "unitAndToolPassed": 730,
+      "webPassed": 216,
+      "serverPassed": 487,
+      "serialArchivePassed": 3,
+      "toolPassed": 24,
+      "unconfiguredCloudSkipped": 17,
+      "fcpxmlDtdPrepared": true,
+      "sourceTreesUnchanged": true,
+      "archive": {
+        "node": "v22.23.3",
+        "previewMs": 9.002017000000023,
+        "queuedMs": 8.23350100000016,
+        "maxGap": 68.72017699999992,
+        "maxGapContext": {
+          "fromPhase": "settling",
+          "toPhase": "archive",
+          "observedProcessed": 0,
+          "observedStatus": "queued"
+        },
+        "maxJobReadMs": 5.1447119999997994,
+        "observedProcessed": 1000,
+        "observedStatus": "completed"
+      }
+    },
+    "24": {
+      "node": "v24.21.0",
+      "nativeAbi": "137",
+      "seconds": 57.91,
+      "unitAndToolPassed": 730,
+      "webPassed": 216,
+      "serverPassed": 487,
+      "serialArchivePassed": 3,
+      "toolPassed": 24,
+      "unconfiguredCloudSkipped": 17,
+      "fcpxmlDtdPrepared": true,
+      "sourceTreesUnchanged": true,
+      "archive": {
+        "node": "v24.21.0",
+        "previewMs": 8.771375000000035,
+        "queuedMs": 7.71003799999994,
+        "maxGap": 40.21427199999994,
+        "maxGapContext": {
+          "fromPhase": "archive",
+          "toPhase": "archive",
+          "observedProcessed": 440,
+          "observedStatus": "running"
+        },
+        "maxJobReadMs": 2.514075000000048,
+        "observedProcessed": 1000,
+        "observedStatus": "completed"
+      }
+    }
+  },
+  "scope": {
+    "completeLocalUnitToolSuite": true,
+    "browserSuiteIncluded": false,
+    "realCloudIncluded": false,
+    "realCloudRequirement": "Mandatory separate Node 22/24 actual-cloud CI matrix.",
+    "laterTestHarnessChanges": "Final equivalence must compare these unit/build inputs; new E2E-only files require their own final browser/type/lint checks."
+  }
+}

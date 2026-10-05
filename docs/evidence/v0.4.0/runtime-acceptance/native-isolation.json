@@ -1,0 +1,8 @@
+{
+  "commit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+  "separateRealFiles": true,
+  "allDistinctInodes": true,
+  "sqliteQueriesPassed": true,
+  "node22BinarySha256": "74ab8380917903b45ed535e56fbc1350cdd5c9f1082ded1eb5536667dc7aa700",
+  "node24BinarySha256": "90c27dc0d431feef669795799271448d5d9fa4da6dab88724edfb43ad3a85221"
+}

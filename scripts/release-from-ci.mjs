@@ -3,8 +3,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const tag = 'v0.3.0';
-const version = '0.3.0';
+const tag = 'v0.4.0';
+const version = '0.4.0';
 const requestPath = '.github/release-request.json';
 const reportPath = `docs/REPORT-${tag}.md`;
 const packages = ['server', 'shared', 'web'];
@@ -36,7 +36,7 @@ export function validateReleaseRequest(value) {
     )
   )
     throw new Error(
-      'Invalid release request: explicit ready v0.3.0 intent, report and three package tree hashes are required.',
+      'Invalid release request: explicit ready v0.4.0 intent, report and three package tree hashes are required.',
     );
   return value;
 }
@@ -150,7 +150,11 @@ export function publishRequestedRelease({
         'Remote main has changed since this CI run; no further publication is allowed.',
       );
     const tagObject = refs.get(tagRef);
-    const tagTarget = refs.get(`${tagRef}^{}`) ?? tagObject;
+    const tagTarget = refs.get(`${tagRef}^{}`);
+    if (tagObject && !tagTarget)
+      throw new Error(
+        'Existing remote tag must be an annotated tag with a peeled target; never replace it.',
+      );
     if (tagTarget && tagTarget !== sha)
       throw new Error(
         'Existing remote tag does not target the successful CI SHA; never move it.',

@@ -1,0 +1,13 @@
+# Final runtime acceptance
+
+These runs measured local checkpoint `e1c68705196f62c917138b238c5d13b7aa57c2c2`, with all four package versions set to 0.4.0. It is an immutable local acceptance identity, not the later GitHub-app publication SHA. [Frozen source inputs](frozen-source.json) retain the exact trees; the final milestone record compares relevant unchanged implementation/build inputs with the release candidate.
+
+[Startup summary](runtime-startup-summary.json) records separate fresh Git clones and native installations on Node 22.23.3 and 24.21.0. Each normal `pnpm start` built the application and invoked its isolated default browser through XDG. Playwright attached to that already-open page: it did not call `goto` or create a page. Both runs created a Chinese library, reloaded the same identity and closed the database before checking twelve migrations, integrity and foreign keys. All owned browser/server processes and ports were cleaned up. The individual JSON files and content-only screenshots preserve these results.
+
+Frozen installs took 3.229/3.202 seconds; startup to readiness took 20.7/19.6 seconds on Node 22/24 respectively. SQLite and Sharp used prebuilts. [Native isolation](native-isolation.json) verifies distinct real SQLite files, inodes and ABI-specific hashes; neither runtime reused the other's native module.
+
+[PSD summary](runtime-psd-summary.json) and the two full benchmark reports use three generated files larger than 50 MiB at 3866×6871, 8192×8192 and 13391×7032. Every case passed the unchanged <10-second/<500,000,000-byte absolute process-RSS gates, including workers/native memory. Node 22 measured 230/424/774 ms and 220/230/234 MB; Node 24 measured 192/382/1080 ms and 376/396/398 MB. Source and retained snapshot hashes stayed exact. These files do not establish results for the user's three original PSDs.
+
+[Artifact/license audit](browser-bundle-licenses.json) inspected the actual fresh Node 24 build: 196 emitted files, 4,388,083 bytes, 42 browser dependency versions, 159 runtime license groups and 168 CMaps. PDF worker/bundled assets and notices were checked; optional canvas was absent. The previously documented mandated Sharp native exception remains explicit. Artifact inventory SHA-256: `b41e1804246029c7a631c47afcdaea9107910937f42d07f61273a580c8a0a463`.
+
+These records cover Linux/x64 startup, persistence, native isolation, PSD resource limits and emitted assets. Full local regression and required real-cloud CI have separate records in the milestone report. They do not establish physical macOS/Windows, hosted-provider or Final Cut Pro behavior. Raw operational logs, generated user data, profiles and private native paths are intentionally not published.

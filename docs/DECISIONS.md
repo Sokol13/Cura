@@ -431,3 +431,13 @@ Coordinate migration with the root's watcher, scans, imports and shutdown. Publi
 ## Registration dialog request lifetime
 
 - Decision: give each folder-registration dialog opening its own identity, even when the library is unchanged. A completed request may close only its original opening; a successful old request still refreshes the catalog and stays bound to the captured library. Rejected: comparing only library IDs or suppressing successful refresh, which respectively loses a newer dialog after navigation or hides a completed registration.
+
+## Canvas performance investigation (item 15)
+
+- Decision: measure four reproducible populated states (canvas, open slot comparison, filled matrix, and controlled DPR 1.25), separating an untouched idle frame/Long Tasks window from repeated sequential CDP captures. Record request, DOM/layout and screenshot measurements with source identities; disable Playwright tracing/video during the measurement because those add their own capture work. Rejected: treating screenshot latency as idle frame time, queuing captures after a timeout, or selecting the best retry.
+- Decision: retain the existing implementation unless measurements or source review demonstrate an actual defect. A passing Linux baseline is an investigation result, not a reproduced or repaired Windows freeze. The affected physical machine/board remains an explicit follow-up in the smoke checklist.
+
+## v0.4.0 release transport and evidence
+
+- Decision: reuse the existing exact-CI-gated publisher because the injected shell GitHub token is expired while connected GitHub app object/ref writes still work. Keep its activation request absent until every milestone gate passes; then freeze main through successful Node 22/24 standard and actual-cloud CI and annotated-tag/stable-Release verification. Existing lightweight tags are rejected, never replaced. Remove the consumed request afterward. Actions-token tag pushes do not trigger another workflow; record the actual main CI and publisher runs instead of claiming a tag CI run.
+- Decision: keep each independent acceptance run's exact local checkpoint and source-tree identities. Documentation-only publication may have a different commit identity; final equivalence checks must compare the relevant unchanged implementation/build inputs rather than relabeling earlier results as measurements of a later SHA.

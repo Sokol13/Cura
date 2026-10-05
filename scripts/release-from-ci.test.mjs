@@ -9,9 +9,9 @@ import {
 
 const sha = 'a'.repeat(40);
 const other = 'b'.repeat(40);
-const tag = 'v0.3.0';
+const tag = 'v0.4.0';
 const repository = 'Sokol13/Cura';
-const report = 'docs/REPORT-v0.3.0.md';
+const report = 'docs/REPORT-v0.4.0.md';
 const requestPath = '.github/release-request.json';
 const trees = {
   server: '1'.repeat(40),
@@ -43,11 +43,11 @@ const event = () => ({
 function fixture() {
   const files = new Map([
     [requestPath, JSON.stringify(request())],
-    [report, '# v0.3.0\n<!-- cura-release-ready: v0.3.0 -->\n'],
+    [report, '# v0.4.0\n<!-- cura-release-ready: v0.4.0 -->\n'],
     ...[
       'package.json',
       ...Object.keys(trees).map((p) => `packages/${p}/package.json`),
-    ].map((path) => [path, JSON.stringify({ version: '0.3.0' })]),
+    ].map((path) => [path, JSON.stringify({ version: '0.4.0' })]),
   ]);
   const state = {
     head: sha,
@@ -107,7 +107,7 @@ function fixture() {
     if (command === 'gh' && args[0] === 'release' && args[1] === 'create') {
       state.writes.push([command, ...args]);
       state.releases.push({ tag_name: tag, draft: false, prerelease: false });
-      return 'https://github.com/Sokol13/Cura/releases/tag/v0.3.0';
+      return 'https://github.com/Sokol13/Cura/releases/tag/v0.4.0';
     }
     throw new Error(`Unexpected seam call: ${command} ${args.join(' ')}`);
   };
@@ -124,16 +124,20 @@ function fixture() {
   };
 }
 
-test('request accepts only explicit ready v0.3.0 intent and exactly three valid production trees', () => {
+test('request accepts only explicit ready v0.4.0 intent and exactly three valid production trees', () => {
   assert.deepEqual(validateReleaseRequest(request()), request());
   for (const invalid of [
     null,
     [],
     {},
     { ...request(), ready: false },
-    { ...request(), tag: 'v0.4.0' },
-    { ...request(), tag: 'v0.3.0; touch /tmp/no' },
-    { ...request(), report: '../REPORT-v0.3.0.md' },
+    { ...request(), tag: 'v0.3.0' },
+    { ...request(), tag: 'v0.3.1' },
+    { ...request(), tag: 'v0.5.0' },
+    { ...request(), tag: 'v0.4.0; touch /tmp/no' },
+    { ...request(), report: '../REPORT-v0.4.0.md' },
+    { ...request(), report: 'docs/REPORT-v0.3.0.md' },
+    { ...request(), report: 'docs/REPORT-v0.3.1.md' },
     { ...request(), schemaVersion: 2 },
     { ...request(), extra: true },
     { ...request(), productionTrees: { ...trees, web: other.slice(1) } },
@@ -219,12 +223,20 @@ test('rejects mismatched checkout, unfinished reports, package versions and pack
     (s) => {
       s.files.set(report, '# Work in progress');
     },
+    (s) => {
+      s.files.set(report, '<!-- cura-release-ready: v0.3.0 -->');
+    },
+    (s) => {
+      s.files.set(report, 'Example: <!-- cura-release-ready: v0.4.0 -->');
+    },
     ...[
       'package.json',
       ...Object.keys(trees).map((p) => `packages/${p}/package.json`),
-    ].map((path) => (s) => {
-      s.files.set(path, JSON.stringify({ version: '0.2.0' }));
-    }),
+    ].flatMap((path) =>
+      ['0.3.0', '0.3.1', '0.4.0-rc.1'].map((version) => (s) => {
+        s.files.set(path, JSON.stringify({ version }));
+      }),
+    ),
     ...Object.keys(trees).map((p) => (s) => {
       s.trees[p] = other;
     }),
@@ -275,6 +287,39 @@ test('matching remote tag and published release are idempotent; partial publicat
   f.state.writes.length = 0;
   assert.equal(f.publish().status, 'already-published');
   assert.deepEqual(f.state.writes, []);
+});
+
+test('lightweight tags cannot resume publication or count as an already published release', () => {
+  for (const released of [false, true]) {
+    const f = fixture();
+    // A lightweight ref targets the correct commit but has no peeled tag entry.
+    f.state.tagObject = sha;
+    if (released)
+      f.state.releases = [{ tag_name: tag, draft: false, prerelease: false }];
+    assert.throws(() => f.publish(), /annotated tag/i);
+    assert.deepEqual(f.state.writes, []);
+    assert.equal(
+      f.state.calls.some(([command]) => command === 'gh'),
+      false,
+    );
+  }
+});
+
+test('a tag without its object ref or a pushed lightweight tag never creates a release', () => {
+  const invalid = fixture();
+  invalid.state.tagTarget = sha;
+  assert.throws(() => invalid.publish(), /tag reference/i);
+  assert.deepEqual(invalid.state.writes, []);
+
+  const pushed = fixture();
+  pushed.state.beforeWrite = (action) => {
+    if (action === 'push') {
+      pushed.state.tagObject = sha;
+      pushed.state.tagTarget = null;
+    }
+  };
+  assert.throws(() => pushed.publish(), /annotated tag/i);
+  assert.equal(pushed.state.writes.length, 2);
 });
 
 test('existing mismatched tags, orphaned releases and drafts never count as publication', () => {
@@ -349,16 +394,90 @@ test('workflow has strict push-main same-repository gates, exact checkout and on
     'utf8',
   );
   for (const condition of [
+    "github.event.workflow_run.status == 'completed'",
     "github.event.workflow_run.conclusion == 'success'",
     "github.event.workflow_run.event == 'push'",
     "github.event.workflow_run.head_branch == 'main'",
     'github.event.workflow_run.head_repository.full_name == github.repository',
+    'github.event.workflow_run.head_repository.id == github.event.repository.id',
+    "github.event.workflow_run.path == '.github/workflows/ci.yml'",
     'ref: ${{ github.event.workflow_run.head_sha }}',
   ])
     assert.ok(workflow.includes(condition), condition);
   assert.match(workflow, /permissions:\n {2}contents: read/);
   assert.match(workflow, / {4}permissions:\n {6}contents: write/);
+  assert.equal(workflow.match(/contents: write/g)?.length, 1);
+  assert.match(workflow, /workflows: \[CI\]/);
+  assert.match(workflow, /cancel-in-progress: false/);
+  assert.match(workflow, /GH_TOKEN: \$\{\{ github.token \}\}/);
+  assert.deepEqual(
+    [...workflow.split('\njobs:\n')[1].matchAll(/^ {2}(\w+):$/gm)].map(
+      (match) => match[1],
+    ),
+    ['release'],
+  );
+  assert.equal(workflow.includes('strategy:'), false);
   assert.ok(workflow.includes('node scripts/release-from-ci.mjs'));
   assert.equal(workflow.includes('workflow_dispatch'), false);
   assert.equal(workflow.includes('pull_request_target'), false);
+});
+
+test('successful CI requires full standard and real-cloud checks on both Node 22 and 24', () => {
+  const readWorkflow = (name) =>
+    readFileSync(
+      new URL(`../.github/workflows/${name}.yml`, import.meta.url),
+      'utf8',
+    );
+  const ci = readWorkflow('ci');
+  const cloud = ci.slice(ci.indexOf('\n  cloud:'), ci.indexOf('\n  check:'));
+  const check = ci.slice(ci.indexOf('\n  check:'));
+  for (const job of [cloud, check]) {
+    assert.match(job, /fail-fast: false/);
+    assert.match(job, /matrix:\n {8}node: \['22', '24'\]/);
+    assert.doesNotMatch(job, /^ {4}if:/m);
+    assert.doesNotMatch(job, /continue-on-error:/);
+  }
+  assert.match(cloud, /uses: \.\/\.github\/workflows\/cloud-check.yml/);
+  assert.match(cloud, /node-version: \$\{\{ matrix.node \}\}/);
+  assert.match(check, /node-version: \$\{\{ matrix.node \}\}/);
+  for (const command of [
+    'python3 scripts/validate-fcpxml.py --prepare',
+    'pnpm install --frozen-lockfile',
+    'pnpm exec node scripts/check-chromium.mjs',
+    'pnpm lint',
+    'pnpm typecheck',
+    'pnpm test',
+    'pnpm e2e',
+    'node scripts/psd-benchmark.mjs',
+  ])
+    assert.ok(
+      check.includes(`run: ${command}`) ||
+        check.includes(`\n          ${command}`),
+      command,
+    );
+
+  const reusable = readWorkflow('cloud-check');
+  assert.match(
+    reusable,
+    /workflow_call:\n {4}inputs:\n {6}node-version:\n[^]*?required: true\n {8}type: string/,
+  );
+  assert.match(reusable, /node-version: \$\{\{ inputs.node-version \}\}/);
+  assert.doesNotMatch(reusable, /^ {4}if:/m);
+  assert.doesNotMatch(reusable, /continue-on-error:/);
+  for (const [phase, file] of [
+    ['protocol', 'sync-cloud.test.ts'],
+    ['auth', 'sync-auth-cloud.test.ts'],
+    ['service', 'sync-service-cloud.test.ts'],
+    ['browser', 'sync.configured.config.ts'],
+  ]) {
+    assert.ok(reusable.includes(file), file);
+    assert.ok(
+      reusable.includes(
+        `node scripts/summarize-cloud-check.mjs ${phase} "$cloud_test_exit"`,
+      ),
+      `${phase} failures must reach the workflow result`,
+    );
+  }
+  assert.ok(reusable.includes('supabase --agent no start'));
+  assert.ok(reusable.includes('--fail-on warn'));
 });

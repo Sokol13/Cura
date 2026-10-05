@@ -1,0 +1,12 @@
+# Final released-data upgrade acceptance
+
+[Results](final-data-upgrade.json) record **95 checks** from exact released v0.3.1 `a078429110b64e99b4358e709de6657f84ccd9ab` to local v0.4.0 runtime checkpoint `e1c68705196f62c917138b238c5d13b7aa57c2c2`. Both fresh fixtures passed on their first run. Each was created by the old production runtime and upgraded by the candidate through real HTTP, worker and SQLite operations. Source trees and built-server hashes are recorded; the candidate is not mislabeled as a published release SHA.
+
+- Inbox: 54 checks across seven assets, eight immutable versions and nine sources; seven dated relocations, two collision suffixes, exact authored metadata/retained bytes/portable records, missing/reference-source controls, twelve migrations and two integrity-clean starts.
+- Slot history: 41 checks across two assets, four versions and three legacy assignments; old attribution remains absent, exact historical source metadata/downloads remain correct, a new local actor persists after restart, and the frozen old-data backup stays unchanged.
+
+The [Inbox harness](final-inbox-upgrade.mjs) extends the earlier [item 11 procedure](inbox-upgrade.md) narrowly for migrations 0010 and 0011: it requires the exact two appended migration hashes and permits only the added nullable actor column while comparing every legacy history field. The [slot harness](final-slot-history-upgrade.mjs) retains the earlier [item 13 procedure](slot-history-upgrade.md) and explicitly checks preservation of all ten old migration registrations plus the final count of twelve. No byte, timestamp, authored-data or semantic-hash comparison was removed.
+
+To reproduce, use clean installed/built checkouts of the released commit and chosen candidate, Node 22, and new generated acceptance directories. Follow the linked original seed/verify commands using these final harness filenames and the actual candidate SHA. Never point the fixture directory at personal Cura data. The archived harnesses differ from the executed copies only by formatting; the JSON records both hashes rather than substituting one for the other. All apps and database handles closed after verification.
+
+This is generated Linux upgrade evidence. Physical Windows locks, macOS normalization/permissions and the user's own data require the separate smoke checklist. Absolute fixture paths, raw source rows and operational logs are excluded from the published JSON.

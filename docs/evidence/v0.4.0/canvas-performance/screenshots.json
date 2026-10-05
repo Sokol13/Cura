@@ -1,0 +1,50 @@
+[
+  {
+    "file": "history-capture-1.png",
+    "sha256": "3758bf58a4f2c7d26750a0987e14b314ae1ac58373e85c13670cfc300be68acf",
+    "sourceJson": "history.json",
+    "screenshotIndex": 1
+  },
+  {
+    "file": "history-capture-10.png",
+    "sha256": "3758bf58a4f2c7d26750a0987e14b314ae1ac58373e85c13670cfc300be68acf",
+    "sourceJson": "history.json",
+    "screenshotIndex": 10
+  },
+  {
+    "file": "canvas-capture-1.png",
+    "sha256": "f2f498327d06455879e0403fe59b21fcc2fd394e3cc82cc8092382a06e7d4811",
+    "sourceJson": "canvas.json",
+    "screenshotIndex": 1
+  },
+  {
+    "file": "canvas-capture-10.png",
+    "sha256": "f2f498327d06455879e0403fe59b21fcc2fd394e3cc82cc8092382a06e7d4811",
+    "sourceJson": "canvas.json",
+    "screenshotIndex": 10
+  },
+  {
+    "file": "matrix-capture-1.png",
+    "sha256": "ec57b8a58f1718eb458b96a1c474dc806aea7db4a85371a170b026652c626a13",
+    "sourceJson": "matrix.json",
+    "screenshotIndex": 1
+  },
+  {
+    "file": "matrix-capture-10.png",
+    "sha256": "ec57b8a58f1718eb458b96a1c474dc806aea7db4a85371a170b026652c626a13",
+    "sourceJson": "matrix.json",
+    "screenshotIndex": 10
+  },
+  {
+    "file": "canvas-fractional-capture-1.png",
+    "sha256": "cea587a7a8cb4c5efc6e9c3b072f7a34368c662faa4b34ef7f7a0e887db125b4",
+    "sourceJson": "canvas-fractional.json",
+    "screenshotIndex": 1
+  },
+  {
+    "file": "canvas-fractional-capture-10.png",
+    "sha256": "cea587a7a8cb4c5efc6e9c3b072f7a34368c662faa4b34ef7f7a0e887db125b4",
+    "sourceJson": "canvas-fractional.json",
+    "screenshotIndex": 10
+  }
+]

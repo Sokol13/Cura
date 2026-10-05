@@ -1,0 +1,24 @@
+{
+  "commit": "c906ecb0472c8804bd66e2a36e6547833878bf93",
+  "version": "0.4.0",
+  "migrations": 12,
+  "rootTree": "3445636dba5426e6496d35d60116c4ea22f5d332",
+  "trees": {
+    "package.json": "a4d939ff1410cf61c69d6b70e63ea8125008bd00",
+    "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615",
+    "pnpm-workspace.yaml": "b8a6126ff8a3a973d3989dcd591d8d6756b1c344",
+    ".npmrc": "d9ca8860b092f4d36ea10a4883343019566769fb",
+    "packages/server": "29dbdd46db0d263f90518be34c6d6a7239d8662f",
+    "packages/shared": "1ab30e200ca9757f055beb5ab5a5ff6ced13f3f5",
+    "packages/web": "8a5706b425c63077dfb951a69df8039a5c01c121",
+    "scripts": "b6a5ea0d521d49d3de127cd50e8cc9575a544790",
+    "e2e": "434d46612df7f0499629636bdbc4d61fd4705b27",
+    "supabase": "96bf9d40081f9f35117106d4e54714dcf7f2aaf2",
+    ".github/workflows": "19c9bcd0cfd67a67d563bc9847c3f6f9f9369b54",
+    "playwright.config.ts": "a8ce9532bff07e93bc43963254d7a9131b9019cc",
+    "tsconfig.base.json": "6de09af12143e0f8ad26381e5b1002689791323b",
+    "tsconfig.tools.json": "5c7701d1464520e86f9f48830dfffa468e597952",
+    "eslint.config.js": "584cae2b21e7d5a3efcdd696a9c36d6a08ef98f8",
+    ".prettierrc.json": "a20502b7f06d848452da0d93ce8830c1d86b05dd"
+  }
+}

@@ -1,0 +1,811 @@
+{
+  "sourceCommit": "c906ecb0472c8804bd66e2a36e6547833878bf93",
+  "summary": {
+    "total": 47,
+    "expected": 47,
+    "unexpected": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "ok": true,
+    "startTime": 1791202151352,
+    "duration": 281922.672,
+    "projectNames": ["chromium"],
+    "errorCount": 0
+  },
+  "tests": [
+    {
+      "id": "af7144226575376c6417-c65e93234ce202d522d1",
+      "title": "offline proposals review exact versions, apply selected fields and selectively undo without overwriting manual changes",
+      "file": "automation.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2817,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2817
+        }
+      ]
+    },
+    {
+      "id": "af7144226575376c6417-dc7855c973fc314b4a16",
+      "title": "archive rule CRUD previews and protects historical final pins while archiving eligible assets",
+      "file": "automation.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2508,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2508
+        }
+      ]
+    },
+    {
+      "id": "af7144226575376c6417-07211741331f8f266b4d",
+      "title": "retained bilingual script edits and historical-version documents persist, recover conflicts and export exact sources",
+      "file": "automation.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 3981,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 3981
+        }
+      ]
+    },
+    {
+      "id": "10c42be442093f2b66b0-9bb2f2b4d0784eb62cad",
+      "title": "real slot drops finalize exact versions, retain replacement history and reuse all preset/custom templates",
+      "file": "boards.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 5783,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 5783
+        }
+      ]
+    },
+    {
+      "id": "10c42be442093f2b66b0-9833e99e524d52ef5401",
+      "title": "canvas nodes, connections, groups, dimensions and viewport survive real dragging and reload",
+      "file": "boards.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 3979,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 3979
+        }
+      ]
+    },
+    {
+      "id": "10c42be442093f2b66b0-3a5cd5e2f77f76a66e48",
+      "title": "character and scene matrices retain exact cell pins through axis edits, reordering and reload",
+      "file": "boards.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 4868,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 4868
+        }
+      ]
+    },
+    {
+      "id": "d4ab753751429ae94db7-3b8ab1e8ad038657a49b",
+      "title": "brand and CMF workflows retain version pins and export meaningful offline HTML PDF JSON and ASE",
+      "file": "brands.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 6577,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 6577
+        }
+      ]
+    },
+    {
+      "id": "d4ab753751429ae94db7-01ae5fe05926e3a2e492",
+      "title": "independent browser PDF reader decodes every A4 page and its exact image geometry",
+      "file": "brands.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 734,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 734
+        }
+      ]
+    },
+    {
+      "id": "049e54009b841dff2e7d-c5336f36caaa29d8c3c4",
+      "title": "idle frames and repeated CDP screenshots stay responsive",
+      "file": "canvas-performance.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 26006,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 26006
+        }
+      ]
+    },
+    {
+      "id": "049e54009b841dff2e7d-2e9444f10584d8f5dd67",
+      "title": "idle frames and repeated CDP screenshots stay responsive",
+      "file": "canvas-performance.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 25860,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 25860
+        }
+      ]
+    },
+    {
+      "id": "049e54009b841dff2e7d-0739e6fc61bc6790590b",
+      "title": "idle frames and repeated CDP screenshots stay responsive",
+      "file": "canvas-performance.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 25393,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 25393
+        }
+      ]
+    },
+    {
+      "id": "049e54009b841dff2e7d-55abe506eb5d51e60b44",
+      "title": "idle frames and repeated CDP screenshots stay responsive",
+      "file": "canvas-performance.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 25784,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 25784
+        }
+      ]
+    },
+    {
+      "id": "92d74693e98b59e1ca27-ee9329cd434003aa7ed5",
+      "title": "canvas pins fill and replace a slot without moving historical or grouped sources",
+      "file": "canvas-slot-drop.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2551,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2551
+        }
+      ]
+    },
+    {
+      "id": "92d74693e98b59e1ca27-b636f605ff16f1bcefb0",
+      "title": "a concurrent slot assignment rejects an in-flight canvas drop without false history",
+      "file": "canvas-slot-drop.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 1506,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 1506
+        }
+      ]
+    },
+    {
+      "id": "af083d3049f5f0c19247-3799b58d78783331497b",
+      "title": "display labels and archive workflows preserve original files and version identity",
+      "file": "catalog-archive.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2825,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2825
+        }
+      ]
+    },
+    {
+      "id": "30aa42b97d8966d0c2dc-e37882685772e65ecb50",
+      "title": "local catalog imports, organizes, searches, batches and preserves workspace settings",
+      "file": "catalog.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 5853,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 5853
+        }
+      ]
+    },
+    {
+      "id": "30aa42b97d8966d0c2dc-a10235ea11d8dddfa5d7",
+      "title": "directory registration, live updates, drop upload, shortcuts and bilingual UI work against the service",
+      "file": "catalog.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 3283,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 3283
+        }
+      ]
+    },
+    {
+      "id": "9ad3700e44ae90574cf7-fd510256ceb8a1d4b1d0",
+      "title": "large registered PSDs become visible without downloading full originals to the browser",
+      "file": "desktop-psd.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 7235,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 7235
+        }
+      ]
+    },
+    {
+      "id": "80bb835772e7bc2f1ed9-0b72d87fd9b653179464",
+      "title": "Settings downloads actionable diagnostics with scan, thumbnail and metadata warnings but no private paths",
+      "file": "diagnostics.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 1228,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 1228
+        }
+      ]
+    },
+    {
+      "id": "9da30ef23dd4ce6bd2a2-a17747669a2f2bb32b0e",
+      "title": "English selected export previews unique board dependencies before confirmation and matches the downloaded archive",
+      "file": "export-preview.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2423,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2423
+        }
+      ]
+    },
+    {
+      "id": "9da30ef23dd4ce6bd2a2-92f904eb08bf4e0ebdaa",
+      "title": "Chinese mixed export rejects a same-count dependency replacement and requires another explicit confirmation",
+      "file": "export-preview.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2785,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2785
+        }
+      ]
+    },
+    {
+      "id": "0667f272bb733ff6f62f-d05f6fb2c27f6b931f25",
+      "title": "offline user downloads whole and selected portable archives with complete history and pinned dependencies",
+      "file": "export.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 7170,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 7170
+        }
+      ]
+    },
+    {
+      "id": "910eb60aed0eab759f72-2b81d498a1c49c6e6c56",
+      "title": "offline FCPXML editor exports exact ordered historical media, inspected source timing and a relocated independently validated package",
+      "file": "fcpxml.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 4097,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 4097
+        }
+      ]
+    },
+    {
+      "id": "905441719ea296184697-2de1440c74165d0f0a56",
+      "title": "all six P0 image formats upload, retain their bytes and render meaningful previews offline",
+      "file": "formats.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2400,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2400
+        }
+      ]
+    },
+    {
+      "id": "c9086cbe786fc8171a5a-812104bce8f39a5dddd4",
+      "title": "native uploads display readable dated Chinese paths and retain same-name files independently",
+      "file": "inbox.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 1416,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 1416
+        }
+      ]
+    },
+    {
+      "id": "fe534f0825407f213faa-d6f9337d4d0900c808c8",
+      "title": "Chinese folder-first onboarding registers nested originals through the directory browser",
+      "file": "onboarding.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2530,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2530
+        }
+      ]
+    },
+    {
+      "id": "fe534f0825407f213faa-3a979f9184c1f7c810a8",
+      "title": "English onboarding keeps empty filters distinct and imports through the keyboard file chooser",
+      "file": "onboarding.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 1561,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 1561
+        }
+      ]
+    },
+    {
+      "id": "f7191c1356a09079afd8-b6820048cd465211c4a6",
+      "title": "offline preview persists image notes and compares immutable replacement versions",
+      "file": "preview.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 3037,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 3037
+        }
+      ]
+    },
+    {
+      "id": "f7191c1356a09079afd8-5a142334f4f826188bed",
+      "title": "SVG preview uses a raster thumbnail and unsupported files remain downloadable",
+      "file": "preview.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 1137,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 1137
+        }
+      ]
+    },
+    {
+      "id": "f7191c1356a09079afd8-f8dddca73f33c7a77e57",
+      "title": "open preview navigates adjacent assets and follows a watched file replacement",
+      "file": "preview.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2244,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2244
+        }
+      ]
+    },
+    {
+      "id": "37e4c99d8313ab3db5d7-9c392a6cefcb15ddd4dd",
+      "title": "offline process timeline, final-output statistics and usable mock jobs survive reload",
+      "file": "process.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 6527,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 6527
+        }
+      ]
+    },
+    {
+      "id": "37e4c99d8313ab3db5d7-bad62d9ed3d37bd17336",
+      "title": "a stale timeline cannot finalize or clear an unseen replacement version",
+      "file": "process.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 1161,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 1161
+        }
+      ]
+    },
+    {
+      "id": "3319e46a8df9994d3464-104190536d6b0df1e0b6",
+      "title": "six rich formats render real local pixels, retain history and rebuild all previews offline",
+      "file": "rich-media.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 11840,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 11840
+        }
+      ]
+    },
+    {
+      "id": "3319e46a8df9994d3464-1249abb6e8ecfe40a1eb",
+      "title": "external models and corrupt video receive explicit states without fetching external resources",
+      "file": "rich-media.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 855,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 855
+        }
+      ]
+    },
+    {
+      "id": "3319e46a8df9994d3464-8a0b21f779153b879fad",
+      "title": "CJK first-page text and indented OBJ geometry produce meaningful previews",
+      "file": "rich-media.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 1350,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 1350
+        }
+      ]
+    },
+    {
+      "id": "5465ed5805d292c007ae-39d23049c62a5baa61c4",
+      "title": "root removal defaults to recoverable Trash, retains history and offers explicit offline cleanup",
+      "file": "root-removal.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2006,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2006
+        }
+      ]
+    },
+    {
+      "id": "7ea3a062472580a0cb7f-cf11918066df0a66ed8e",
+      "title": "registered directories show recursive scan outcomes and retain them after reload",
+      "file": "scan-summary.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 1255,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 1255
+        }
+      ]
+    },
+    {
+      "id": "c108fafca6acf7ac4603-82e5dc0c5f6620bb5ffa",
+      "title": "catalog selection opens an isolated export dialog and downloads only selected assets",
+      "file": "selection-export.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2143,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2143
+        }
+      ]
+    },
+    {
+      "id": "33ccc60647d477901ba5-d43bd0d86871509a2a5b",
+      "title": "slot history compares different assets and exact asset versions, including repeated pins in distinct revisions",
+      "file": "slot-history.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 1264,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 1264
+        }
+      ]
+    },
+    {
+      "id": "33ccc60647d477901ba5-501a42f222f4d0a47634",
+      "title": "historical comparison survives renamed replacements and Trash, switches language, and never rewrites history",
+      "file": "slot-history.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 3879,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 3879
+        }
+      ]
+    },
+    {
+      "id": "33ccc60647d477901ba5-b21f242ba17637dd8c2f",
+      "title": "empty, single, generic-file and cleared history have accessible comparison states without broken images",
+      "file": "slot-history.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 2375,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 2375
+        }
+      ]
+    },
+    {
+      "id": "4219922fea2e2bd3c691-a888800b981982dc0fa3",
+      "title": "production homepage renders and its same-origin health endpoint is ready",
+      "file": "smoke.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 560,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 560
+        }
+      ]
+    },
+    {
+      "id": "496454548f4205703e07-36d83000180e686e9dad",
+      "title": "1000 distinct assets stay responsive and usable with only loopback networking",
+      "file": "stress.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 26896,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 26896
+        }
+      ]
+    },
+    {
+      "id": "0cc518b4e81cfdbffc61-baa523cbc415ff9cfbbd",
+      "title": "cloud workspace stays fully local without configuration in English and Chinese",
+      "file": "sync.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 1036,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 1036
+        }
+      ]
+    },
+    {
+      "id": "008a33ccbcceaa20bf79-80f46e86d836ba7cdc12",
+      "title": "existing English preset boards localize every slot and description without rewriting saved data",
+      "file": "template-i18n.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 4615,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 4615
+        }
+      ]
+    },
+    {
+      "id": "008a33ccbcceaa20bf79-45e65177691c43f7256b",
+      "title": "Chinese display preserves custom templates with canonical keys and user-renamed built-in slots",
+      "file": "template-i18n.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 867,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 867
+        }
+      ]
+    },
+    {
+      "id": "bf54eadcbe2de0236896-67b27f2c6c0072e47058",
+      "title": "synthetic 10000-record browser catalog keeps grid and list DOM bounded while scrolling",
+      "file": "virtualization.spec.ts",
+      "outcome": "expected",
+      "status": "passed",
+      "duration": 16377,
+      "attempts": [
+        {
+          "attempt": 0,
+          "retry": 0,
+          "status": "passed",
+          "duration": 16377
+        }
+      ]
+    }
+  ],
+  "measurements": [
+    {
+      "testId": "049e54009b841dff2e7d-c5336f36caaa29d8c3c4",
+      "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+      "attempt": 0,
+      "testStatus": "passed",
+      "kind": "canvas",
+      "file": "node24-canvas-01-attempt-0.json"
+    },
+    {
+      "testId": "049e54009b841dff2e7d-2e9444f10584d8f5dd67",
+      "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+      "attempt": 0,
+      "testStatus": "passed",
+      "kind": "canvas",
+      "file": "node24-canvas-02-attempt-0.json"
+    },
+    {
+      "testId": "049e54009b841dff2e7d-0739e6fc61bc6790590b",
+      "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+      "attempt": 0,
+      "testStatus": "passed",
+      "kind": "canvas",
+      "file": "node24-canvas-03-attempt-0.json"
+    },
+    {
+      "testId": "049e54009b841dff2e7d-55abe506eb5d51e60b44",
+      "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+      "attempt": 0,
+      "testStatus": "passed",
+      "kind": "canvas",
+      "file": "node24-canvas-04-attempt-0.json"
+    },
+    {
+      "testId": "496454548f4205703e07-36d83000180e686e9dad",
+      "testTitle": "1000 distinct assets stay responsive and usable with only loopback networking",
+      "attempt": 0,
+      "testStatus": "passed",
+      "kind": "stress",
+      "file": "node24-stress-05-attempt-0.json"
+    }
+  ]
+}

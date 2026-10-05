@@ -1,0 +1,65 @@
+{
+  "commit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+  "version": "0.4.0",
+  "status": "passed",
+  "nodeRuntimes": {
+    "22": {
+      "node": "v22.23.3",
+      "passed": true,
+      "limits": {
+        "processingMs": 10000,
+        "absoluteRssBytes": 500000000,
+        "minSourceBytes": 52428800
+      },
+      "cases": [
+        {
+          "name": "resource-1036",
+          "milliseconds": 229.695,
+          "absoluteRssBytes": 219930624,
+          "bytesPreserved": true
+        },
+        {
+          "name": "resource-1033",
+          "milliseconds": 424.389,
+          "absoluteRssBytes": 229924864,
+          "bytesPreserved": true
+        },
+        {
+          "name": "merged-raw",
+          "milliseconds": 774.459,
+          "absoluteRssBytes": 233779200,
+          "bytesPreserved": true
+        }
+      ]
+    },
+    "24": {
+      "node": "v24.21.0",
+      "passed": true,
+      "limits": {
+        "processingMs": 10000,
+        "absoluteRssBytes": 500000000,
+        "minSourceBytes": 52428800
+      },
+      "cases": [
+        {
+          "name": "resource-1036",
+          "milliseconds": 191.934,
+          "absoluteRssBytes": 376377344,
+          "bytesPreserved": true
+        },
+        {
+          "name": "resource-1033",
+          "milliseconds": 381.891,
+          "absoluteRssBytes": 395956224,
+          "bytesPreserved": true
+        },
+        {
+          "name": "merged-raw",
+          "milliseconds": 1080.343,
+          "absoluteRssBytes": 397922304,
+          "bytesPreserved": true
+        }
+      ]
+    }
+  }
+}

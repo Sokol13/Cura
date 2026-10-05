@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 2,
+  "recordedAt": "2026-10-05T11:39:00.519Z",
+  "commit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+  "node": "v22.23.3",
+  "platform": "linux",
+  "architecture": "x64",
+  "productionFiles": {
+    "app.js": "84c68371932b4fac84cfbda0f4e78a76be7e786d10e2b906b91b359cfbae2605",
+    "database.js": "3efd38a6a895c74eb0895cb8121433b13c63025762b54f0a200202f900943b7c",
+    "catalog-store.js": "2d26272f12f2058d102fff9dd8395ddaa14dd0c495c37d2d4f8593ec9c0104ff",
+    "media/service.js": "7271a8dcb9a7330491230208c9df1025fb51d672cce59aa974e1565fbe265d1a",
+    "media/worker.js": "6d0376e12ebab2b29afc70eaa69880f097e4d42b21c24dbef9916a9f5fe37052",
+    "media/image.js": "357de35f0d5743a4c60513ab824b3f1573a8c50110a501a113d6763c30acb3fc",
+    "media/psd.js": "304daa47dca7d6d7936c016efe462b86096d5c9e2337230a1a3844c4fb6f60df"
+  },
+  "limits": {
+    "processingMs": 10000,
+    "absoluteRssBytes": 500000000,
+    "minSourceBytes": 52428800
+  },
+  "method": "Separate fixture-generation subprocess; a fresh plain-Node process per case with the complete compiled production Fastify server, SQLite database, persistent logger and internal media worker. Each source is isolated in its own registered folder. Real HTTP creates the library, registers its root, polls the ready asset and fetches its thumbnail. Startup is recorded separately; processing time starts before root registration and includes watching, scanning, queueing, source containment, hashing, immutable snapshot, preview generation, database commit, ready polling and thumbnail retrieval. Absolute process-wide resourceUsage maxRSS includes the entire server, workers, native libraries and validation; it is not a heap or baseline delta.",
+  "limitations": [
+    "Generated PSD fixtures are not the user original files.",
+    "8192 x 8192 is a representative middle size because only the smallest and largest sizes were supplied.",
+    "All fixtures contain complete raw merged pixels exceeding 50 MiB; first two use embedded JPEG resources, final case has no thumbnail resource.",
+    "Linux container results do not establish macOS/Windows timings."
+  ],
+  "cases": [
+    {
+      "name": "resource-1036",
+      "originalWidth": 3866,
+      "originalHeight": 6871,
+      "sourceBytes": 79690210,
+      "sourceSha256": "daee0eb0c92123201fd68e76516020969220a85a63cd99f722e79ea0f12a1f5d",
+      "startupMs": 670.950122,
+      "processingMs": 229.69520999999997,
+      "maxRssKiB": 214776,
+      "maxRssBytes": 219930624,
+      "thumbnailWidth": 7,
+      "thumbnailHeight": 5,
+      "sampledColors": [[210, 49, 31]],
+      "sourceAndSnapshotHashesPreserved": true,
+      "fullProductionServer": true,
+      "registeredViaHttp": true,
+      "thumbnailRetrievedViaHttp": true,
+      "workerThreads": true
+    },
+    {
+      "name": "resource-1033",
+      "originalWidth": 8192,
+      "originalHeight": 8192,
+      "sourceBytes": 201326944,
+      "sourceSha256": "0e33edc36e3f1df92aa194160e20564a80945fe7a681c57e364da04e7c44e57e",
+      "startupMs": 656.417261,
+      "processingMs": 424.38875699999994,
+      "maxRssKiB": 224536,
+      "maxRssBytes": 229924864,
+      "thumbnailWidth": 7,
+      "thumbnailHeight": 5,
+      "sampledColors": [[30, 181, 207]],
+      "sourceAndSnapshotHashesPreserved": true,
+      "fullProductionServer": true,
+      "registeredViaHttp": true,
+      "thumbnailRetrievedViaHttp": true,
+      "workerThreads": true
+    },
+    {
+      "name": "merged-raw",
+      "originalWidth": 13391,
+      "originalHeight": 7032,
+      "sourceBytes": 282496576,
+      "sourceSha256": "3365a732bfe9a5ae4c5b2ff97246c2fe4fbfd67ef14eebc91c09eb879084c1a3",
+      "startupMs": 680.2166090000001,
+      "processingMs": 774.459271,
+      "maxRssKiB": 228300,
+      "maxRssBytes": 233779200,
+      "thumbnailWidth": 512,
+      "thumbnailHeight": 269,
+      "sampledColors": [
+        [240, 21, 10],
+        [11, 230, 31],
+        [20, 40, 220],
+        [230, 210, 21]
+      ],
+      "sourceAndSnapshotHashesPreserved": true,
+      "fullProductionServer": true,
+      "registeredViaHttp": true,
+      "thumbnailRetrievedViaHttp": true,
+      "workerThreads": true
+    }
+  ],
+  "passed": true
+}

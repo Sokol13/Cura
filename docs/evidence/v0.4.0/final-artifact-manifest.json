@@ -1,0 +1,172 @@
+{
+  "sources": {
+    "runtimeStartupPsdUnit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+    "lintTypesBrowser": "c906ecb0472c8804bd66e2a36e6547833878bf93",
+    "equivalentUnitAndRuntimeInputs": {
+      "package.json": "a4d939ff1410cf61c69d6b70e63ea8125008bd00",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615",
+      "pnpm-workspace.yaml": "b8a6126ff8a3a973d3989dcd591d8d6756b1c344",
+      ".npmrc": "d9ca8860b092f4d36ea10a4883343019566769fb",
+      "packages/server": "29dbdd46db0d263f90518be34c6d6a7239d8662f",
+      "packages/shared": "1ab30e200ca9757f055beb5ab5a5ff6ced13f3f5",
+      "packages/web": "8a5706b425c63077dfb951a69df8039a5c01c121",
+      "scripts": "b6a5ea0d521d49d3de127cd50e8cc9575a544790",
+      "supabase": "96bf9d40081f9f35117106d4e54714dcf7f2aaf2",
+      "tsconfig.base.json": "6de09af12143e0f8ad26381e5b1002689791323b",
+      "tsconfig.tools.json": "5c7701d1464520e86f9f48830dfffa468e597952",
+      "eslint.config.js": "584cae2b21e7d5a3efcdd696a9c36d6a08ef98f8",
+      ".prettierrc.json": "a20502b7f06d848452da0d93ce8830c1d86b05dd"
+    },
+    "changedPathsBetweenCheckpoints": [
+      "CHANGELOG.md",
+      "docs/DECISIONS.md",
+      "docs/PROGRESS.md",
+      "docs/SMOKE_TEST.md",
+      "docs/TESTING.md",
+      "docs/evidence/v0.4.0/final-data-upgrade.json",
+      "docs/evidence/v0.4.0/final-data-upgrade.md",
+      "docs/evidence/v0.4.0/final-inbox-upgrade.mjs",
+      "docs/evidence/v0.4.0/final-slot-history-upgrade.mjs",
+      "docs/evidence/v0.4.0/runtime-acceptance/README.md",
+      "docs/evidence/v0.4.0/runtime-acceptance/browser-bundle-licenses.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/frozen-source.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/native-isolation.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/node22-clean-start.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/node22-clean-start.png",
+      "docs/evidence/v0.4.0/runtime-acceptance/node22-psd-benchmark.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/node24-clean-start.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/node24-clean-start.png",
+      "docs/evidence/v0.4.0/runtime-acceptance/node24-psd-benchmark.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/runtime-psd-summary.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/runtime-startup-summary.json",
+      "docs/evidence/v0.4.0/unit-acceptance.json",
+      "docs/superpowers/plans/2026-10-04-desktop-feedback.md",
+      "e2e/canvas-performance.spec.ts",
+      "e2e/fixtures/canvas-metrics.ts",
+      "e2e/fixtures/canvas-performance.ts"
+    ]
+  },
+  "status": "passed",
+  "files": [
+    {
+      "path": "docs/evidence/v0.4.0/final-acceptance.json",
+      "bytes": 18699,
+      "sha256": "8b9fc3c268c25798cf80378808e9cb3e83c89b15c2e3dcd741102920691f550f"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node22-browser-tests.json",
+      "bytes": 22634,
+      "sha256": "c12b8c6c236b32ef48569906af3c06f1f4672b3cb59532051a8e1922072a8388"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node22-canvas-01-attempt-0.json",
+      "bytes": 54579,
+      "sha256": "66185c75784012370317c32ab5ee7a986f9e6d8428df8d8f2a34735fc3a1624c"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node22-canvas-02-attempt-0.json",
+      "bytes": 54340,
+      "sha256": "46a65d5587c7603d4a341cf6be380d8209f3d57547459be66c7b68071b3c2554"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node22-canvas-03-attempt-0.json",
+      "bytes": 53013,
+      "sha256": "94bf3139ddb6fb85e8f13ee89daef9f39c555a09fe09d37a22fb9d27566899de"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node22-canvas-04-attempt-0.json",
+      "bytes": 54431,
+      "sha256": "eaaf7e0562db4d6cae95bb8ec31c54138b9855fdcf236fe2cb80c6161f7e6078"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node22-stress-05-attempt-0.json",
+      "bytes": 18985,
+      "sha256": "656095e9e5c36a41008f836d555e66e576a8bc4e6dac66c81d5dc71c84877f5d"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node24-browser-tests.json",
+      "bytes": 22634,
+      "sha256": "feb2c64ba2c1adec7d25c7f56d7578d7ffbddf28cb8dcde82bc318c0559926ab"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node24-canvas-01-attempt-0.json",
+      "bytes": 54659,
+      "sha256": "8014224c54c34392436dada34a0e96cb3e83064ab72a1e5cd7741d83e28242c2"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node24-canvas-02-attempt-0.json",
+      "bytes": 54462,
+      "sha256": "c8ff9201599da07c9e7dbdb4c013ccc91a670a3d1f9940954f37abb521a5f597"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node24-canvas-03-attempt-0.json",
+      "bytes": 52957,
+      "sha256": "413a1c12d1b375f0e0bbdc2edf2f40af8d5196b7be680d78ba8a8992a63d8981"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node24-canvas-04-attempt-0.json",
+      "bytes": 54480,
+      "sha256": "9aa1357ed9bc95f1a70744ceea731b7e0a39713db1a449d9e31c0e882b63ced5"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/node24-stress-05-attempt-0.json",
+      "bytes": 18960,
+      "sha256": "7c518c2e99ba56a73bfc2078ba81b2e2d82196f483aaa1858fb94803cb884fad"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/regression-source.json",
+      "bytes": 1225,
+      "sha256": "0b37cc5ca72e2721969d63eb1523367a6d0f3fd3fc9ae55aa7fefca5a7d67bd0"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/runtime-acceptance/browser-bundle-licenses.json",
+      "bytes": 92820,
+      "sha256": "99ee8e568e4533dc45da8fb8c0baca7fc96b7c0da99e2d361dfda43b45cddd49"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/runtime-acceptance/frozen-source.json",
+      "bytes": 1225,
+      "sha256": "451b89ba34f37df74eda0aea4a2e0ca603f121d853f6655093a28430ee0da2ab"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/runtime-acceptance/native-isolation.json",
+      "bytes": 332,
+      "sha256": "130001583001bdc3f4eb9b80f60264345917cf8c8e745ef1194cf8eb9e95b8ff"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/runtime-acceptance/node22-clean-start.json",
+      "bytes": 5079,
+      "sha256": "910d73e5ad53d5592a4121cfe3ed54711a1004a9eb8b2e1c23b3b4d0b9da1de9"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/runtime-acceptance/node22-clean-start.png",
+      "bytes": 86211,
+      "sha256": "b5d120a69701db73349544415046322b3f468a8bc1e928eb0b700ddfaffbc623"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/runtime-acceptance/node22-psd-benchmark.json",
+      "bytes": 4167,
+      "sha256": "35552b2e72b3b1c6feff87e7e4a78d4e32d8a6a40a965c7e2cb483761ee89784"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/runtime-acceptance/node24-clean-start.json",
+      "bytes": 5081,
+      "sha256": "ee5620775af53945ea74955a2303fb26a6b7755fc0515f11b6640602f68a3e3c"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/runtime-acceptance/node24-clean-start.png",
+      "bytes": 86283,
+      "sha256": "af71b9eb68a7eb4ad8141d9fd305aef16c3480103d008aa1eb66433486dca3c3"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/runtime-acceptance/node24-psd-benchmark.json",
+      "bytes": 4168,
+      "sha256": "81ca0f50ac590a0792df3c312e29e8fb41e971dcecea2df5a826156de47d2686"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/unit-acceptance.json",
+      "bytes": 3066,
+      "sha256": "cc364a2ae237c5afd0a20b3813a82413a6d2de1d1bae115a8175e854534cb52b"
+    }
+  ]
+}

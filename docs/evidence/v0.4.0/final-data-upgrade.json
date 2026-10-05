@@ -1,0 +1,140 @@
+{
+  "status": "passed",
+  "completedAt": "2026-10-05T11:38:21.089322+00:00",
+  "method": "Two fresh generated fixtures seeded with the exact released runtime, then upgraded sequentially through real HTTP and SQLite; neither previous fixture nor previous evidence reused.",
+  "released": {
+    "kind": "release-tag",
+    "tag": "v0.3.1",
+    "commit": "a078429110b64e99b4358e709de6657f84ccd9ab",
+    "node": "v22.23.3",
+    "platform": "linux",
+    "runtimeTrees": {
+      "packages/server": "7fd4d872f1b6910e08c54cc36cb2902e182efc6b",
+      "packages/shared": "f2096978e6c6cd3ee3373c93ad67b5b4d1c28230",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615"
+    },
+    "builtEntrypointSha256": "d7f023be0eaeeb459d5328c1fa05b4a1330193081a269cb3e75942c7c72086f6"
+  },
+  "candidate": {
+    "kind": "local-checkpoint",
+    "version": "0.4.0",
+    "commit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+    "node": "v22.23.3",
+    "platform": "linux",
+    "runtimeTrees": {
+      "packages/server": "29dbdd46db0d263f90518be34c6d6a7239d8662f",
+      "packages/shared": "1ab30e200ca9757f055beb5ab5a5ff6ced13f3f5",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615"
+    },
+    "builtEntrypointSha256": "84c68371932b4fac84cfbda0f4e78a76be7e786d10e2b906b91b359cfbae2605"
+  },
+  "inbox": {
+    "status": "passed",
+    "passedUniqueChecks": 54,
+    "fixtureCounts": {
+      "assets": 7,
+      "versions": 8,
+      "sources": 9,
+      "inboxSources": 8,
+      "existingInboxSources": 7,
+      "missingInboxSources": 1,
+      "referenceSources": 1,
+      "dedupAliasSources": 2
+    },
+    "passes": [
+      {
+        "pass": 1,
+        "sourcesInDatedLayout": 7,
+        "collisionSuffixes": 2,
+        "newTables": ["inbox_migrations"],
+        "completedJournalRows": 7,
+        "migrations": 12,
+        "integrity": "ok",
+        "foreignKeyViolations": 0
+      },
+      {
+        "pass": 2,
+        "sourcesInDatedLayout": 7,
+        "collisionSuffixes": 2,
+        "newTables": ["inbox_migrations"],
+        "completedJournalRows": 7,
+        "migrations": 12,
+        "integrity": "ok",
+        "foreignKeyViolations": 0
+      }
+    ],
+    "portableSemanticHashBeforeAndAfter": "afc31fc0a6e84d8fff506a147d01d00a1bcd783e81b5089bbabb2c53874fb223",
+    "verified": [
+      "All eight immutable version SQL rows, retained snapshot bytes and thumbnail bytes remain identical.",
+      "Seven existing Inbox sources relocate by source creation local date; source IDs, last_hash, availability, aliases and source bytes remain exact.",
+      "Two same-name collisions retain distinct content and gain only a short suffix; Chinese/NFC/NFD identity remains stable.",
+      "Manual current V2 with a different filename and V1 source aliases survives; authored names, metadata, tags, folders, annotations and timestamps remain exact.",
+      "Missing original stays missing with exact row and retained snapshot; external reference source stays untouched; Trash source relocates without losing state.",
+      "Asset primary locators and FTS change only by exact source-locator substitution; real HTTP old/new path search remains correct.",
+      "Complete portable records and semantic hash remain unchanged; all legacy tables remain exact except explicitly checked locators, observation/scan state and nullable actor column.",
+      "Exactly migration0010 and0011 hashes append to the original ten rows; only the Inbox journal table is new and all seven relocations complete.",
+      "Second closed-database startup preserves mappings, immutable rows, portable records and completed journals; integrity and foreign keys pass both times."
+    ],
+    "allowedOperationalDifferences": [
+      "Derived search_text and FTS change only by verified source-locator substitutions; real HTTP old/new path searches checked",
+      "Automatic scan summaries change on startup/rescan",
+      "Normal source observation can update asset_sources.updated_at",
+      "Expected SQL migration registration and local Inbox relocation journal"
+    ],
+    "rawEvidenceSha256": "231884af960dc8a59c02072507b9beb1768bda095a13bf958872ed9e69ea252c"
+  },
+  "slotHistory": {
+    "status": "passed",
+    "passedChecks": 41,
+    "fixtureCounts": {
+      "assets": 2,
+      "versions": 4,
+      "oldSlotRevisions": 3,
+      "newSlotRevisions": 1
+    },
+    "migrationCounts": {
+      "released": 10,
+      "candidate": 12
+    },
+    "initialSemanticHash": "3a8044034eac538a40548ffea0fffaeec2587a893a1e9276f7fd4262e16abd1f",
+    "afterAssignmentSemanticHash": "87af3fa0ff740da5f99feaa8ba0df39363009003ee233b5da7eee73155d5eb66",
+    "verified": [
+      "All four immutable version rows and retained/thumbnail bytes remain exact, with real HTTP downloads checked against original SHA256.",
+      "Authored folders, tags, asset tags and annotations remain byte-for-byte identical.",
+      "Three existing A/V1,B/V2,A/V1 slot revisions retain every old field; new actor_json is NULL and portable actor/source remain absent.",
+      "Complete portable graph and semantic hash remain unchanged on initial upgrade, with existing boards/items/edges/slots/final selections exact.",
+      "History source presentation resolves immutable version names/types/ordinals, including A/V1 while A/V2 is current.",
+      "One new assignment selects exact B/V2, increments once and records an explicit local actor in real HTTP and SQL.",
+      "Only new board state and the affected asset updatedAt change after assignment; old portable records and semantic identities are preserved.",
+      "Local attribution and complete history survive restart; graph, slot SQL, integrity and foreign keys remain valid; frozen released-runtime backup stays exact."
+    ],
+    "rawEvidenceSha256": "2dad517baed5760b8cf00546949cf17996bbd1e68cc7a0323d4807af6dea2025"
+  },
+  "harnesses": [
+    {
+      "path": "docs/evidence/v0.4.0/final-inbox-upgrade.mjs",
+      "archivedSha256": "8543d752e5a8cd0a43d4d3e922c3bf85b527a050bcbce4242a3e29df754870d8",
+      "executedSha256": "a3ef2e3362db32178fbc2272e9b0ae6b56b3c2ac3c0cb9c8a10b05c1604d46c9"
+    },
+    {
+      "path": "docs/evidence/v0.4.0/final-slot-history-upgrade.mjs",
+      "archivedSha256": "511ccae2d77f037d36ce5d4b0afe90c1b4332e2701a89cac8d252396d0bb7650",
+      "executedSha256": "2631fb4c4f257f20fb8d44fa57617e5f0664f4e80c50f8496c24e0100d6660e7"
+    }
+  ],
+  "harnessNote": "Archived copies differ from executed scripts only by Prettier formatting; both identities are recorded. Original archived item11/item13 evidence is unchanged.",
+  "reproduction": [
+    "Use Node22 and clean, built RELEASED_CHECKOUT at a078429110b64e99b4358e709de6657f84ccd9ab and CANDIDATE_CHECKOUT at e1c68705196f62c917138b238c5d13b7aa57c2c2. Set FIXTURE_DIR to a fresh directory outside both checkouts.",
+    "CURA_INBOX_ACCEPTANCE_DIR=\"$FIXTURE_DIR/inbox\" node docs/evidence/v0.4.0/final-inbox-upgrade.mjs seed \"$RELEASED_CHECKOUT\"",
+    "CURA_INBOX_ACCEPTANCE_DIR=\"$FIXTURE_DIR/inbox\" node docs/evidence/v0.4.0/final-inbox-upgrade.mjs verify \"$CANDIDATE_CHECKOUT\" e1c68705196f62c917138b238c5d13b7aa57c2c2",
+    "mkdir -p \"$FIXTURE_DIR/slot-history\"",
+    "node docs/evidence/v0.4.0/final-slot-history-upgrade.mjs seed \"$RELEASED_CHECKOUT\" a078429110b64e99b4358e709de6657f84ccd9ab \"$FIXTURE_DIR/slot-history\"",
+    "node docs/evidence/v0.4.0/final-slot-history-upgrade.mjs verify \"$CANDIDATE_CHECKOUT\" e1c68705196f62c917138b238c5d13b7aa57c2c2 \"$FIXTURE_DIR/slot-history\""
+  ],
+  "boundaries": [
+    "Candidate is a local version0.4.0 checkpoint, not a verified published release tag.",
+    "Synthetic data only on Linux; no physical Windows/macOS filesystem, file-lock, watcher-latency or authenticated-account attribution claim.",
+    "No browser/performance test is claimed by these upgrade harnesses.",
+    "Absolute fixture/runtime paths, raw operational logs and generated per-source IDs/paths are excluded from this public report. Raw results remain separate."
+  ]
+}

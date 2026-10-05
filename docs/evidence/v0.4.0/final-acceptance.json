@@ -1,0 +1,516 @@
+{
+  "schemaVersion": 2,
+  "version": "0.4.0",
+  "status": "passed",
+  "recordedAt": "2026-10-05T12:18:13.847783+00:00",
+  "sources": {
+    "runtimeStartupPsdUnit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+    "lintTypesBrowser": "c906ecb0472c8804bd66e2a36e6547833878bf93",
+    "equivalentUnitAndRuntimeInputs": {
+      "package.json": "a4d939ff1410cf61c69d6b70e63ea8125008bd00",
+      "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615",
+      "pnpm-workspace.yaml": "b8a6126ff8a3a973d3989dcd591d8d6756b1c344",
+      ".npmrc": "d9ca8860b092f4d36ea10a4883343019566769fb",
+      "packages/server": "29dbdd46db0d263f90518be34c6d6a7239d8662f",
+      "packages/shared": "1ab30e200ca9757f055beb5ab5a5ff6ced13f3f5",
+      "packages/web": "8a5706b425c63077dfb951a69df8039a5c01c121",
+      "scripts": "b6a5ea0d521d49d3de127cd50e8cc9575a544790",
+      "supabase": "96bf9d40081f9f35117106d4e54714dcf7f2aaf2",
+      "tsconfig.base.json": "6de09af12143e0f8ad26381e5b1002689791323b",
+      "tsconfig.tools.json": "5c7701d1464520e86f9f48830dfffa468e597952",
+      "eslint.config.js": "584cae2b21e7d5a3efcdd696a9c36d6a08ef98f8",
+      ".prettierrc.json": "a20502b7f06d848452da0d93ce8830c1d86b05dd"
+    },
+    "changedPathsBetweenCheckpoints": [
+      "CHANGELOG.md",
+      "docs/DECISIONS.md",
+      "docs/PROGRESS.md",
+      "docs/SMOKE_TEST.md",
+      "docs/TESTING.md",
+      "docs/evidence/v0.4.0/final-data-upgrade.json",
+      "docs/evidence/v0.4.0/final-data-upgrade.md",
+      "docs/evidence/v0.4.0/final-inbox-upgrade.mjs",
+      "docs/evidence/v0.4.0/final-slot-history-upgrade.mjs",
+      "docs/evidence/v0.4.0/runtime-acceptance/README.md",
+      "docs/evidence/v0.4.0/runtime-acceptance/browser-bundle-licenses.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/frozen-source.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/native-isolation.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/node22-clean-start.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/node22-clean-start.png",
+      "docs/evidence/v0.4.0/runtime-acceptance/node22-psd-benchmark.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/node24-clean-start.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/node24-clean-start.png",
+      "docs/evidence/v0.4.0/runtime-acceptance/node24-psd-benchmark.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/runtime-psd-summary.json",
+      "docs/evidence/v0.4.0/runtime-acceptance/runtime-startup-summary.json",
+      "docs/evidence/v0.4.0/unit-acceptance.json",
+      "docs/superpowers/plans/2026-10-04-desktop-feedback.md",
+      "e2e/canvas-performance.spec.ts",
+      "e2e/fixtures/canvas-metrics.ts",
+      "e2e/fixtures/canvas-performance.ts"
+    ]
+  },
+  "migrations": 12,
+  "nodeRuntimes": {
+    "22": {
+      "node": "v22.23.3",
+      "nativeAbi": "127",
+      "phases": {
+        "install": {
+          "sourceCommit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+          "node": "v22.23.3",
+          "nativeAbi": "127",
+          "seconds": 3.229,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "start": {
+          "sourceCommit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+          "node": "v22.23.3",
+          "nativeAbi": "127",
+          "seconds": 26.413,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "psd": {
+          "sourceCommit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+          "node": "v22.23.3",
+          "nativeAbi": "127",
+          "seconds": 5.874,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "test": {
+          "sourceCommit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+          "node": "v22.23.3",
+          "nativeAbi": "127",
+          "seconds": 57.307,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "lint": {
+          "sourceCommit": "c906ecb0472c8804bd66e2a36e6547833878bf93",
+          "node": "v22.23.3",
+          "nativeAbi": "127",
+          "seconds": 19.198,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "typecheck": {
+          "sourceCommit": "c906ecb0472c8804bd66e2a36e6547833878bf93",
+          "node": "v22.23.3",
+          "nativeAbi": "127",
+          "seconds": 17.805,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "e2e": {
+          "sourceCommit": "c906ecb0472c8804bd66e2a36e6547833878bf93",
+          "node": "v22.23.3",
+          "nativeAbi": "127",
+          "seconds": 304.711,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        }
+      },
+      "unitAndToolPassed": 730,
+      "unconfiguredCloudSkipped": 17,
+      "browserSummary": {
+        "total": 47,
+        "expected": 47,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0,
+        "ok": true,
+        "startTime": 1791201752759,
+        "duration": 281579.595,
+        "projectNames": ["chromium"],
+        "errorCount": 0
+      },
+      "measurementEvidence": [
+        {
+          "testId": "049e54009b841dff2e7d-c5336f36caaa29d8c3c4",
+          "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+          "attempt": 0,
+          "testStatus": "passed",
+          "kind": "canvas",
+          "file": "node22-canvas-01-attempt-0.json"
+        },
+        {
+          "testId": "049e54009b841dff2e7d-2e9444f10584d8f5dd67",
+          "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+          "attempt": 0,
+          "testStatus": "passed",
+          "kind": "canvas",
+          "file": "node22-canvas-02-attempt-0.json"
+        },
+        {
+          "testId": "049e54009b841dff2e7d-0739e6fc61bc6790590b",
+          "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+          "attempt": 0,
+          "testStatus": "passed",
+          "kind": "canvas",
+          "file": "node22-canvas-03-attempt-0.json"
+        },
+        {
+          "testId": "049e54009b841dff2e7d-55abe506eb5d51e60b44",
+          "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+          "attempt": 0,
+          "testStatus": "passed",
+          "kind": "canvas",
+          "file": "node22-canvas-04-attempt-0.json"
+        },
+        {
+          "testId": "496454548f4205703e07-36d83000180e686e9dad",
+          "testTitle": "1000 distinct assets stay responsive and usable with only loopback networking",
+          "attempt": 0,
+          "testStatus": "passed",
+          "kind": "stress",
+          "file": "node22-stress-05-attempt-0.json"
+        }
+      ],
+      "startup": {
+        "command": "NODE_PATH= PORT=<isolated-port> pnpm start (default browser opening)",
+        "startupSeconds": 20.7,
+        "emptyDataCacheLogDirectories": true,
+        "buildPassed": true,
+        "health": {
+          "status": "ok"
+        },
+        "host": "127.0.0.1",
+        "defaultBrowserOpened": true,
+        "defaultBrowserMethod": "Isolated XDG HTTP/HTTPS desktop association invoked headless Chromium; global associations unchanged.",
+        "freshBrowserProfile": true,
+        "attachedWith": "Playwright connectOverCDP to the already automatically opened page",
+        "pageGotoCalled": false,
+        "newPageCalled": false
+      },
+      "persistence": {
+        "language": "zh-CN",
+        "libraryName": "v0.4.0 Node 22 启动验证 · 设计资料库",
+        "createdThroughChineseUI": true,
+        "sameLibraryIdAfterReload": true,
+        "activeLibraryIdAfterReload": true,
+        "closedDatabaseContainsLibrary": true,
+        "closedDatabaseIntegrityCheck": "ok",
+        "closedDatabaseForeignKeyViolations": 0,
+        "migrationCount": 12
+      },
+      "cleanup": {
+        "privateServerStopped": true,
+        "privateBrowserStopped": true,
+        "serverAndCdpPortsReleased": true
+      },
+      "psd": {
+        "passed": true,
+        "limits": {
+          "processingMs": 10000,
+          "absoluteRssBytes": 500000000,
+          "minSourceBytes": 52428800
+        },
+        "cases": [
+          {
+            "name": "resource-1036",
+            "originalWidth": 3866,
+            "originalHeight": 6871,
+            "sourceBytes": 79690210,
+            "sourceSha256": "daee0eb0c92123201fd68e76516020969220a85a63cd99f722e79ea0f12a1f5d",
+            "startupMs": 670.950122,
+            "processingMs": 229.69520999999997,
+            "maxRssKiB": 214776,
+            "maxRssBytes": 219930624,
+            "thumbnailWidth": 7,
+            "thumbnailHeight": 5,
+            "sampledColors": [[210, 49, 31]],
+            "sourceAndSnapshotHashesPreserved": true,
+            "fullProductionServer": true,
+            "registeredViaHttp": true,
+            "thumbnailRetrievedViaHttp": true,
+            "workerThreads": true
+          },
+          {
+            "name": "resource-1033",
+            "originalWidth": 8192,
+            "originalHeight": 8192,
+            "sourceBytes": 201326944,
+            "sourceSha256": "0e33edc36e3f1df92aa194160e20564a80945fe7a681c57e364da04e7c44e57e",
+            "startupMs": 656.417261,
+            "processingMs": 424.38875699999994,
+            "maxRssKiB": 224536,
+            "maxRssBytes": 229924864,
+            "thumbnailWidth": 7,
+            "thumbnailHeight": 5,
+            "sampledColors": [[30, 181, 207]],
+            "sourceAndSnapshotHashesPreserved": true,
+            "fullProductionServer": true,
+            "registeredViaHttp": true,
+            "thumbnailRetrievedViaHttp": true,
+            "workerThreads": true
+          },
+          {
+            "name": "merged-raw",
+            "originalWidth": 13391,
+            "originalHeight": 7032,
+            "sourceBytes": 282496576,
+            "sourceSha256": "3365a732bfe9a5ae4c5b2ff97246c2fe4fbfd67ef14eebc91c09eb879084c1a3",
+            "startupMs": 680.2166090000001,
+            "processingMs": 774.459271,
+            "maxRssKiB": 228300,
+            "maxRssBytes": 233779200,
+            "thumbnailWidth": 512,
+            "thumbnailHeight": 269,
+            "sampledColors": [
+              [240, 21, 10],
+              [11, 230, 31],
+              [20, 40, 220],
+              [230, 210, 21]
+            ],
+            "sourceAndSnapshotHashesPreserved": true,
+            "fullProductionServer": true,
+            "registeredViaHttp": true,
+            "thumbnailRetrievedViaHttp": true,
+            "workerThreads": true
+          }
+        ]
+      }
+    },
+    "24": {
+      "node": "v24.21.0",
+      "nativeAbi": "137",
+      "phases": {
+        "install": {
+          "sourceCommit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+          "node": "v24.21.0",
+          "nativeAbi": "137",
+          "seconds": 3.202,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "start": {
+          "sourceCommit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+          "node": "v24.21.0",
+          "nativeAbi": "137",
+          "seconds": 25.263,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "psd": {
+          "sourceCommit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+          "node": "v24.21.0",
+          "nativeAbi": "137",
+          "seconds": 6.293,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "test": {
+          "sourceCommit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+          "node": "v24.21.0",
+          "nativeAbi": "137",
+          "seconds": 57.91,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "lint": {
+          "sourceCommit": "c906ecb0472c8804bd66e2a36e6547833878bf93",
+          "node": "v24.21.0",
+          "nativeAbi": "137",
+          "seconds": 17.717,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "typecheck": {
+          "sourceCommit": "c906ecb0472c8804bd66e2a36e6547833878bf93",
+          "node": "v24.21.0",
+          "nativeAbi": "137",
+          "seconds": 15.361,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        },
+        "e2e": {
+          "sourceCommit": "c906ecb0472c8804bd66e2a36e6547833878bf93",
+          "node": "v24.21.0",
+          "nativeAbi": "137",
+          "seconds": 300.674,
+          "exitCode": 0,
+          "sourceTreesUnchanged": true
+        }
+      },
+      "unitAndToolPassed": 730,
+      "unconfiguredCloudSkipped": 17,
+      "browserSummary": {
+        "total": 47,
+        "expected": 47,
+        "unexpected": 0,
+        "flaky": 0,
+        "skipped": 0,
+        "ok": true,
+        "startTime": 1791202151352,
+        "duration": 281922.672,
+        "projectNames": ["chromium"],
+        "errorCount": 0
+      },
+      "measurementEvidence": [
+        {
+          "testId": "049e54009b841dff2e7d-c5336f36caaa29d8c3c4",
+          "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+          "attempt": 0,
+          "testStatus": "passed",
+          "kind": "canvas",
+          "file": "node24-canvas-01-attempt-0.json"
+        },
+        {
+          "testId": "049e54009b841dff2e7d-2e9444f10584d8f5dd67",
+          "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+          "attempt": 0,
+          "testStatus": "passed",
+          "kind": "canvas",
+          "file": "node24-canvas-02-attempt-0.json"
+        },
+        {
+          "testId": "049e54009b841dff2e7d-0739e6fc61bc6790590b",
+          "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+          "attempt": 0,
+          "testStatus": "passed",
+          "kind": "canvas",
+          "file": "node24-canvas-03-attempt-0.json"
+        },
+        {
+          "testId": "049e54009b841dff2e7d-55abe506eb5d51e60b44",
+          "testTitle": "idle frames and repeated CDP screenshots stay responsive",
+          "attempt": 0,
+          "testStatus": "passed",
+          "kind": "canvas",
+          "file": "node24-canvas-04-attempt-0.json"
+        },
+        {
+          "testId": "496454548f4205703e07-36d83000180e686e9dad",
+          "testTitle": "1000 distinct assets stay responsive and usable with only loopback networking",
+          "attempt": 0,
+          "testStatus": "passed",
+          "kind": "stress",
+          "file": "node24-stress-05-attempt-0.json"
+        }
+      ],
+      "startup": {
+        "command": "NODE_PATH= PORT=<isolated-port> pnpm start (default browser opening)",
+        "startupSeconds": 19.6,
+        "emptyDataCacheLogDirectories": true,
+        "buildPassed": true,
+        "health": {
+          "status": "ok"
+        },
+        "host": "127.0.0.1",
+        "defaultBrowserOpened": true,
+        "defaultBrowserMethod": "Isolated XDG HTTP/HTTPS desktop association invoked headless Chromium; global associations unchanged.",
+        "freshBrowserProfile": true,
+        "attachedWith": "Playwright connectOverCDP to the already automatically opened page",
+        "pageGotoCalled": false,
+        "newPageCalled": false
+      },
+      "persistence": {
+        "language": "zh-CN",
+        "libraryName": "v0.4.0 Node 24 启动验证 · 设计资料库",
+        "createdThroughChineseUI": true,
+        "sameLibraryIdAfterReload": true,
+        "activeLibraryIdAfterReload": true,
+        "closedDatabaseContainsLibrary": true,
+        "closedDatabaseIntegrityCheck": "ok",
+        "closedDatabaseForeignKeyViolations": 0,
+        "migrationCount": 12
+      },
+      "cleanup": {
+        "privateServerStopped": true,
+        "privateBrowserStopped": true,
+        "serverAndCdpPortsReleased": true
+      },
+      "psd": {
+        "passed": true,
+        "limits": {
+          "processingMs": 10000,
+          "absoluteRssBytes": 500000000,
+          "minSourceBytes": 52428800
+        },
+        "cases": [
+          {
+            "name": "resource-1036",
+            "originalWidth": 3866,
+            "originalHeight": 6871,
+            "sourceBytes": 79690210,
+            "sourceSha256": "daee0eb0c92123201fd68e76516020969220a85a63cd99f722e79ea0f12a1f5d",
+            "startupMs": 641.880731,
+            "processingMs": 191.93392499999993,
+            "maxRssKiB": 367556,
+            "maxRssBytes": 376377344,
+            "thumbnailWidth": 7,
+            "thumbnailHeight": 5,
+            "sampledColors": [[210, 49, 31]],
+            "sourceAndSnapshotHashesPreserved": true,
+            "fullProductionServer": true,
+            "registeredViaHttp": true,
+            "thumbnailRetrievedViaHttp": true,
+            "workerThreads": true
+          },
+          {
+            "name": "resource-1033",
+            "originalWidth": 8192,
+            "originalHeight": 8192,
+            "sourceBytes": 201326944,
+            "sourceSha256": "0e33edc36e3f1df92aa194160e20564a80945fe7a681c57e364da04e7c44e57e",
+            "startupMs": 649.935863,
+            "processingMs": 381.89105399999994,
+            "maxRssKiB": 386676,
+            "maxRssBytes": 395956224,
+            "thumbnailWidth": 7,
+            "thumbnailHeight": 5,
+            "sampledColors": [[30, 181, 207]],
+            "sourceAndSnapshotHashesPreserved": true,
+            "fullProductionServer": true,
+            "registeredViaHttp": true,
+            "thumbnailRetrievedViaHttp": true,
+            "workerThreads": true
+          },
+          {
+            "name": "merged-raw",
+            "originalWidth": 13391,
+            "originalHeight": 7032,
+            "sourceBytes": 282496576,
+            "sourceSha256": "3365a732bfe9a5ae4c5b2ff97246c2fe4fbfd67ef14eebc91c09eb879084c1a3",
+            "startupMs": 667.0147860000001,
+            "processingMs": 1080.342985,
+            "maxRssKiB": 388596,
+            "maxRssBytes": 397922304,
+            "thumbnailWidth": 512,
+            "thumbnailHeight": 269,
+            "sampledColors": [
+              [240, 21, 10],
+              [11, 230, 31],
+              [20, 40, 220],
+              [230, 210, 21]
+            ],
+            "sourceAndSnapshotHashesPreserved": true,
+            "fullProductionServer": true,
+            "registeredViaHttp": true,
+            "thumbnailRetrievedViaHttp": true,
+            "workerThreads": true
+          }
+        ]
+      }
+    }
+  },
+  "browserArtifactAudit": {
+    "sourceCommit": "e1c68705196f62c917138b238c5d13b7aa57c2c2",
+    "artifactCount": 196,
+    "artifactInventorySha256": "b41e1804246029c7a631c47afcdaea9107910937f42d07f61273a580c8a0a463"
+  },
+  "validationProblems": [],
+  "scope": {
+    "platform": "linux",
+    "architecture": "x64",
+    "physicalWindowsVerified": false,
+    "physicalMacOSVerified": false,
+    "realCloudIncluded": false,
+    "realCloudRequirement": "Mandatory separate Node22/24 actual-cloud CI matrix.",
+    "failedAttemptsRetained": true,
+    "privateLogsAndFullReportsCopied": false
+  }
+}

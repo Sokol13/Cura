@@ -1,0 +1,180 @@
+[
+  {
+    "dpr": 1,
+    "viewport": {
+      "width": 1500,
+      "height": 1000,
+      "dpr": 1
+    },
+    "layout": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1500,
+        "clientHeight": 1000
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1500,
+        "clientHeight": 1000,
+        "scale": 1,
+        "zoom": 1
+      },
+      "contentSize": {
+        "x": 0,
+        "y": 0,
+        "width": 1500,
+        "height": 1000
+      },
+      "cssLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1500,
+        "clientHeight": 1000
+      },
+      "cssVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1500,
+        "clientHeight": 1000,
+        "scale": 1,
+        "zoom": 1
+      },
+      "cssContentSize": {
+        "x": 0,
+        "y": 0,
+        "width": 1500,
+        "height": 1000
+      }
+    },
+    "captures": [
+      {
+        "mode": "default-surface",
+        "width": 1500,
+        "height": 1000,
+        "corners": [
+          [255, 0, 0, 255],
+          [0, 0, 255, 255],
+          [255, 255, 0, 255],
+          [0, 255, 0, 255]
+        ]
+      },
+      {
+        "mode": "clip-device-pixels",
+        "width": 1500,
+        "height": 1000,
+        "corners": [
+          [255, 0, 0, 255],
+          [0, 0, 255, 255],
+          [255, 255, 0, 255],
+          [0, 255, 0, 255]
+        ]
+      },
+      {
+        "mode": "clip-css-pixels",
+        "width": 1500,
+        "height": 1000,
+        "corners": [
+          [255, 0, 0, 255],
+          [0, 0, 255, 255],
+          [255, 255, 0, 255],
+          [0, 255, 0, 255]
+        ]
+      }
+    ]
+  },
+  {
+    "dpr": 1.25,
+    "viewport": {
+      "width": 1500,
+      "height": 1000,
+      "dpr": 1.25
+    },
+    "layout": {
+      "layoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1500,
+        "clientHeight": 1000
+      },
+      "visualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1500,
+        "clientHeight": 1000,
+        "scale": 1,
+        "zoom": 1
+      },
+      "contentSize": {
+        "x": 0,
+        "y": 0,
+        "width": 1500,
+        "height": 1000
+      },
+      "cssLayoutViewport": {
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1500,
+        "clientHeight": 1000
+      },
+      "cssVisualViewport": {
+        "offsetX": 0,
+        "offsetY": 0,
+        "pageX": 0,
+        "pageY": 0,
+        "clientWidth": 1500,
+        "clientHeight": 1000,
+        "scale": 1,
+        "zoom": 1
+      },
+      "cssContentSize": {
+        "x": 0,
+        "y": 0,
+        "width": 1500,
+        "height": 1000
+      }
+    },
+    "captures": [
+      {
+        "mode": "default-surface",
+        "width": 1500,
+        "height": 1000,
+        "corners": [
+          [255, 0, 0, 255],
+          [0, 0, 255, 255],
+          [255, 255, 0, 255],
+          [0, 255, 0, 255]
+        ]
+      },
+      {
+        "mode": "clip-device-pixels",
+        "width": 1500,
+        "height": 1000,
+        "corners": [
+          [255, 0, 0, 255],
+          [0, 0, 255, 255],
+          [255, 255, 0, 255],
+          [0, 255, 0, 255]
+        ]
+      },
+      {
+        "mode": "clip-css-pixels",
+        "width": 1200,
+        "height": 800,
+        "corners": [
+          [255, 0, 0, 255],
+          [0, 0, 255, 255],
+          [255, 255, 0, 255],
+          [0, 255, 0, 255]
+        ]
+      }
+    ]
+  }
+]

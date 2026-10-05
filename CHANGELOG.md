@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 — 2026-10-05
+
+- Put local-folder registration first in empty libraries, alongside file import, with clear source-preservation guidance.
+- Store uploads in dated Inbox folders with collision-only suffixes; migrate legacy UUID sources through a recoverable local journal while preserving hashes, versions and manual replacements.
+- Drop existing canvas assets into slots using their exact historical pins, preserving the free items and connections.
+- Compare two slot revisions side by side with historical source details, pinned downloads and server-recorded actor/time; leave legacy authors explicitly unrecorded.
+- Preview exact selected/dependency asset counts and reasons before neutral export; changed membership requires refreshed confirmation without creating a stale job.
+- Add reproducible idle-frame and CDP screenshot checks for canvas responsiveness; retain the physical Windows reproduction boundary and an expanded desktop smoke checklist.
+
 ## 0.3.1 — 2026-10-05
 
 - Decode large PSD embedded thumbnails and bounded merged composites without reading the layer tree; recover retained previews and verify strict time/memory limits.

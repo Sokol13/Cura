@@ -172,12 +172,13 @@
 **Files:** web/boards/BoardCanvas.tsx/useBoardDocument.ts and relevant event effects only when reproduced; e2e board performance harness; TESTING.md.
 **Interfaces:** Record Performance API frame distribution, long tasks, redraw/request frequency and repeated CDP screenshot success during idle. Correct demonstrated unbounded invalidation.
 
-- [ ] Write and observe a failing regression covering idle populated canvas and slot/matrix cases, no continuous rerender/poll loop, repeated screenshots without renderer timeout, Linux evidence separated from Windows verification.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Audit canvas effects, resize/scroll handling and thumbnail polling. No self-sustaining React Flow loop is proven by source review; the empty preview queue has a bounded two-second GET timer.
+- [x] Measure the unchanged production baseline with four cases: 100-node canvas, slot-history comparison, filled 10×10 matrix at DPR 1, and canvas at emulated DPR 1.25. Separate 15 seconds of untouched idle Performance API samples from ten bounded CDP screenshots; retain raw evidence and the existing strict frame gates, with trace/video recording disabled.
+- [x] The Linux baseline passed after correcting harness setup/capture assumptions. No production defect was reproduced, so production behavior is unchanged. The reported physical Windows screenshot freeze remains unverified; no failing product regression or fix is claimed.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### v0.4.0 release gate
 
-- [ ] All 15 numbered rows verified, including upgrade preservation and explicit device-only limits in REPORT-v0.4.0.md.
+- [x] All 15 numbered rows verified locally, including 95 upgrade checks and explicit device-only limits in REPORT-v0.4.0.md; final exact-main CI still gates the tag.
 - [ ] Fresh whole-branch review; resolve material findings, full Node22/24 local/CI gates, clean install/start and final migration/exports acceptance.
 - [ ] Update versions/CHANGELOG/SMOKE_TEST/PROGRESS, publish annotated v0.4.0 and verify Release. Stop owned processes and finish with clean main and green CI.
