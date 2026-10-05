@@ -20,6 +20,7 @@ import { CatalogStore } from '../src/catalog-store.js';
 import { openDatabase } from '../src/database.js';
 import { processFile } from '../src/media/image.js';
 import { resolveContained } from '../src/media/path-utils.js';
+import { discoverFiles, type ScanDiscovery } from '../src/media/scan.js';
 import { fileOperationMessage, MediaService } from '../src/media/service.js';
 
 interface Payload {
@@ -30,6 +31,7 @@ interface Payload {
   filePath?: string;
   dataDir?: string;
   cacheDir?: string;
+  knownRelativePaths?: string[];
 }
 const transport = vi.hoisted(() => ({
   dispatch: undefined as ((job: Payload) => Promise<unknown>) | undefined,
@@ -106,19 +108,9 @@ function deferred() {
   return { promise, resolve };
 }
 
-async function enumerate(root: string): Promise<string[]> {
-  const paths: string[] = [];
-  for (const entry of await readdir(root, { withFileTypes: true })) {
-    const file = join(root, entry.name);
-    if (entry.isDirectory()) paths.push(...(await enumerate(file)));
-    else if (entry.isFile()) paths.push(file);
-  }
-  return paths;
-}
-
 async function dispatch(job: Payload) {
   if (job.kind === 'scan')
-    return { files: await enumerate(job.root!), errors: [] };
+    return discoverFiles(job.root!, job.knownRelativePaths ?? []);
   return processFile({
     filePath: job.relativePath
       ? await resolveContained(job.root!, job.relativePath)
@@ -198,7 +190,7 @@ it('reprocesses a change received after copying an earlier snapshot', async () =
     }
     return result;
   };
-  const file = join(originals, 'changing.bin');
+  const file = join(originals, 'changing.png');
   await writeFile(file, 'first');
   watchers[0]!.emit('add', file);
   await copied.promise;
@@ -340,7 +332,7 @@ it('bounds worker messages and reconciles overflowed watcher events', async () =
     return dispatch(job);
   };
   for (let index = 0; index < 80; index++) {
-    const file = join(originals, `${index}.bin`);
+    const file = join(originals, `${index}.png`);
     await writeFile(file, `unique source ${index}`);
     watchers[0]!.emit('add', file);
   }
@@ -510,8 +502,8 @@ it('rechecks source containment when the real worker executes a queued file', as
 it('keeps one asset when a source is renamed and later edited, then marks deletion missing', async () => {
   const { media, originals, library, store } = await setup();
   await media.registerRoot(library.id, originals);
-  const first = join(originals, 'before.bin');
-  const next = join(originals, 'after.bin');
+  const first = join(originals, 'before.png');
+  const next = join(originals, 'after.png');
   await writeFile(first, 'original');
   watchers[0]!.emit('add', first);
   await expect.poll(() => store.listAssets(library.id).total).toBe(1);
@@ -521,7 +513,7 @@ it('keeps one asset when a source is renamed and later edited, then marks deleti
   watchers[0]!.emit('add', next);
   await expect
     .poll(() => store.getAsset(original.id).relativePath)
-    .toBe('after.bin');
+    .toBe('after.png');
   await writeFile(next, 'edited original');
   watchers[0]!.emit('change', next);
   await expect.poll(() => store.getAsset(original.id).size).toBe(15);
@@ -540,7 +532,7 @@ it('keeps one asset when a source is renamed and later edited, then marks deleti
 
 it('reconciles files removed while the watcher was offline after a complete rescan', async () => {
   const { media, originals, library, store } = await setup();
-  const file = join(originals, 'offline.bin');
+  const file = join(originals, 'offline.png');
   await writeFile(file, 'retained');
   await media.registerRoot(library.id, originals);
   await expect.poll(() => store.listAssets(library.id).total).toBe(1);
@@ -553,27 +545,91 @@ it('reconciles files removed while the watcher was offline after a complete resc
 
 it('does not mark sources missing after partial enumeration permission errors', async () => {
   const { media, originals, library, store } = await setup();
-  const file = join(originals, 'protected.bin');
+  const file = join(originals, 'protected.png');
   await writeFile(file, 'present');
   await media.registerRoot(library.id, originals);
   await expect.poll(() => store.listAssets(library.id).total).toBe(1);
   const original = store.listAssets(library.id).items[0]!;
   const completed = deferred();
   media.subscribe((event) => {
-    if (event.type === 'scan' && event.total === 0) completed.resolve();
+    if (event.type === 'scan' && event.scanSummary?.status === 'partial')
+      completed.resolve();
   });
+  const denied: ScanDiscovery = {
+    files: [],
+    presentRelativePaths: [],
+    interrupted: false,
+    summary: {
+      filesFound: 0,
+      supportedFound: 0,
+      existingGenericFound: 0,
+      unsupportedSkipped: 0,
+      processed: 0,
+      succeeded: 0,
+      readErrors: 1,
+      symlinksSkipped: 0,
+      specialEntriesSkipped: 0,
+      extensions: [],
+      otherExtensionFiles: 0,
+      errors: [
+        { relativePath: 'private-child', stage: 'enumerate', code: 'EACCES' },
+      ],
+      omittedErrors: 0,
+    },
+  };
   transport.dispatch = async (job) =>
-    job.kind === 'scan'
-      ? { files: [], errors: [{ code: 'EACCES', message: 'Denied subtree' }] }
-      : dispatch(job);
+    job.kind === 'scan' ? denied : dispatch(job);
   await media.rescan(library.id);
   await completed.promise;
   expect(store.getAsset(original.id).missing).toBe(false);
+  expect(store.scanStore.get(original.rootId)).toMatchObject({
+    status: 'partial',
+    phase: 'finished',
+    readErrors: 1,
+    errors: denied.summary.errors,
+  });
+});
+
+it('retains source availability and history when enumeration is interrupted before completing', async () => {
+  const { media, originals, library, store } = await setup();
+  await writeFile(join(originals, 'retained.png'), 'immutable original');
+  const root = await media.registerRoot(library.id, originals);
+  await expect
+    .poll(() => store.scanStore.get(root.id)?.status)
+    .toBe('completed');
+  const original = store.listAssets(library.id).items[0]!;
+  transport.dispatch = async (job) =>
+    job.kind === 'scan'
+      ? discoverFiles(job.root!, job.knownRelativePaths ?? [], () => true)
+      : dispatch(job);
+  await media.rescan(library.id);
+  await expect
+    .poll(() => store.scanStore.get(root.id)?.status)
+    .toBe('interrupted');
+  expect(store.scanStore.get(root.id)).toMatchObject({
+    phase: 'finished',
+    finishedAt: expect.any(String),
+    filesFound: 0,
+    processed: 0,
+    readErrors: 0,
+  });
+  expect(store.getAsset(original.id)).toMatchObject({
+    missing: false,
+    deletedAt: null,
+    currentVersionId: original.currentVersionId,
+  });
+  expect(store.listVersions(original.id)).toHaveLength(1);
+  expect(
+    await readFile(
+      store.getVersionFile(original.currentVersionId).snapshotPath,
+      'utf8',
+    ),
+  ).toBe('immutable original');
 });
 
 it('does not reactivate a deleted source when an earlier worker result arrives late', async () => {
   const { media, originals, library, store } = await setup();
-  const file = join(originals, 'deleted.bin');
+  const file = join(originals, 'deleted.png');
   await writeFile(file, 'original');
   await media.registerRoot(library.id, originals);
   await expect.poll(() => store.listAssets(library.id).total).toBe(1);
@@ -602,8 +658,8 @@ it('does not reactivate a deleted source when an earlier worker result arrives l
 
 it('does not mark a newly watched file missing using an older scan enumeration', async () => {
   const { media, originals, library, store } = await setup();
-  await writeFile(join(originals, 'a.bin'), 'first existing');
-  await writeFile(join(originals, 'b.bin'), 'second existing');
+  await writeFile(join(originals, 'a.png'), 'first existing');
+  await writeFile(join(originals, 'b.png'), 'second existing');
   await media.registerRoot(library.id, originals);
   await expect.poll(() => store.listAssets(library.id).total).toBe(2);
   const copied = deferred();
@@ -626,14 +682,14 @@ it('does not mark a newly watched file missing using an older scan enumeration',
   });
   await media.rescan(library.id);
   await copied.promise;
-  const file = join(originals, 'new.bin');
+  const file = join(originals, 'new.png');
   await writeFile(file, 'new content');
   watchers[0]!.emit('add', file);
   release.resolve();
   await completed.promise;
   const added = store
     .listAssets(library.id)
-    .items.find((asset) => asset.name === 'new.bin');
+    .items.find((asset) => asset.name === 'new.png');
   expect(added).toBeDefined();
   expect(added?.missing).toBe(false);
 });
