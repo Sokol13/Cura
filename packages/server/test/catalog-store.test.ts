@@ -874,3 +874,302 @@ describe('P2 catalog metadata and managed roots', () => {
     ).toEqual(count);
   });
 });
+
+describe('root removal modes and availability filtering', () => {
+  it('trashes orphaned assets by default while preserving exact retained history and final owners', async () => {
+    const f = await fixture(),
+      asset = f.ingest('original.png', 'original').asset;
+    const tag = f.store.createTag(f.library.id, { name: 'approved' });
+    f.store.updateAsset(asset.id, {
+      note: 'keep note',
+      rating: 5,
+      tagIds: [tag.id],
+      finalized: true,
+    });
+    f.store.createAnnotation(asset.id, {
+      versionId: asset.currentVersionId,
+      x: 0.25,
+      y: 0.75,
+      text: 'original annotation',
+    });
+    f.store.replaceAsset(asset.id, file('manual'), 'manual.png');
+    setFinalSelection(
+      f.db,
+      { libraryId: f.library.id, ownerKind: 'slot', ownerId: randomUUID() },
+      { assetId: asset.id, versionId: asset.currentVersionId },
+    );
+    const versions = f.store.listVersions(asset.id),
+      annotations = f.store.listAnnotations(asset.id),
+      owners = f.db.sqlite.prepare('SELECT * FROM final_selections').all();
+    f.store.markSourceMissing(f.root.id, 'original.png');
+    expect(f.store.deleteRoot(f.root.id)).toEqual({
+      ok: true,
+      rootId: f.root.id,
+      libraryId: f.library.id,
+      affected: 1,
+      trashed: 1,
+      offline: 0,
+      keptAvailable: 0,
+    });
+    expect(f.store.getAsset(asset.id)).toMatchObject({
+      missing: true,
+      deletedAt: expect.any(String),
+      hash: 'manual',
+      note: 'keep note',
+      rating: 5,
+      tags: [tag],
+    });
+    expect(f.store.listAssets(f.library.id).total).toBe(0);
+    expect(
+      f.store
+        .listAssets(f.library.id, { trash: true })
+        .items.map((item) => item.id),
+    ).toEqual([asset.id]);
+    expect(f.store.listVersions(asset.id)).toEqual(versions);
+    expect(f.store.listAnnotations(asset.id)).toEqual(annotations);
+    expect(f.db.sqlite.prepare('SELECT * FROM final_selections').all()).toEqual(
+      owners,
+    );
+    expect(f.store.getVersionFile(asset.currentVersionId).snapshotPath).toBe(
+      '/snapshot/original',
+    );
+  });
+  it('keeps offline assets visible and leaves previously trashed assets unchanged', async () => {
+    const f = await fixture(),
+      visible = f.ingest('visible.png', 'visible').asset,
+      deleted = f.ingest('deleted.png', 'deleted').asset;
+    f.store.batchAssets(f.library.id, {
+      assetIds: [deleted.id],
+      action: 'trash',
+    });
+    const deletedAt = f.store.getAsset(deleted.id).deletedAt;
+    expect(f.store.deleteRoot(f.root.id, 'offline')).toMatchObject({
+      affected: 2,
+      trashed: 0,
+      offline: 1,
+      keptAvailable: 0,
+    });
+    expect(f.store.getAsset(visible.id)).toMatchObject({
+      deletedAt: null,
+      missing: true,
+    });
+    expect(f.store.getAsset(deleted.id)).toMatchObject({
+      deletedAt,
+      missing: true,
+    });
+    f.reopen();
+    expect(
+      f.store
+        .listAssets(f.library.id, { missing: true })
+        .items.map((item) => item.id),
+    ).toEqual([visible.id]);
+  });
+  it('keeps aliases in other roots and Inbox available and counts distinct assets, not source paths', async () => {
+    const f = await fixture(),
+      sole = f.ingest('sole.png', 'sole').asset,
+      shared = f.ingest('shared.png', 'shared').asset;
+    f.ingest('shared-copy.png', 'shared');
+    const other = f.store.addRoot(f.library.id, '/other'),
+      inbox = f.store.addRoot(f.library.id, '/inbox', 'inbox');
+    const ingest = (rootId: string, name: string, hash: string) =>
+      f.store.ingest({
+        libraryId: f.library.id,
+        rootId,
+        relativePath: name,
+        actualRelativePath: name,
+        processed: file(hash),
+      }).asset;
+    ingest(other.id, 'other-copy.png', 'shared');
+    const uploaded = ingest(inbox.id, 'upload.png', 'upload');
+    f.ingest('upload-copy.png', 'upload');
+    expect(f.store.deleteRoot(f.root.id)).toMatchObject({
+      affected: 3,
+      trashed: 1,
+      offline: 0,
+      keptAvailable: 2,
+    });
+    expect(f.store.getAsset(sole.id).deletedAt).not.toBeNull();
+    expect(f.store.getAsset(shared.id)).toMatchObject({
+      rootId: other.id,
+      missing: false,
+      deletedAt: null,
+    });
+    expect(f.store.getAsset(uploaded.id)).toMatchObject({
+      rootId: inbox.id,
+      missing: false,
+      deletedAt: null,
+    });
+  });
+  it('preserves a managed primary copy through sequential removal of its registered aliases', async () => {
+    const f = await fixture(),
+      managed = f.store.addRoot(f.library.id, '/managed');
+    const original = f.store.ingest({
+      libraryId: f.library.id,
+      rootId: managed.id,
+      relativePath: 'incoming.png',
+      actualRelativePath: 'incoming.png',
+      processed: file('managed'),
+    }).asset;
+    f.db.sqlite
+      .prepare('UPDATE library_roots SET managed=1 WHERE id=?')
+      .run(managed.id);
+    f.ingest('copy.png', 'managed');
+    const other = f.store.addRoot(f.library.id, '/other');
+    f.store.ingest({
+      libraryId: f.library.id,
+      rootId: other.id,
+      relativePath: 'copy.png',
+      actualRelativePath: 'copy.png',
+      processed: file('managed'),
+    });
+    f.db.sqlite
+      .prepare('DELETE FROM asset_sources WHERE root_id=?')
+      .run(managed.id);
+    expect(f.store.deleteRoot(f.root.id)).toMatchObject({
+      keptAvailable: 1,
+      trashed: 0,
+    });
+    expect(f.store.getAsset(original.id).rootId).toBe(managed.id);
+    expect(f.store.deleteRoot(other.id)).toMatchObject({
+      keptAvailable: 1,
+      trashed: 0,
+    });
+    expect(f.store.getAsset(original.id)).toMatchObject({
+      rootId: managed.id,
+      missing: false,
+      deletedAt: null,
+    });
+    expect(
+      f.store
+        .listAssets(f.library.id, { missing: false })
+        .items.map((a) => a.id),
+    ).toEqual([original.id]);
+    expect(f.store.listAssets(f.library.id, { missing: true }).total).toBe(0);
+  });
+  it('reactivates the exact removed root without duplicating trash or reverting a manual replacement', async () => {
+    const f = await fixture(),
+      asset = f.ingest('角色-é.png', 'original').asset;
+    const manual = f.store.replaceAsset(asset.id, file('manual'), 'manual.png');
+    f.store.deleteRoot(f.root.id);
+    const deletedAt = f.store.getAsset(asset.id).deletedAt;
+    f.store.batchAssets(f.library.id, {
+      assetIds: [asset.id],
+      action: 'restore',
+    });
+    expect(f.store.getAsset(asset.id)).toMatchObject({
+      missing: true,
+      deletedAt: null,
+    });
+    f.store.batchAssets(f.library.id, {
+      assetIds: [asset.id],
+      action: 'trash',
+    });
+    const retainedDeletedAt = f.store.getAsset(asset.id).deletedAt;
+    expect(deletedAt).not.toBeNull();
+    f.reopen();
+    const restored = f.store.addRoot(f.library.id, f.root.path);
+    expect(restored).toMatchObject({
+      id: f.root.id,
+      createdAt: f.root.createdAt,
+    });
+    expect(f.store.getSource(restored.id, '角色-é.png')).toMatchObject({
+      available: false,
+      lastHash: 'original',
+    });
+    const rescanned = f.ingest('角色-é.png'.normalize('NFD'), 'original');
+    expect(rescanned.asset).toMatchObject({
+      id: asset.id,
+      currentVersionId: manual.currentVersionId,
+      hash: 'manual',
+      missing: false,
+      deletedAt: retainedDeletedAt,
+    });
+    expect(f.store.stats()).toMatchObject({
+      roots: 1,
+      assets: 1,
+      versions: 2,
+      sources: 1,
+    });
+    expect(f.store.listVersions(asset.id)).toHaveLength(2);
+    f.store.batchAssets(f.library.id, {
+      assetIds: [asset.id],
+      action: 'restore',
+    });
+    expect(f.store.listAssets(f.library.id, { missing: false }).total).toBe(1);
+    const second = f.store.createLibrary({ name: 'Other' });
+    expect(f.store.addRoot(second.id, f.root.path).id).not.toBe(f.root.id);
+  });
+  it('applies missing filters before pagination and totals alongside search, trash, archive and library isolation', async () => {
+    const f = await fixture(),
+      available = f.ingest('available.png', 'available').asset;
+    const missing = [
+      f.ingest('missing-one.png', 'one').asset,
+      f.ingest('missing-two.png', 'two').asset,
+    ];
+    for (const asset of missing) {
+      f.store.updateAsset(asset.id, { rating: 4, note: 'lost source' });
+      f.store.markSourceMissing(f.root.id, asset.relativePath);
+    }
+    const archived = f.ingest('archived.png', 'archive').asset;
+    f.store.markSourceMissing(f.root.id, archived.relativePath);
+    f.store.updateAsset(archived.id, { archivedAt: new Date().toISOString() });
+    const deleted = f.ingest('deleted.png', 'delete').asset;
+    f.store.markSourceMissing(f.root.id, deleted.relativePath);
+    f.store.batchAssets(f.library.id, {
+      assetIds: [deleted.id],
+      action: 'trash',
+    });
+    const otherLibrary = f.store.createLibrary({ name: 'Other' }),
+      otherRoot = f.store.addRoot(otherLibrary.id, '/other');
+    const other = f.store.ingest({
+      libraryId: otherLibrary.id,
+      rootId: otherRoot.id,
+      relativePath: 'missing.png',
+      actualRelativePath: 'missing.png',
+      processed: file('other'),
+    }).asset;
+    f.store.markSourceMissing(otherRoot.id, other.relativePath);
+    const page = f.store.listAssets(f.library.id, {
+      missing: 'true',
+      q: 'lost',
+      rating: 4,
+      limit: 1,
+      offset: 1,
+    });
+    expect(page.total).toBe(2);
+    expect(page.items).toHaveLength(1);
+    expect(missing.map((a) => a.id)).toContain(page.items[0]!.id);
+    expect(
+      f.store
+        .listAssets(f.library.id, { missing: false })
+        .items.map((a) => a.id),
+    ).toEqual([available.id]);
+    expect(
+      f.store
+        .listAssets(f.library.id, { missing: true, archived: true })
+        .items.map((a) => a.id),
+    ).toEqual([archived.id]);
+    expect(
+      f.store
+        .listAssets(f.library.id, { missing: true, trash: true })
+        .items.map((a) => a.id),
+    ).toEqual([deleted.id]);
+    expect(f.store.listAssets(f.library.id).total).toBe(3);
+  });
+  it('rolls root availability and all asset changes back when any orphan update fails', async () => {
+    const f = await fixture(),
+      first = f.ingest('one.png', 'one').asset,
+      second = f.ingest('two.png', 'two').asset;
+    f.db.sqlite.exec(
+      `CREATE TRIGGER reject_root_removal BEFORE UPDATE ON assets WHEN NEW.id='${second.id}' BEGIN SELECT RAISE(ABORT,'test write failure'); END`,
+    );
+    expect(() => f.store.deleteRoot(f.root.id)).toThrow('test write failure');
+    expect(f.store.getRoot(f.root.id).id).toBe(f.root.id);
+    for (const asset of [first, second])
+      expect(f.store.getAsset(asset.id)).toMatchObject({
+        deletedAt: null,
+        missing: false,
+      });
+    expect(f.store.getSource(f.root.id, 'one.png')?.available).toBe(true);
+  });
+});

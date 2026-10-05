@@ -26,6 +26,22 @@ export const LibrariesSchema = z.array(LibrarySchema);
 export const RegisterRootSchema = z
   .object({ path: z.string().min(1).max(4096) })
   .strict();
+export const RootRemovalModeSchema = z.enum(['trash', 'offline']);
+export const RemoveRootQuerySchema = z
+  .object({ mode: RootRemovalModeSchema.default('trash') })
+  .strict();
+export const RemoveRootResultSchema = z.object({
+  ok: z.literal(true),
+  rootId: IdSchema,
+  libraryId: IdSchema,
+  affected: z.number().int().nonnegative(),
+  trashed: z.number().int().nonnegative(),
+  offline: z.number().int().nonnegative(),
+  keptAvailable: z.number().int().nonnegative(),
+});
+export type RootRemovalMode = z.infer<typeof RootRemovalModeSchema>;
+export type RemoveRootQuery = z.input<typeof RemoveRootQuerySchema>;
+export type RemoveRootResult = z.infer<typeof RemoveRootResultSchema>;
 export const LibraryRootSchema = z.object({
   ...entity,
   libraryId: IdSchema,
@@ -153,6 +169,13 @@ export const AssetQuerySchema = z
     maxWidth: optionalInteger(0),
     maxHeight: optionalInteger(0),
     similarTo: IdSchema.optional(),
+    missing: z
+      .preprocess(
+        (value) =>
+          value === 'true' ? true : value === 'false' ? false : value,
+        z.boolean(),
+      )
+      .optional(),
     trash: z
       .preprocess(
         (v) => (v === 'true' ? true : v === 'false' ? false : v),

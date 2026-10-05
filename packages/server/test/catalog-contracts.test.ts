@@ -70,3 +70,37 @@ describe('catalog contracts', () => {
     });
   });
 });
+
+it('defaults root removal to trash, rejects unknown modes and parses the optional missing-source filter', () => {
+  expect(shared.RemoveRootQuerySchema.parse({})).toEqual({ mode: 'trash' });
+  expect(shared.RemoveRootQuerySchema.parse({ mode: 'offline' })).toEqual({
+    mode: 'offline',
+  });
+  for (const input of [
+    { mode: 'delete-originals' },
+    { mode: 'trash', path: '/private' },
+    { mode: null },
+  ])
+    expect(shared.RemoveRootQuerySchema.safeParse(input).success).toBe(false);
+  expect(shared.AssetQuerySchema.parse({ missing: 'true' }).missing).toBe(true);
+  expect(shared.AssetQuerySchema.parse({ missing: 'false' }).missing).toBe(
+    false,
+  );
+  expect(shared.AssetQuerySchema.parse({}).missing).toBeUndefined();
+  expect(shared.AssetQuerySchema.safeParse({ missing: 'yes' }).success).toBe(
+    false,
+  );
+  const result = {
+    ok: true,
+    rootId: crypto.randomUUID(),
+    libraryId: crypto.randomUUID(),
+    affected: 2,
+    trashed: 1,
+    offline: 0,
+    keptAvailable: 1,
+  };
+  expect(shared.RemoveRootResultSchema.parse(result)).toEqual(result);
+  expect(
+    shared.RemoveRootResultSchema.safeParse({ ...result, trashed: -1 }).success,
+  ).toBe(false);
+});

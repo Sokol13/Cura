@@ -3,7 +3,11 @@ import { basename, isAbsolute } from 'node:path';
 import type Database from 'better-sqlite3';
 import * as C from '@cura/shared';
 import type { AppDatabase } from './database.js';
-import { assetSearch, registerSearchFunctions } from './catalog-search.js';
+import {
+  ASSET_AVAILABLE_SQL,
+  assetSearch,
+  registerSearchFunctions,
+} from './catalog-search.js';
 import { setFinalSelection } from './process/final-selections.js';
 
 type Row = Record<string, unknown>;
@@ -208,28 +212,49 @@ export class CatalogStore {
   ): C.LibraryRoot {
     this.getLibrary(libraryId);
     C.RegisterRootSchema.parse({ path });
-    const existing = this.row(
-      'SELECT id FROM library_roots WHERE library_id=? AND path=? AND removed_at IS NULL',
-      libraryId,
-      path,
-    );
-    if (existing) return this.getRoot(String(existing.id));
-    const id = randomUUID(),
-      date = now();
-    this.run(
-      'INSERT INTO library_roots(id,library_id,path,kind,removed_at,created_at,updated_at) VALUES (?,?,?,?,NULL,?,?)',
-      id,
-      libraryId,
-      path,
-      kind,
-      date,
-      date,
-    );
-    return this.getRoot(id);
+    return this.sqlite.transaction(() => {
+      const existing = this.row(
+        'SELECT id FROM library_roots WHERE library_id=? AND path=? AND removed_at IS NULL',
+        libraryId,
+        path,
+      );
+      if (existing) return this.getRoot(String(existing.id));
+      const removed = this.row(
+        'SELECT id FROM library_roots WHERE library_id=? AND path=? AND removed_at IS NOT NULL AND managed=0 ORDER BY removed_at DESC,updated_at DESC,id LIMIT 1',
+        libraryId,
+        path,
+      );
+      const date = now();
+      if (removed) {
+        // A scan reactivates observed aliases; registration alone must not
+        // restore missing files, trash, or the source's last observed hash.
+        this.run(
+          'UPDATE library_roots SET removed_at=NULL,updated_at=? WHERE id=?',
+          date,
+          String(removed.id),
+        );
+        return this.getRoot(String(removed.id));
+      }
+      const id = randomUUID();
+      this.run(
+        'INSERT INTO library_roots(id,library_id,path,kind,removed_at,created_at,updated_at) VALUES (?,?,?,?,NULL,?,?)',
+        id,
+        libraryId,
+        path,
+        kind,
+        date,
+        date,
+      );
+      return this.getRoot(id);
+    })();
   }
-  deleteRoot(id: string): void {
-    this.getRoot(id);
-    this.sqlite.transaction(() => {
+  deleteRoot(
+    id: string,
+    mode: C.RootRemovalMode = 'trash',
+  ): C.RemoveRootResult {
+    C.RootRemovalModeSchema.parse(mode);
+    return this.sqlite.transaction(() => {
+      const root = this.getRoot(id);
       const date = now();
       const assets = this.rows(
         'SELECT DISTINCT asset_id FROM asset_sources WHERE root_id=?',
@@ -246,8 +271,30 @@ export class CatalogStore {
         date,
         id,
       );
-      for (const asset of assets)
-        this.refreshSourceLocation(String(asset.asset_id));
+      const result: C.RemoveRootResult = {
+        ok: true,
+        rootId: id,
+        libraryId: root.libraryId,
+        affected: assets.length,
+        trashed: 0,
+        offline: 0,
+        keptAvailable: 0,
+      };
+      for (const row of assets) {
+        const asset = this.refreshSourceLocation(String(row.asset_id));
+        if (!asset.missing) result.keptAvailable++;
+        else if (!asset.deletedAt) {
+          if (mode === 'trash') {
+            this.writeAsset({ ...asset, deletedAt: date, updatedAt: date });
+            this.log(root.libraryId, asset.id, 'trash', {
+              reason: 'root-removed',
+              rootId: id,
+            });
+            result.trashed++;
+          } else result.offline++;
+        }
+      }
+      return C.RemoveRootResultSchema.parse(result);
     })();
   }
   getSource(rootId: string, relativePath: string): AssetSource | undefined {
@@ -305,7 +352,11 @@ export class CatalogStore {
         source.root_id === asset.rootId &&
         source.relative_path === asset.relativePath,
     );
-    const replacement = primary ? undefined : available[0];
+    const managedPrimary = this.row(
+      'SELECT 1 FROM library_roots WHERE id=? AND managed=1 AND removed_at IS NULL',
+      asset.rootId,
+    );
+    const replacement = primary || managedPrimary ? undefined : available[0];
     this.writeAsset({
       ...asset,
       ...(replacement
@@ -327,14 +378,10 @@ export class CatalogStore {
       id,
     ).map((row) => C.TagSchema.parse(camel(row)));
     const missing =
-      !this.row(
-        'SELECT 1 FROM asset_sources s JOIN library_roots r ON r.id=s.root_id WHERE s.asset_id=? AND s.available=1 AND r.removed_at IS NULL LIMIT 1',
+      this.row(
+        `SELECT ${ASSET_AVAILABLE_SQL} AS available FROM assets a WHERE a.id=?`,
         id,
-      ) &&
-      !this.row(
-        'SELECT 1 FROM library_roots WHERE id=? AND managed=1 AND removed_at IS NULL',
-        String(row.root_id),
-      );
+      )?.available !== 1;
     return C.AssetSchema.parse({
       ...Object(payload),
       ...camel(row),

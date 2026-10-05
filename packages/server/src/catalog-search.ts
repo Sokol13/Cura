@@ -1,6 +1,14 @@
 import type Database from 'better-sqlite3';
 import { AssetQuerySchema, type AssetQuery } from '@cura/shared';
 
+// Shared by item hydration and filtering; `a` is the assets table alias.
+export const ASSET_AVAILABLE_SQL = `(
+  EXISTS (SELECT 1 FROM asset_sources s JOIN library_roots r ON r.id=s.root_id
+    WHERE s.asset_id=a.id AND s.available=1 AND r.removed_at IS NULL)
+  OR EXISTS (SELECT 1 FROM library_roots r
+    WHERE r.id=a.root_id AND r.managed=1 AND r.removed_at IS NULL)
+)`;
+
 export function hammingDistance(left: string, right: string): number {
   if (
     !left ||
@@ -61,6 +69,8 @@ export function assetSearch(
     clauses.push(
       `json_extract(a.payload, '$.archivedAt') IS ${q.archived ? 'NOT ' : ''}NULL`,
     );
+  if (q.missing !== undefined)
+    clauses.push(`${q.missing ? 'NOT ' : ''}${ASSET_AVAILABLE_SQL}`);
   const orders: string[] = [];
   const orderParams: Array<string | number> = [];
   if (q.q) {
