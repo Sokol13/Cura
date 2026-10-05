@@ -76,8 +76,8 @@
 **Files:** server/boards/presets.ts; web/boards/i18n.ts, SlotCard.tsx, TemplateManager.tsx and forms.
 **Interfaces:** Stable built-in identities map default labels/descriptions through i18n; custom/renamed values remain exact.
 
-- [ ] Write and observe a failing regression covering every built-in slot label/description in zh-CN and en, existing generated template compatibility, custom rename preserved.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Write and observe a failing regression covering every built-in slot label/description in zh-CN and en, existing generated template compatibility, custom rename preserved.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 6: Platform shortcut hints

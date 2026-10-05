@@ -16,7 +16,7 @@ On a free canvas:
 - Add asset slots for named deliverables. Slot frames can move independently of their assigned versions.
 - Delete selected items or connections with the toolbar or Delete/Backspace outside a text field. Removing a view leaves the library asset available.
 
-Four built-in templates provide Character, Scene, Product and Brand frames. Built-ins are read-only. **Manage templates** creates reusable custom templates with named frames. Editing or deleting a custom template affects future use; existing boards retain their copied frames and original template reference.
+Four built-in templates provide Character, Scene, Product and Brand frames. Built-ins are read-only. Their template names, all 13 default slot labels and purpose descriptions follow the English/Chinese interface language, including existing boards. Template purposes appear in selection and management; slot purposes are available as hover and accessible descriptions. Custom template text and renamed slot labels stay exactly as authored. Translation is presentation only: it does not change saved labels, revisions, exports or matrix axes. **Manage templates** creates reusable custom templates with named frames. Editing or deleting a custom template affects future use; existing boards retain their copied frames and original template reference.
 
 Matrices use stable row and column identities. Renaming or reordering an axis preserves each cell's assignment. Adding an axis creates empty cells. Removing an axis archives its cells and clears their current final selections while retaining assignment history. At least one row and one column remain; each axis supports up to 50 entries. Clear an individual matrix cell rather than deleting it independently.
 
