@@ -49,6 +49,167 @@ export const LibraryRootSchema = z.object({
   kind: z.enum(['reference', 'inbox']),
 });
 export const LibraryRootsSchema = z.array(LibraryRootSchema);
+export const ScanStatusSchema = z.enum([
+  'running',
+  'completed',
+  'partial',
+  'failed',
+  'interrupted',
+]);
+export const ScanPhaseSchema = z.enum([
+  'enumerating',
+  'processing',
+  'finished',
+]);
+const scanCount = z.number().int().nonnegative();
+const hasScanControlCharacters = (value: string) =>
+  [...value].some(
+    (character) =>
+      character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127,
+  );
+export const ScanErrorSchema = z
+  .object({
+    relativePath: z
+      .string()
+      .min(1)
+      .max(1024)
+      .refine(
+        (value) =>
+          !/[\\:]/u.test(value) &&
+          !hasScanControlCharacters(value) &&
+          value
+            .split('/')
+            .every((part) => part && part !== '.' && part !== '..'),
+        'Use a contained relative path without control characters',
+      )
+      .nullable(),
+    stage: z.enum(['enumerate', 'read']),
+    code: z
+      .string()
+      .max(64)
+      .regex(/^[A-Z][A-Z0-9_]*$/),
+  })
+  .strict();
+export const ScanExtensionSchema = z
+  .object({
+    extension: z
+      .string()
+      .max(255)
+      .refine(
+        (value) =>
+          (value === '' || /^\.[^./\\:]+$/u.test(value)) &&
+          !hasScanControlCharacters(value) &&
+          value === value.toLowerCase().normalize('NFC'),
+        'Use a lowercase extension or an empty string for no extension',
+      ),
+    found: scanCount,
+    supported: scanCount,
+    existingGeneric: scanCount,
+    skipped: scanCount,
+    readErrors: scanCount,
+  })
+  .strict()
+  .refine(
+    (value) =>
+      value.found === value.supported + value.existingGeneric + value.skipped,
+    'Extension totals must match found files',
+  );
+export const ScanSummarySchema = z
+  .object({
+    scanId: IdSchema,
+    rootId: IdSchema,
+    libraryId: IdSchema,
+    status: ScanStatusSchema,
+    phase: ScanPhaseSchema,
+    recursive: z.literal(true),
+    startedAt: TimestampSchema,
+    finishedAt: TimestampSchema.nullable(),
+    ...timestamps,
+    filesFound: scanCount,
+    supportedFound: scanCount,
+    existingGenericFound: scanCount,
+    unsupportedSkipped: scanCount,
+    processed: scanCount,
+    succeeded: scanCount,
+    readErrors: scanCount,
+    symlinksSkipped: scanCount,
+    specialEntriesSkipped: scanCount,
+    extensions: z.array(ScanExtensionSchema).max(64),
+    otherExtensionFiles: scanCount,
+    errors: z.array(ScanErrorSchema).max(50),
+    omittedErrors: scanCount,
+  })
+  .strict()
+  .superRefine((value, context) => {
+    const check = (valid: boolean, message: string) => {
+      if (!valid) context.addIssue({ code: 'custom', message });
+    };
+    const eligible = value.supportedFound + value.existingGenericFound;
+    check(
+      value.filesFound === eligible + value.unsupportedSkipped,
+      'File totals must match classification',
+    );
+    check(
+      value.filesFound ===
+        value.extensions.reduce((sum, item) => sum + item.found, 0) +
+          value.otherExtensionFiles,
+      'Extension totals must match files found',
+    );
+    check(
+      value.processed <= eligible && value.succeeded <= value.processed,
+      'Processing counts exceed discovered files',
+    );
+    check(
+      value.readErrors === value.errors.length + value.omittedErrors,
+      'Error totals must include omitted errors',
+    );
+    check(
+      new Set(value.extensions.map((item) => item.extension)).size ===
+        value.extensions.length,
+      'Extension rows must be unique',
+    );
+    for (const [field, total] of [
+      ['supported', value.supportedFound],
+      ['existingGeneric', value.existingGenericFound],
+      ['skipped', value.unsupportedSkipped],
+      ['readErrors', value.readErrors],
+    ] as const)
+      check(
+        value.extensions.reduce((sum, item) => sum + item[field], 0) <= total,
+        'Extension counts exceed summary totals',
+      );
+    const running = value.status === 'running';
+    check(
+      running
+        ? value.phase !== 'finished' && value.finishedAt === null
+        : value.phase === 'finished' && value.finishedAt !== null,
+      'Scan status must match its phase and completion timestamp',
+    );
+    check(
+      Date.parse(value.updatedAt) >= Date.parse(value.createdAt) &&
+        Date.parse(value.updatedAt) >= Date.parse(value.startedAt),
+      'Updated timestamp predates the scan',
+    );
+    if (value.finishedAt !== null)
+      check(
+        Date.parse(value.finishedAt) >= Date.parse(value.startedAt) &&
+          Date.parse(value.updatedAt) >= Date.parse(value.finishedAt),
+        'Completion timestamps must be ordered',
+      );
+    if (value.status === 'completed')
+      check(
+        value.processed === eligible &&
+          value.succeeded === eligible &&
+          value.readErrors === 0,
+        'Completed scans must finish all eligible files without read errors',
+      );
+  });
+export const ScanSummariesSchema = z.array(ScanSummarySchema);
+export type ScanSummary = z.infer<typeof ScanSummarySchema>;
+export type ScanError = z.infer<typeof ScanErrorSchema>;
+export type ScanExtension = z.infer<typeof ScanExtensionSchema>;
+export type ScanStatus = z.infer<typeof ScanStatusSchema>;
+export type ScanPhase = z.infer<typeof ScanPhaseSchema>;
 export const DirectoryQuerySchema = z
   .object({ path: z.string().max(4096).optional() })
   .strict();
@@ -296,6 +457,9 @@ export const UpdateSettingsSchema = z
   })
   .strict();
 export const CatalogEventSchema = z.object({
+  scanSummary: ScanSummarySchema.optional(),
+  scanId: IdSchema.optional(),
+  status: ScanStatusSchema.optional(),
   boardId: IdSchema.optional(),
   type: z.enum(['scan', 'asset', 'error', 'thumbnail', 'board']),
   libraryId: IdSchema,
