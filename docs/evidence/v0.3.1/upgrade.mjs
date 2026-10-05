@@ -396,8 +396,8 @@ try {
     assetId: fontAsset.id,
     versionId: fontAsset.currentVersionId,
   };
-  let brand = brands.createBrand(library.id, { name: '中文品牌' });
-  brand = brands.saveBrand(brand.id, {
+  const brand = brands.createBrand(library.id, { name: '中文品牌' });
+  brands.saveBrand(brand.id, {
     expectedRevision: 0,
     name: brand.name,
     guidelines: '# 品牌规范\n保留颜色、字体和历史标识。',
@@ -411,8 +411,8 @@ try {
       { name: '终稿标识', pin: secondPin },
     ],
   });
-  let cmf = brands.createCmfBoard(library.id, { name: '材质工艺' });
-  cmf = brands.saveCmfBoard(cmf.id, {
+  const cmf = brands.createCmfBoard(library.id, { name: '材质工艺' });
+  brands.saveCmfBoard(cmf.id, {
     expectedRevision: 0,
     name: cmf.name,
     entries: [
@@ -443,7 +443,10 @@ try {
     (job) => job.status === 'completed',
     'Released mock generation',
   );
-  const generated = catalog.getAsset(completed.assetIds[0]);
+  assert.equal(
+    catalog.getAsset(completed.assetIds[0]).id,
+    completed.assetIds[0],
+  );
   const failedJob = generationService.start(library.id, {
     prompt: '失败过程样本',
     mockOutcome: 'fail',
