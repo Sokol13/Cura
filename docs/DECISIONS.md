@@ -317,3 +317,13 @@ Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate cor
 **Reason:** A clean clone does not contain the ignored, separately downloaded DTD. Ordinary local unit tests should work before developers install the optional Python verification tooling. Existing CI preparation keeps all three independent checks enabled.
 
 **Alternatives rejected:** Downloading files during unit tests, skipping all FCPXML tests, or catching validator errors and treating a malformed cached DTD as a skip. Application code, validator behavior, package versions and release tags are unchanged.
+
+## Desktop follow-up scope and PSD acceptance
+
+**Decision:** The user's explicit v0.3.1/v0.4.0 request supersedes the original completed release horizon and Node-22-only requirement. Implement numbered items in order, with research/review inside the active item parallelized where useful. Do not start v0.4 implementation before the v0.3.1 tag. Existing main publication and tag authorization remains in force.
+
+**Decision:** Generate independent PSD fixtures at the two reported endpoint dimensions and a documented 8192×8192 middle proxy; the actual three user PSD files and exact middle dimensions were not supplied. Measure elapsed server-worker import/preview time and absolute process peak RSS, including native buffers and the worker, in fresh isolated processes after fixture generation. Add a real browser registration check and distinguish these results from physical Photoshop-file validation.
+
+**Reason:** Raising current whole-file/whole-image browser limits would exceed the 500 MB target. A bounded reader over retained snapshots can skip layer data, prefer thumbnail resources, and sample/stream only the merged composite. Native previews must preserve original dimensions and old versions, repair existing failed-preview records, and keep the prior bounded browser fallback for unsupported encodings.
+
+**Alternatives rejected:** Claiming validation of files never received, changing originals, lifting all size/pixel caps, or decoding an entire layer tree for a thumbnail.

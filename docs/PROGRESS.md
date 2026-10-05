@@ -2,11 +2,21 @@
 
 ## Current status
 
-All three requested milestones are published. AGENTS.md section 1(a), **all three milestones achieved**, is satisfied. The user authorized uninterrupted implementation, main publication and milestone tags without questions; decisions and resolved findings remain in DECISIONS.md and the reports. Incoming macOS/Windows smoke-test bugs take priority over any future feature work.
+The user supplied physical macOS/Windows results at `6ed394b` and authorized a new ordered release sequence: items 1–9 → v0.3.1, then items 10–15 → v0.4.0. Earlier milestone completion is historical, not the current stopping point. No questions; record decisions and push each completed item to main. Source requirements/results: [DESKTOP-FEEDBACK.md](DESKTOP-FEEDBACK.md). Execution plan: [desktop feedback plan](superpowers/plans/2026-10-04-desktop-feedback.md).
+
+## Active follow-up ledger
+
+| Item                  | Status                       | Verification / next action                                                                                                                                                                                                      |
+| --------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 PSD previews        | In progress                  | Reproduced architectural blockers: 50 MiB full-file fetch, 16 Mpx guard and full-resolution allocations. Implement bounded server-worker resource/composite preview and old-preview recovery; retain original dimensions/bytes. |
+| 2–9 v0.3.1 fixes      | Pending in user order        | Root removal, scan summaries, diagnostics, template i18n, shortcut hints, preview layout, Node24, UTF-8 tEXt.                                                                                                                   |
+| v0.3.1 release        | Pending                      | Finish all nine fixes and green full Node22/24 gates before tagging.                                                                                                                                                            |
+| 10–15 v0.4.0          | Pending until v0.3.1 release | Folder-first onboarding, Inbox migration, canvas drops, history compare, dependency preview, canvas idle performance.                                                                                                           |
+| v0.4.0 report/release | Pending                      | Enumerate all15 results and device-only checks, verify/tag/report.                                                                                                                                                              |
 
 ## Post-release smoke feedback
 
-- The user has begun physical macOS/Windows smoke testing; no pass/fail outcome is claimed yet.
+- User-reported Mac/Windows passes and remaining checks are recorded in DESKTOP-FEEDBACK.md. Do not imply the untested Windows Chinese-directory/locked-file/watcher cases passed.
 - Reproduced three clean-clone server failures caused only by the missing ignored FCPXML DTD cache. The fix skips exactly those cases with one preparation hint; ordinary FCPXML tests remain active and a present invalid DTD still fails validation.
 - Verified missing-cache `pnpm test`: 431 unit/tool tests passed, exactly three additional DTD-dependent skips alongside the existing 17 unconfigured-cloud skips, and one preparation hint. With the pinned DTD prepared, all 11 FCPXML tests passed; an existing corrupt DTD still failed validation. Lint, typecheck and all 27 real-server browser scenarios passed. Independent review found no material issue. This follow-up is delivered to main without a new tag; the normal main CI retains explicit DTD preparation and complete cloud acceptance.
 
@@ -45,4 +55,4 @@ Physical macOS/Windows, hosted Supabase configuration and Final Cut Pro applicat
 
 ## Next / resume
 
-No planned feature task remains. The DTD-cache smoke-feedback fix is complete locally; verify its main CI before reporting completion. For a new user-reported failure, read AGENTS.md, this file and the relevant report; run the documented environment setup, inspect current main/status, reproduce the first failure and prioritize its fix. Do not recreate already completed milestones. Evidence lives under docs/evidence/v0.1.0/, v0.2.0/ and v0.3.0/.
+Resume the first incomplete numbered item in the active ledger and implementation plan. Follow the new user release boundaries; do not redo earlier releases or stop after v0.3.0. Environment setup is rerun at task start; inspect main/status and active agent worktrees before editing. New physical-device findings retain priority. Preserve every reported limit and measured result through interruption.
