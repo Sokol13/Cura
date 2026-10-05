@@ -20,23 +20,20 @@ export function chunk(type: string, data: Buffer): Buffer {
 
 export function textChunk(
   key: string,
-  value: string,
+  value: string | Buffer,
   type: 'tEXt' | 'zTXt' | 'iTXt' = 'tEXt',
   compressed = false,
 ): Buffer {
   const prefix = Buffer.from(`${key}\0`, 'latin1');
-  if (type === 'tEXt')
-    return chunk(type, Buffer.concat([prefix, Buffer.from(value, 'latin1')]));
+  const content = Buffer.isBuffer(value)
+    ? value
+    : Buffer.from(value, type === 'iTXt' ? 'utf8' : 'latin1');
+  if (type === 'tEXt') return chunk(type, Buffer.concat([prefix, content]));
   if (type === 'zTXt')
     return chunk(
       type,
-      Buffer.concat([
-        prefix,
-        Buffer.from([0]),
-        deflateSync(Buffer.from(value, 'latin1')),
-      ]),
+      Buffer.concat([prefix, Buffer.from([0]), deflateSync(content)]),
     );
-  const content = Buffer.from(value, 'utf8');
   return chunk(
     type,
     Buffer.concat([

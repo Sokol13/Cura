@@ -61,6 +61,15 @@ function readText(
     throw new Error('PNG text exceeds individual size limit');
   if (bytes.length > budget)
     throw new Error('PNG text exceeds aggregate budget');
+  // Some generators write UTF-8 values in legacy tEXt; keywords stay Latin-1.
+  if (type === 'tEXt') {
+    try {
+      const value = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      return [key, value, bytes.length];
+    } catch {
+      // Fall back to PNG's Latin-1 only when the complete value is invalid UTF-8.
+    }
+  }
   // Fatal UTF-8 decoding prevents silently changing malformed international text.
   const value =
     encoding === 'utf8'

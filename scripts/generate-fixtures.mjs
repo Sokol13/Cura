@@ -76,7 +76,7 @@ export async function createFixture(index) {
   const png = await sharp(pixels, { raw: { width, height, channels: 3 } })
     .png()
     .toBuffer();
-  const prompt = `Cura fixture ${index}, geometric landscape, studio color study`;
+  const prompt = `Cura fixture ${index}, geometric landscape, studio color study, 中文场景与柔和光线`;
   const negative = 'blur, watermark, malformed shapes';
   let chunks;
   if (index % 2 === 0) {

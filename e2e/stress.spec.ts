@@ -216,6 +216,7 @@ test('1000 distinct assets stay responsive and usable with only loopback network
       expect(asset.model).toBe(model);
       expect(asset.seed).toBe(seed);
       expect(asset.prompt).toContain('geometric landscape');
+      expect(asset.prompt).toContain('中文场景与柔和光线');
       expect(asset.negativePrompt).toContain('watermark');
       expect(asset.width).toBeGreaterThan(0);
       expect(asset.colors.length).toBeGreaterThanOrEqual(5);

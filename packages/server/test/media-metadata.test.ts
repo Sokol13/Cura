@@ -29,6 +29,105 @@ describe('PNG metadata containers and SD WebUI', () => {
     });
   });
 
+  it('decodes UTF-8 tEXt SD values with Chinese prompts, model and exact uint64 seed', () => {
+    const raw =
+      '红色陶瓷杯\n柔和光线\nNegative prompt: 水印、模糊\nSteps: 20, Seed: 18446744073709551615, Model: 中国模型';
+    const result = parsePngMetadata(
+      png(textChunk('parameters', Buffer.from(raw, 'utf8'))),
+    );
+    expect(result).toMatchObject({
+      source: 'sd-webui',
+      prompt: '红色陶瓷杯\n柔和光线',
+      negativePrompt: '水印、模糊',
+      model: '中国模型',
+      seed: '18446744073709551615',
+    });
+    expect(result.params.raw).toEqual({ parameters: [raw] });
+    expect(warnings(result)).toBe('');
+  });
+
+  it('keeps Latin-1 keywords separate from UTF-8 tEXt value decoding', () => {
+    const result = parsePngMetadata(
+      png(
+        textChunk('Clé', Buffer.from('中文说明', 'utf8')),
+        textChunk('ClÃ©', Buffer.from('另一条说明', 'utf8')),
+      ),
+    );
+    expect(result.params.raw).toEqual({
+      Clé: ['中文说明'],
+      'ClÃ©': ['另一条说明'],
+    });
+    expect(warnings(result)).toBe('');
+  });
+
+  it('accepts a literal replacement character in valid UTF-8 without falling back', () => {
+    const result = parsePngMetadata(
+      png(textChunk('Comment', Buffer.from('保留字符 �', 'utf8'))),
+    );
+    expect(result.params.raw).toEqual({ Comment: ['保留字符 �'] });
+    expect(warnings(result)).toBe('');
+  });
+
+  it.each([
+    ['Latin-1 accents', Buffer.from('café crème', 'latin1'), 'café crème'],
+    [
+      'invalid continuation after a valid UTF-8 prefix',
+      Buffer.from([0xc3, 0xa9, 0xc3, 0x28]),
+      'Ã©Ã(',
+    ],
+    [
+      'truncated multibyte sequence',
+      Buffer.from([0xf0, 0x9f, 0x92]),
+      '\u00f0\u009f\u0092',
+    ],
+    ['overlong UTF-8 sequence', Buffer.from([0xc0, 0xaf]), 'À¯'],
+  ])(
+    'falls back to Latin-1 for the entire tEXt value on %s',
+    (_label, bytes, expected) => {
+      const result = parsePngMetadata(png(textChunk('Comment', bytes)));
+      expect(result.params.raw).toEqual({ Comment: [expected] });
+      expect(warnings(result)).toBe('');
+    },
+  );
+
+  it('keeps zTXt values Latin-1 even when their bytes also form valid UTF-8', () => {
+    const raw = 'cafÃ©\nSteps: 2, Seed: 9';
+    const result = parsePngMetadata(png(textChunk('parameters', raw, 'zTXt')));
+    expect(result.prompt).toBe('cafÃ©');
+    expect(result.params.raw).toEqual({ parameters: [raw] });
+  });
+
+  it.each([false, true])(
+    'still rejects invalid UTF-8 iTXt with compression=%s',
+    (compressed) => {
+      const invalid = textChunk(
+        'parameters',
+        Buffer.from('café\nSteps: 2, Seed: 9', 'latin1'),
+        'iTXt',
+        compressed,
+      );
+      const result = parsePngMetadata(
+        png(invalid, textChunk('parameters', sd)),
+      );
+      expect(result.seed).toBe('18446744073709551615');
+      expect(result.params.raw).toEqual({ parameters: [sd] });
+      expect(warnings(result)).toMatch(/iTXt metadata invalid/i);
+    },
+  );
+
+  it('charges UTF-8 tEXt limits by encoded bytes rather than decoded characters', () => {
+    const oversized = textChunk(
+      'parameters',
+      Buffer.from('中'.repeat(350000), 'utf8'),
+    );
+    const result = parsePngMetadata(
+      png(oversized, textChunk('parameters', sd)),
+    );
+    expect(result.seed).toBe('18446744073709551615');
+    expect(result.params.raw).toEqual({ parameters: [sd] });
+    expect(warnings(result)).toMatch(/size limit/i);
+  });
+
   it.each([false, true])(
     'decodes Unicode iTXt with compression=%s',
     (compressed) => {
@@ -242,6 +341,31 @@ describe('ComfyUI PNG metadata', () => {
         },
       ],
     });
+  });
+
+  it('decodes raw UTF-8 tEXt Comfy JSON without changing unquoted uint64 seeds', () => {
+    const graph = comfyGraph();
+    graph.negative = {
+      class_type: 'CLIPTextEncode',
+      inputs: { text: '水印、模糊' },
+    };
+    graph.loader = {
+      class_type: 'CheckpointLoaderSimple',
+      inputs: { ckpt_name: '中国模型.safetensors' },
+    };
+    const raw = graphJson(graph);
+    const result = parsePngMetadata(
+      png(textChunk('prompt', Buffer.from(raw, 'utf8'))),
+    );
+    expect(result).toMatchObject({
+      source: 'comfyui',
+      prompt: '红色杯子 18446744073709551615',
+      negativePrompt: '水印、模糊',
+      model: '中国模型.safetensors',
+      seed: '18446744073709551615',
+    });
+    expect(result.params.raw).toEqual({ prompt: [raw] });
+    expect(warnings(result)).toBe('');
   });
 
   it('extracts the supported PreviewImage output branch', () => {
