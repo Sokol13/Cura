@@ -13,11 +13,21 @@ concurrency:
 
 jobs:
   cloud:
-    name: Mandatory real cloud integration
+    name: Mandatory real cloud integration (Node ${{ matrix.node }})
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
     uses: ./.github/workflows/cloud-check.yml
+    with:
+      node-version: ${{ matrix.node }}
 
   check:
-    name: Lint, types, unit tests and Chromium E2E
+    name: Lint, types, unit tests and Chromium E2E (Node ${{ matrix.node }})
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -25,7 +35,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .node-version
+          node-version: ${{ matrix.node }}
           cache: pnpm
       - uses: actions/setup-python@v5
         with:
@@ -57,7 +67,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-diagnostics
+          name: playwright-diagnostics-node-${{ matrix.node }}
           path: |
             playwright-report/
             test-results/

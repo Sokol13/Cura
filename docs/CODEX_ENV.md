@@ -6,7 +6,7 @@ The checkout is `/workspace/Cura`. Keep main here; the accepted autonomous deliv
 
 | Name                       | Type                                  | Required value or purpose                                                                                                                                                            |
 | -------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `CODEX_ENV_NODE_VERSION`   | Required environment variable         | `22`; verify that the actual runtime reports Node `v22.x`                                                                                                                            |
+| `CODEX_ENV_NODE_VERSION`   | Required environment variable         | `24` recommended, or `22`; verify the actual runtime and use a current LTS patch                                                                                                     |
 | `GH_TOKEN`                 | Existing secret for GitHub operations | Preserve the existing secure binding. It must support repository access, content/workflow writes, Actions reads, and release creation. Never put its value in the repository or chat |
 | `CURA_OPEN_BROWSER`        | Recommended environment variable      | `0` for headless Linux                                                                                                                                                               |
 | `CURA_CHROMIUM_EXECUTABLE` | Optional environment variable         | An explicit browser such as `/usr/bin/chromium` for constrained containers. Leave unset to use the installed Chrome test channel with native H.264                                   |
@@ -17,7 +17,7 @@ Check only credential names, presence, and operation results. Git may authentica
 
 ## Environment installation script
 
-Use the following complete script in environment settings. Node 22 is provided by the environment version setting. The script installs pnpm in a writable tool directory if needed and invokes the repository installer without assuming that project dependencies exist. Installing gh when absent requires root or noninteractive sudo.
+Use the following complete script in environment settings. Node 24 or 22 is provided by the environment version setting; the repository accepts `>=22 <25`. The script installs pnpm in a writable tool directory if needed and invokes the repository installer without assuming that project dependencies exist. Installing gh when absent requires root or noninteractive sudo.
 
 ```bash
 #!/usr/bin/env bash
@@ -25,7 +25,7 @@ set -euo pipefail
 
 export CURA_TOOL_HOME=/workspace/.cura-tools
 mkdir -p "$CURA_TOOL_HOME"
-export PATH="$CURA_TOOL_HOME/node/bin:$CURA_TOOL_HOME/pnpm/node_modules/.bin:$PATH"
+export PATH="$CURA_TOOL_HOME/pnpm/node_modules/.bin:$PATH"
 export npm_config_cache="$CURA_TOOL_HOME/npm-cache"
 export npm_config_store_dir="$CURA_TOOL_HOME/pnpm-store"
 export XDG_CACHE_HOME="$CURA_TOOL_HOME/cache"
@@ -35,8 +35,8 @@ export PLAYWRIGHT_BROWSERS_PATH="$CURA_TOOL_HOME/ms-playwright"
 export CURA_OPEN_BROWSER="${CURA_OPEN_BROWSER:-0}"
 unset NODE_PATH # Do not resolve undeclared packages from the managed image.
 
-if ! command -v node >/dev/null 2>&1 || [[ "$(node -p 'process.versions.node.split(".")[0]')" != 22 ]]; then
-  echo 'Node 22 is required. Set CODEX_ENV_NODE_VERSION=22 in environment settings.' >&2
+if ! command -v node >/dev/null 2>&1 || ! node -e 'const major = Number(process.versions.node.split(".")[0]); process.exit(major >= 22 && major < 25 ? 0 : 1)'; then
+  echo 'Node >=22 <25 is required. Set CODEX_ENV_NODE_VERSION=24 or 22 and use a current LTS patch.' >&2
   exit 1
 fi
 if ! command -v pnpm >/dev/null 2>&1 || [[ "$(pnpm --version)" != 10.34.6 ]]; then
@@ -66,7 +66,7 @@ fi
 
 The `gh auth setup-git` step retains the requested environment bootstrap behavior. Keep the existing HTTPS origin `https://github.com/Sokol13/Cura.git` and platform proxy routing. Do not copy or extract credentials into files.
 
-The repository's `scripts/codex-setup.sh` locates the checkout from its own path, checks Node 22 and the exact pinned pnpm version, then:
+The repository's `scripts/codex-setup.sh` locates the checkout from its own path, checks Node `>=22 <25` and the exact pinned pnpm version, then:
 
 1. Runs `pnpm install --frozen-lockfile`, including SQLite prebuilt verification. No node-gyp fallback is allowed.
 2. Runs `pnpm exec playwright install --with-deps chromium chrome`.
@@ -91,17 +91,17 @@ Production validation uses `pnpm build && pnpm start`. Quality validation uses `
 
 Installation-script exports may not automatically reach later shells. Persist the non-secret variables in environment settings, or repeat the exports when opening a new shell. Retained cache/data files do not imply retained processes; cross-instance persistence depends on the platform snapshot.
 
-## Required settings changes observed in this task
+## Runtime selection and historical environment observations
 
-**Keep the Node 22 setting and the reusable installation script above. For this image, set CURA_CHROMIUM_EXECUTABLE=/usr/bin/chromium until the pinned-browser CDN route is available.** Runtime inspection initially differed from the supplied environment description:
+**Select Node 24 or 22 and use the reusable installation script above. Do not prepend an older local Node installation after selecting a runtime. For this image, set CURA_CHROMIUM_EXECUTABLE=/usr/bin/chromium until the pinned-browser CDN route is available.** The following observations describe the original Node-22-only bootstrap, before desktop feedback expanded support:
 
-- Initial Node was 24.19.0, and `CODEX_ENV_NODE_VERSION` was unset. Set `CODEX_ENV_NODE_VERSION=22` and verify the resulting runtime. For this task, official Node 22.23.3 was downloaded, checked against its official SHA-256, and installed under `/workspace/.cura-tools/node`. That local installation does not prove that the version setting has been applied.
+- Initial Node was 24.19.0, and `CODEX_ENV_NODE_VERSION` was unset. At that time the environment was changed to Node 22, and official Node 22.23.3 was downloaded, checked against its official SHA-256, and installed under `/workspace/.cura-tools/node`. This is historical setup evidence, not a requirement to downgrade Node 24. A local installation does not prove that the environment version setting has been applied.
 - GH_TOKEN was present. Initial `api.github.com` requests returned HTTP 403 during proxy CONNECT, but access subsequently recovered: `gh auth status`, account lookup, and repository permission checks succeeded. No replacement token is needed. Preserve access to the API for Actions monitoring and Release creation.
 - Browser downloads from `cdn.playwright.dev` and `playwright.download.prss.microsoft.com` initially returned HTTP 403. Keep those destinations permitted for Playwright's standard pinned Chromium download. This container also provides `/usr/bin/chromium`, usable through the explicit override. See TESTING.md for which browser actually passed; P0 CI used the pinned Chromium download; P1 CI installs the Chrome channel for H.264 acceptance.
 - The current container is not root and has no sudo. Its base image must already provide Chromium libraries, or permit system-package installation. The setup script verifies the actual browser launch rather than assuming those libraries exist.
 
 Required network destinations include `registry.npmjs.org`, `nodejs.org`, `github.com`, `api.github.com`, `release-assets.githubusercontent.com`, `cdn.playwright.dev`, `playwright.download.prss.microsoft.com`, and the base image's existing package repositories. If an allowlist is used, add required domains while preserving existing entries. Keep TLS, package-signature, and artifact checks enabled.
 
-The tested install_script, start_skill, Node 22/browser variable requirements, and additive network destinations have been saved to the environment draft. Apply/publish that draft in environment settings to use it for later tasks; no new GitHub secret is needed. A saved configuration draft does not execute its script, update the running network policy, or publish the environment. See [PROGRESS.md](PROGRESS.md) and [BLOCKERS.md](BLOCKERS.md) for actual validation and publication status.
+The original install_script, start_skill, Node 22/browser variables, and additive network destinations were saved to the environment draft. Update any retained draft to the runtime range and script above before applying it for later tasks; no new GitHub secret is needed. A saved configuration draft does not execute its script, update the running network policy, or publish the environment. See [PROGRESS.md](PROGRESS.md) and [BLOCKERS.md](BLOCKERS.md) for actual validation and publication status.
 
 Fresh acceptance must clear `NODE_PATH` so modules preinstalled by the managed image cannot mask an undeclared or intentionally excluded dependency. P1 CI exposed exactly this with an optional Node canvas. Browser PDF verification runs in Chromium; pure Node unit tests require no canvas package.

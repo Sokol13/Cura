@@ -1,15 +1,15 @@
 # Setup and local operation
 
-Cura needs Node.js **22**, pnpm **10.34.6**, and Git. The exact CI Node patch is in `.node-version` and `.nvmrc`; the lockfile pins package versions. A network connection is needed to clone and install dependencies. Normal library use after installation requires neither networking nor an account.
+Cura accepts Node.js **`>=22 <25`** and needs pnpm **10.34.6** and Git. Use a current Node **24** or **22** LTS patch; both run the complete standard and cloud suites in CI. `.node-version` and `.nvmrc` retain the default Node 22 patch for version managers; CI explicitly selects both majors. The lockfile pins package versions. A network connection is needed to clone and install dependencies. Normal library use after installation requires neither networking nor an account.
 
 ## macOS: Homebrew
 
 Install [Homebrew](https://brew.sh/) using its official instructions, then:
 
 ```bash
-brew install git node@22
-export PATH="$(brew --prefix node@22)/bin:$PATH"
-printf '\nexport PATH="%s/bin:$PATH"\n' "$(brew --prefix node@22)" >> ~/.zprofile
+brew install git node@24
+export PATH="$(brew --prefix node@24)/bin:$PATH"
+printf '\nexport PATH="%s/bin:$PATH"\n' "$(brew --prefix node@24)" >> ~/.zprofile
 npm install --global pnpm@10.34.6
 node --version
 pnpm --version
@@ -19,7 +19,7 @@ pnpm install
 pnpm start
 ```
 
-Node should report `v22.x`; pnpm should report `10.34.6`. Homebrew supplies the current Node 22 patch. To match CI exactly, use the pinned patch from the [official Node.js downloads](https://nodejs.org/en/download).
+Node should report `v24.x`; pnpm should report `10.34.6`. Homebrew supplies the current Node 24 patch. Node 22 users can substitute `node@22` in the commands above. Choose current patches from the [official Node.js downloads](https://nodejs.org/en/download): some locked build tools require recent minors (Vite requires Node 22.12 or newer, and an optional Linux Rollup helper requires 22.20 or 24.12 or newer). Node 23 falls within the engine range, but the full CI matrix covers the maintained 22 and 24 LTS lines.
 
 ## Windows: winget and the official Node installer
 
@@ -29,7 +29,7 @@ Install Git from PowerShell:
 winget install --id Git.Git -e --accept-package-agreements --accept-source-agreements
 ```
 
-Install **Node 22** for your Windows architecture from the [official Node.js downloads](https://nodejs.org/en/download). Keep npm and PATH support enabled. An unversioned `OpenJS.NodeJS.LTS` winget install may select a newer major, so check the version before using it. Compiler/Visual Studio tools are not needed for Cura's native dependencies.
+Install a current **Node 24 or Node 22 LTS** patch for your Windows architecture from the [official Node.js downloads](https://nodejs.org/en/download). Keep npm and PATH support enabled. An unversioned `OpenJS.NodeJS.LTS` winget install may change its selected major over time, so check that the installed version is within `>=22 <25` before using it. Compiler/Visual Studio tools are not needed for Cura's native dependencies.
 
 Open a new PowerShell window:
 
@@ -106,7 +106,7 @@ Export **Settings → Export diagnostics** after reproducing a problem. The ZIP 
 
 ## Native modules and development
 
-Installation verifies published better-sqlite3 and Sharp native binaries with a real SQLite query and image encode/decode. There is no compiler fallback. If a prebuilt is unavailable, check Node 22, OS/architecture, optional dependencies, and access to the package/prebuild download hosts; retry a normal install. Do not use `--ignore-scripts` or remove optional Sharp platform packages. [DEPENDENCIES.md](DEPENDENCIES.md) explains native notices.
+Installation verifies published better-sqlite3 and Sharp native binaries with a real SQLite query and image encode/decode. There is no compiler fallback. If a prebuilt is unavailable, check the selected Node version, OS/architecture, optional dependencies, and access to the package/prebuild download hosts; retry a normal install. Do not use `--ignore-scripts` or remove optional Sharp platform packages. [DEPENDENCIES.md](DEPENDENCIES.md) explains native notices.
 
 For development:
 
@@ -120,3 +120,5 @@ Open [http://127.0.0.1:5173](http://127.0.0.1:5173). Vite proxies API requests t
 For automation, install Chromium with `pnpm exec playwright install chromium chrome`; Linux may need `pnpm exec playwright install --with-deps chromium chrome` and root/sudo for system packages. GitHub CLI is only needed for repository publishing or the cloud setup script (`brew install gh` / `winget install --id GitHub.cli -e`). The repeatable `bash scripts/codex-setup.sh` checks tools, dependencies, a real browser launch, and GitHub authentication. Git Bash supplies Bash on Windows. [CODEX_ENV.md](CODEX_ENV.md) documents the cloud toolchain and constrained-browser fallback; [TESTING.md](TESTING.md) lists validation commands.
 
 Full P1 E2E selects the installed Chrome channel by default because Playwright's bundled Chromium omits H.264 codecs. An explicitly provisioned `CURA_CHROMIUM_EXECUTABLE` overrides that choice and must support H.264 for the video gate. `scripts/check-chromium.mjs` verifies launch/rendering and declared codec availability; rich-media E2E verifies actual decoded pixels. This does not install or bundle a browser for normal `pnpm start`, which opens the user's default browser.
+
+When switching Node majors, stop Cura and reinstall with `pnpm install --frozen-lockfile` so the SQLite prebuilt matches the selected runtime. For concurrent development or acceptance runs, use separate checkouts and `node_modules` directories per Node major; sharing the pnpm download store is safe. The installer verifies SQLite and Sharp without compiling native code.

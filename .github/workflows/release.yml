@@ -14,11 +14,21 @@ concurrency:
 
 jobs:
   cloud:
-    name: Mandatory real cloud integration
+    name: Mandatory real cloud integration (Node ${{ matrix.node }})
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
     uses: ./.github/workflows/cloud-check.yml
+    with:
+      node-version: ${{ matrix.node }}
 
   validate:
-    name: Validate tagged source
+    name: Validate tagged source (Node ${{ matrix.node }})
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -26,7 +36,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .node-version
+          node-version: ${{ matrix.node }}
           cache: pnpm
       - uses: actions/setup-python@v5
         with:
@@ -45,11 +55,13 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm e2e
+      - name: Large PSD time and memory acceptance
+        run: node scripts/psd-benchmark.mjs .tmp/psd-benchmark.json
       - name: Upload failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: release-playwright-diagnostics
+          name: release-playwright-diagnostics-node-${{ matrix.node }}
           path: |
             playwright-report/
             test-results/

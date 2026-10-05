@@ -1,6 +1,6 @@
 # Architecture
 
-Cura is a local-first asset catalog, served by Node 22 on `127.0.0.1` to a browser. HTTP and WebSocket are the only web/server boundary. The desktop browser never uses proprietary filesystem APIs. AGENTS.md is the feature specification; this document fixes implementation interfaces.
+Cura is a local-first asset catalog, served by Node 22–24 (`>=22 <25`, with full CI on 22 and 24) on `127.0.0.1` to a browser. HTTP and WebSocket are the only web/server boundary. The desktop browser never uses proprietary filesystem APIs. AGENTS.md is the feature specification; this document fixes implementation interfaces.
 
 ## Packages and boundaries
 

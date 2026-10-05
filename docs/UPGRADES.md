@@ -6,7 +6,7 @@ Cura applies pending SQLite migrations when the server starts. The v0.1.0 → v0
 
 1. Stop Cura and wait for the server to exit. Use one Cura server per data directory.
 2. Copy the **entire data directory** to a backup, including retained version bytes and Inbox files. Back up registered original folders separately. See [data directory locations](SETUP.md#data-directories-and-backup); a copy of `cura.sqlite` alone is incomplete.
-3. Install and build the new version with its supported Node 22/pnpm versions. Keep the existing data directory and any `CURA_DATA_DIR`, `CURA_CACHE_DIR`, and `CURA_LOG_DIR` overrides. Start the new version normally; no manual SQL step is required.
+3. Install and build the new version with a current supported Node 22 or 24 LTS patch and the pinned pnpm version. Keep the existing data directory and any `CURA_DATA_DIR`, `CURA_CACHE_DIR`, and `CURA_LOG_DIR` overrides. Start the new version normally; no manual SQL step is required.
 4. Check an existing library, folder/tag assignments, notes, annotations, both old and current asset versions, and the Creative process final selection. Create a board or brand, then restart Cura to check persistence. Cache thumbnails can be rebuilt separately.
 
 To roll back, stop Cura, restore the complete pre-upgrade data backup to its original location, then run the old version. Opening an already upgraded database with an older binary is not a supported rollback. Do not combine a restored database with a different retained-byte/Inbox directory.

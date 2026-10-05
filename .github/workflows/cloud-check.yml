@@ -2,14 +2,26 @@ name: Cloud integration
 
 on:
   workflow_call:
+    inputs:
+      node-version:
+        description: Node major selected by the required CI or release matrix
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      node-version:
+        description: Node major for a manual cloud verification run
+        required: true
+        default: '24'
+        type: choice
+        options: ['22', '24']
 
 permissions:
   contents: read
 
 jobs:
   cloud:
-    name: Real Supabase Auth, RLS, Storage and two-device sync
+    name: Real Supabase Auth, RLS, Storage and two-device sync (Node ${{ inputs.node-version }})
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -20,7 +32,7 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .node-version
+          node-version: ${{ inputs.node-version }}
           cache: pnpm
       - uses: supabase/setup-cli@v1
         with:

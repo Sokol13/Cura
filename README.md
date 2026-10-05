@@ -8,7 +8,7 @@ The current workflow includes watched folders and uploads, metadata extraction, 
 
 ## Start on macOS or Windows
 
-Install **Node.js 22**, **pnpm 10.34.6**, and Git. [SETUP.md](docs/SETUP.md) includes macOS Homebrew and Windows winget/official-installer instructions. GitHub CLI and an account are not needed to use Cura.
+Install a current patch of **Node.js 24 or 22**, **pnpm 10.34.6**, and Git. Cura accepts Node `>=22 <25`; CI runs the complete suite on both LTS majors. [SETUP.md](docs/SETUP.md) includes macOS Homebrew and Windows winget/official-installer instructions. GitHub CLI and an account are not needed to use Cura.
 
 macOS Terminal:
 

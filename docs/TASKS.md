@@ -6,7 +6,7 @@
 
 **Architecture:** A local Fastify server owns SQLite and all filesystem operations. Worker threads process media and React consumes shared Zod contracts over HTTP/WebSocket. Immutable content snapshots preserve versions and portable exports.
 
-**Tech Stack:** Node 22, pnpm 10.34.6, TypeScript strict, Fastify, better-sqlite3/Drizzle, Sharp, chokidar, exifr, Zod, React/Vite/Tailwind, Zustand, TanStack Virtual, React Flow and i18next.
+**Tech Stack:** Node 22–24 (`>=22 <25`; full CI on 22 and 24), pnpm 10.34.6, TypeScript strict, Fastify, better-sqlite3/Drizzle, Sharp, chokidar, exifr, Zod, React/Vite/Tailwind, Zustand, TanStack Virtual, React Flow and i18next.
 
 **Spec:** `AGENTS.md`, `docs/PRD.md`, `docs/ARCHITECTURE.md`.
 

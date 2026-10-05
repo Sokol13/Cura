@@ -3,7 +3,7 @@
 ## Resolved
 
 - AGENTS.md was initially absent because the repository had no commits. The supplied origin/main commit `af345fc` was fetched and its full specification was read before finalizing the scaffold.
-- Initial Node 24 did not meet the project requirement. Official Node 22.23.3 was installed with TLS and SHA-256 verification; all project validation uses Node 22. The draft requests CODEX_ENV_NODE_VERSION=22.
+- During the original bootstrap, Node 24 did not meet the then-current Node-22-only requirement. Official Node 22.23.3 was installed with TLS and SHA-256 verification. Desktop feedback item 8 supersedes that restriction with `>=22 <25`; current CI runs complete Node 22 and 24 gates. The original environment draft requested `CODEX_ENV_NODE_VERSION=22`; new setups may select 24. See TESTING.md for actual validation results.
 - Initial GitHub API requests were denied by the proxy. GitHub authentication and API access subsequently recovered and the repository's push permission was confirmed. No token replacement was needed.
 
 - During P2 the injected shell GitHub token expired. Existing connected GitHub app access still permits exact-tree Git commits and non-force main updates; public fetch and remote CI inspection work. Development and publication continue through that verified route without requesting credentials.

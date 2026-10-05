@@ -2,7 +2,7 @@
 
 `.github/workflows/cloud-check.yml` is called by both CI and Release. Release publication depends on its successful result as well as the normal validation job. It requires no repository or hosted Supabase secrets.
 
-Each Ubuntu runner uses Node 22 from `.node-version`, pnpm 10 from `packageManager`, Supabase CLI 2.119.0 and the checked-in `config.toml`. The disposable project is `cura-ci`; only PostgreSQL, Auth, PostgREST, Storage and the gateway run. The Data API exposes `public`, with automatic grants disabled. Email confirmation is disabled only for this local fixture.
+CI and Release each call this workflow with a required `node-version` input for both Node 22 and Node 24. Every matrix cell runs the entire sequence below in its own Ubuntu runner, using the current patch of that major, pnpm 10 from `packageManager`, Supabase CLI 2.119.0 and the checked-in `config.toml`. A manual workflow dispatch selects one major for a focused rerun; it does not replace the two mandatory matrix cells. The disposable project is `cura-ci`; only PostgreSQL, Auth, PostgREST, Storage and the gateway run. The Data API exposes `public`, with automatic grants disabled. Email confirmation is disabled only for this local fixture.
 
 Checks run in this order:
 

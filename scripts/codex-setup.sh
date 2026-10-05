@@ -7,7 +7,7 @@ cd "$repo_root"
 for tool in node pnpm gh; do
   command -v "$tool" >/dev/null 2>&1 || { echo "Missing prerequisite: $tool. See docs/SETUP.md and docs/CODEX_ENV.md." >&2; exit 1; }
 done
-node -e 'if (process.versions.node.split(".")[0] !== "22") { console.error("Cura requires Node 22; found " + process.version); process.exit(1); }'
+node -e 'const major = Number(process.versions.node.split(".")[0]); if (!(major >= 22 && major < 25)) { console.error("Cura requires Node >=22 <25; found " + process.version); process.exit(1); }'
 expected_pnpm="$(node -p 'JSON.parse(require("node:fs").readFileSync("package.json", "utf8")).packageManager.split("@")[1]')"
 if [[ "$(pnpm --version)" != "$expected_pnpm" ]]; then
   echo "Cura requires pnpm $expected_pnpm. Run: npm install --global pnpm@$expected_pnpm" >&2
