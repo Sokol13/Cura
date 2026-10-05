@@ -10,6 +10,7 @@ import {
 } from './catalog-search.js';
 import { setFinalSelection } from './process/final-selections.js';
 import { ScanStore } from './media/scan-store.js';
+import { InboxMigrationStore } from './media/inbox-migration-store.js';
 
 type Row = Record<string, unknown>;
 type Parser<T> = { parse: (input: unknown) => T };
@@ -91,9 +92,13 @@ const now = () => new Date().toISOString();
 export class CatalogStore {
   private readonly sqlite: Database.Database;
   readonly scanStore: ScanStore;
+  readonly inboxMigrations: InboxMigrationStore;
   constructor(db: AppDatabase) {
     this.sqlite = db.sqlite;
     this.scanStore = new ScanStore(db);
+    this.inboxMigrations = new InboxMigrationStore(db, (ids) =>
+      this.refreshAssetSearch(ids),
+    );
     registerSearchFunctions(this.sqlite);
   }
   private row(
