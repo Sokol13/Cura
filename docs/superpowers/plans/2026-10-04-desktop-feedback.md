@@ -59,7 +59,7 @@
 **Interfaces:** ScanSummary records completion state/timestamps, supported/skipped/error totals, bounded extension histogram and errors; last summary survives restart.
 
 - [x] Write and observe a failing regression covering nested images, empty folder, unsupported extensions, denied subdirectory and partial success, terminal 0/0 state, restart and details UI.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 4: Actionable diagnostic bundles
