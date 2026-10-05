@@ -78,15 +78,15 @@
 
 - [x] Write and observe a failing regression covering every built-in slot label/description in zh-CN and en, existing generated template compatibility, custom rename preserved.
 - [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
-- [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
+- [x] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 6: Platform shortcut hints
 
 **Files:** Create shared web shortcut-format utility; replace hardcoded hints in App/catalog/board/dialog UI.
 **Interfaces:** One formatter maps primary modifier using browser platform; keyboard handling still accepts metaKey and ctrlKey.
 
-- [ ] Write and observe a failing regression covering Mac/Windows/Linux formatter cases and rendered global shortcut labels; editable input keyboard behavior retained.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Observe the incorrect Windows/Linux baseline, then verify rendered Mac/Windows/Linux hints and keyboard focus/editable-field boundaries with a real-browser platform simulation. Keep this small display change free of implementation-mirroring unit tests.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 7: Full-width preview messages

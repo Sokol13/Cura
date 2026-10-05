@@ -1,0 +1,188 @@
+{
+  "before": {
+    "mode": "before",
+    "date": "2026-10-05T07:12:58.383Z",
+    "environment": "Chromium on Linux; navigator platform simulation only",
+    "cases": [
+      {
+        "name": "legacy Mac",
+        "platform": "MacIntel",
+        "modernPlatform": null,
+        "expectedHint": "⌘ F",
+        "observedHint": "⌘ F",
+        "matches": true,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      },
+      {
+        "name": "legacy Windows",
+        "platform": "Win32",
+        "modernPlatform": null,
+        "expectedHint": "Ctrl F",
+        "observedHint": "⌘ F",
+        "matches": false,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      },
+      {
+        "name": "legacy Linux",
+        "platform": "Linux x86_64",
+        "modernPlatform": null,
+        "expectedHint": "Ctrl F",
+        "observedHint": "⌘ F",
+        "matches": false,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      },
+      {
+        "name": "modern macOS precedence",
+        "platform": "Win32",
+        "modernPlatform": "macOS",
+        "expectedHint": "⌘ F",
+        "observedHint": "⌘ F",
+        "matches": true,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      },
+      {
+        "name": "modern Windows precedence",
+        "platform": "MacIntel",
+        "modernPlatform": "Windows",
+        "expectedHint": "Ctrl F",
+        "observedHint": "⌘ F",
+        "matches": false,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      },
+      {
+        "name": "empty modern platform fallback",
+        "platform": "MacIntel",
+        "modernPlatform": "",
+        "expectedHint": "⌘ F",
+        "observedHint": "⌘ F",
+        "matches": true,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      }
+    ],
+    "allHintsCorrect": false
+  },
+  "after": {
+    "mode": "after",
+    "date": "2026-10-05T07:13:22.097Z",
+    "environment": "Chromium on Linux; navigator platform simulation only",
+    "cases": [
+      {
+        "name": "legacy Mac",
+        "platform": "MacIntel",
+        "modernPlatform": null,
+        "expectedHint": "⌘ F",
+        "observedHint": "⌘ F",
+        "matches": true,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      },
+      {
+        "name": "legacy Windows",
+        "platform": "Win32",
+        "modernPlatform": null,
+        "expectedHint": "Ctrl F",
+        "observedHint": "Ctrl F",
+        "matches": true,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      },
+      {
+        "name": "legacy Linux",
+        "platform": "Linux x86_64",
+        "modernPlatform": null,
+        "expectedHint": "Ctrl F",
+        "observedHint": "Ctrl F",
+        "matches": true,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      },
+      {
+        "name": "modern macOS precedence",
+        "platform": "Win32",
+        "modernPlatform": "macOS",
+        "expectedHint": "⌘ F",
+        "observedHint": "⌘ F",
+        "matches": true,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      },
+      {
+        "name": "modern Windows precedence",
+        "platform": "MacIntel",
+        "modernPlatform": "Windows",
+        "expectedHint": "Ctrl F",
+        "observedHint": "Ctrl F",
+        "matches": true,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      },
+      {
+        "name": "empty modern platform fallback",
+        "platform": "MacIntel",
+        "modernPlatform": "",
+        "expectedHint": "⌘ F",
+        "observedHint": "⌘ F",
+        "matches": true,
+        "keyboard": {
+          "ctrlOutsideFocus": true,
+          "metaOutsideFocus": true,
+          "ctrlEditablePreserved": true,
+          "metaEditablePreserved": true
+        }
+      }
+    ],
+    "allHintsCorrect": true
+  },
+  "baselineRevision": "fb359d23aa5ccf14603cd2e9ef0fa43c3aafb35d",
+  "fixedRevision": "f6ce7d9e20461da429884a8cb4497943035c2aad"
+}
