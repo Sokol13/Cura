@@ -1,0 +1,653 @@
+{
+  "environment": {
+    "platform": "linux",
+    "arch": "x64",
+    "node": "v22.23.3",
+    "browser": "headless Chromium",
+    "physicalDesktopVerified": false
+  },
+  "fixtureCount": 1000,
+  "timings": [
+    {
+      "query": "all",
+      "sample": 0,
+      "milliseconds": 38.259115999986534,
+      "total": 1000
+    },
+    {
+      "query": "fulltext",
+      "sample": 0,
+      "milliseconds": 10.009424000003492,
+      "total": 1
+    },
+    {
+      "query": "fulltext-cjk",
+      "sample": 0,
+      "milliseconds": 11.923143000007258,
+      "total": 1
+    },
+    {
+      "query": "fulltext-tag",
+      "sample": 0,
+      "milliseconds": 10.373019999999087,
+      "total": 1
+    },
+    {
+      "query": "tag",
+      "sample": 0,
+      "milliseconds": 10.736046000005445,
+      "total": 1
+    },
+    {
+      "query": "rating",
+      "sample": 0,
+      "milliseconds": 10.825576000002911,
+      "total": 1
+    },
+    {
+      "query": "type",
+      "sample": 0,
+      "milliseconds": 45.84803300000203,
+      "total": 1000
+    },
+    {
+      "query": "color",
+      "sample": 0,
+      "milliseconds": 55.36979599999904,
+      "total": 333
+    },
+    {
+      "query": "source",
+      "sample": 0,
+      "milliseconds": 52.53624200000195,
+      "total": 500
+    },
+    {
+      "query": "date",
+      "sample": 0,
+      "milliseconds": 36.36983300000429,
+      "total": 1000
+    },
+    {
+      "query": "dimension",
+      "sample": 0,
+      "milliseconds": 42.9259999999922,
+      "total": 248
+    },
+    {
+      "query": "folder",
+      "sample": 0,
+      "milliseconds": 4.447383000006084,
+      "total": 1
+    },
+    {
+      "query": "combined",
+      "sample": 0,
+      "milliseconds": 5.044471000001067,
+      "total": 1
+    },
+    {
+      "query": "similar",
+      "sample": 0,
+      "milliseconds": 80.51174199998786,
+      "total": 1000
+    },
+    {
+      "query": "all",
+      "sample": 1,
+      "milliseconds": 58.88412500001141,
+      "total": 1000
+    },
+    {
+      "query": "fulltext",
+      "sample": 1,
+      "milliseconds": 10.60535000001255,
+      "total": 1
+    },
+    {
+      "query": "fulltext-cjk",
+      "sample": 1,
+      "milliseconds": 14.511379000003217,
+      "total": 1
+    },
+    {
+      "query": "fulltext-tag",
+      "sample": 1,
+      "milliseconds": 9.753558000011253,
+      "total": 1
+    },
+    {
+      "query": "tag",
+      "sample": 1,
+      "milliseconds": 10.329274000003352,
+      "total": 1
+    },
+    {
+      "query": "rating",
+      "sample": 1,
+      "milliseconds": 8.074170000007143,
+      "total": 1
+    },
+    {
+      "query": "type",
+      "sample": 1,
+      "milliseconds": 38.36779899999965,
+      "total": 1000
+    },
+    {
+      "query": "color",
+      "sample": 1,
+      "milliseconds": 50.0758199999982,
+      "total": 333
+    },
+    {
+      "query": "source",
+      "sample": 1,
+      "milliseconds": 44.44574700000521,
+      "total": 500
+    },
+    {
+      "query": "date",
+      "sample": 1,
+      "milliseconds": 37.79517899999337,
+      "total": 1000
+    },
+    {
+      "query": "dimension",
+      "sample": 1,
+      "milliseconds": 38.08745799999451,
+      "total": 248
+    },
+    {
+      "query": "folder",
+      "sample": 1,
+      "milliseconds": 4.729035999989719,
+      "total": 1
+    },
+    {
+      "query": "combined",
+      "sample": 1,
+      "milliseconds": 2.9431690000055823,
+      "total": 1
+    },
+    {
+      "query": "similar",
+      "sample": 1,
+      "milliseconds": 44.47079500000109,
+      "total": 1000
+    },
+    {
+      "query": "all",
+      "sample": 2,
+      "milliseconds": 36.342791999995825,
+      "total": 1000
+    },
+    {
+      "query": "fulltext",
+      "sample": 2,
+      "milliseconds": 13.571643999996013,
+      "total": 1
+    },
+    {
+      "query": "fulltext-cjk",
+      "sample": 2,
+      "milliseconds": 10.370255999994697,
+      "total": 1
+    },
+    {
+      "query": "fulltext-tag",
+      "sample": 2,
+      "milliseconds": 8.525198999996064,
+      "total": 1
+    },
+    {
+      "query": "tag",
+      "sample": 2,
+      "milliseconds": 8.279790999993565,
+      "total": 1
+    },
+    {
+      "query": "rating",
+      "sample": 2,
+      "milliseconds": 11.593928000002052,
+      "total": 1
+    },
+    {
+      "query": "type",
+      "sample": 2,
+      "milliseconds": 36.233657000004314,
+      "total": 1000
+    },
+    {
+      "query": "color",
+      "sample": 2,
+      "milliseconds": 44.530664000005345,
+      "total": 333
+    },
+    {
+      "query": "source",
+      "sample": 2,
+      "milliseconds": 40.16150899999775,
+      "total": 500
+    },
+    {
+      "query": "date",
+      "sample": 2,
+      "milliseconds": 50.06222899998829,
+      "total": 1000
+    },
+    {
+      "query": "dimension",
+      "sample": 2,
+      "milliseconds": 36.313798999995925,
+      "total": 248
+    },
+    {
+      "query": "folder",
+      "sample": 2,
+      "milliseconds": 5.525504999997793,
+      "total": 1
+    },
+    {
+      "query": "combined",
+      "sample": 2,
+      "milliseconds": 5.495460000005551,
+      "total": 1
+    },
+    {
+      "query": "similar",
+      "sample": 2,
+      "milliseconds": 40.330564000003505,
+      "total": 1000
+    },
+    {
+      "query": "all",
+      "sample": 3,
+      "milliseconds": 41.4997629999998,
+      "total": 1000
+    },
+    {
+      "query": "fulltext",
+      "sample": 3,
+      "milliseconds": 11.706317000003764,
+      "total": 1
+    },
+    {
+      "query": "fulltext-cjk",
+      "sample": 3,
+      "milliseconds": 9.220535999993444,
+      "total": 1
+    },
+    {
+      "query": "fulltext-tag",
+      "sample": 3,
+      "milliseconds": 7.561860999994678,
+      "total": 1
+    },
+    {
+      "query": "tag",
+      "sample": 3,
+      "milliseconds": 7.3295300000027055,
+      "total": 1
+    },
+    {
+      "query": "rating",
+      "sample": 3,
+      "milliseconds": 7.916213000004063,
+      "total": 1
+    },
+    {
+      "query": "type",
+      "sample": 3,
+      "milliseconds": 32.93845900001179,
+      "total": 1000
+    },
+    {
+      "query": "color",
+      "sample": 3,
+      "milliseconds": 45.74786599999061,
+      "total": 333
+    },
+    {
+      "query": "source",
+      "sample": 3,
+      "milliseconds": 37.977943000005325,
+      "total": 500
+    },
+    {
+      "query": "date",
+      "sample": 3,
+      "milliseconds": 39.96584499999881,
+      "total": 1000
+    },
+    {
+      "query": "dimension",
+      "sample": 3,
+      "milliseconds": 41.5988720000023,
+      "total": 248
+    },
+    {
+      "query": "folder",
+      "sample": 3,
+      "milliseconds": 3.380707000003895,
+      "total": 1
+    },
+    {
+      "query": "combined",
+      "sample": 3,
+      "milliseconds": 4.484878999995999,
+      "total": 1
+    },
+    {
+      "query": "similar",
+      "sample": 3,
+      "milliseconds": 40.28564600000391,
+      "total": 1000
+    },
+    {
+      "query": "all",
+      "sample": 4,
+      "milliseconds": 37.40308799999184,
+      "total": 1000
+    },
+    {
+      "query": "fulltext",
+      "sample": 4,
+      "milliseconds": 12.078737000003457,
+      "total": 1
+    },
+    {
+      "query": "fulltext-cjk",
+      "sample": 4,
+      "milliseconds": 9.26211900000635,
+      "total": 1
+    },
+    {
+      "query": "fulltext-tag",
+      "sample": 4,
+      "milliseconds": 7.596132000006037,
+      "total": 1
+    },
+    {
+      "query": "tag",
+      "sample": 4,
+      "milliseconds": 10.763937999989139,
+      "total": 1
+    },
+    {
+      "query": "rating",
+      "sample": 4,
+      "milliseconds": 8.285819999990053,
+      "total": 1
+    },
+    {
+      "query": "type",
+      "sample": 4,
+      "milliseconds": 41.49982799999998,
+      "total": 1000
+    },
+    {
+      "query": "color",
+      "sample": 4,
+      "milliseconds": 41.643488000001526,
+      "total": 333
+    },
+    {
+      "query": "source",
+      "sample": 4,
+      "milliseconds": 41.3612540000031,
+      "total": 500
+    },
+    {
+      "query": "date",
+      "sample": 4,
+      "milliseconds": 36.68642899999395,
+      "total": 1000
+    },
+    {
+      "query": "dimension",
+      "sample": 4,
+      "milliseconds": 40.15900499999407,
+      "total": 248
+    },
+    {
+      "query": "folder",
+      "sample": 4,
+      "milliseconds": 3.036870000010822,
+      "total": 1
+    },
+    {
+      "query": "combined",
+      "sample": 4,
+      "milliseconds": 4.3678730000101496,
+      "total": 1
+    },
+    {
+      "query": "similar",
+      "sample": 4,
+      "milliseconds": 40.89987000000838,
+      "total": 1000
+    }
+  ],
+  "outsideRequests": [],
+  "ingestionMilliseconds": 10129.797244000001,
+  "automaticMetadata": ["sd-webui", "comfyui"],
+  "browserSearch": [
+    {
+      "query": "cura-00002-sd.png",
+      "inputToPaintMs": 109.90000000596046,
+      "inputToRequestMs": 62.70000000298023,
+      "inputToResponseMs": 83.20000000298023
+    },
+    {
+      "query": "cura-00003-comfy.png",
+      "inputToPaintMs": 112,
+      "inputToRequestMs": 62.5,
+      "inputToResponseMs": 78.59999999403954
+    },
+    {
+      "query": "cura-00004-sd.png",
+      "inputToPaintMs": 108.59999999403954,
+      "inputToRequestMs": 62,
+      "inputToResponseMs": 78
+    },
+    {
+      "query": "cura-00005-comfy.png",
+      "inputToPaintMs": 107.8999999910593,
+      "inputToRequestMs": 62.29999999701977,
+      "inputToResponseMs": 77.79999999701977
+    },
+    {
+      "query": "cura-00006-sd.png",
+      "inputToPaintMs": 100.8999999910593,
+      "inputToRequestMs": 62.19999998807907,
+      "inputToResponseMs": 75.59999999403954
+    }
+  ],
+  "thumbnails": {
+    "requested": 1000,
+    "decoded": 1000,
+    "failures": []
+  },
+  "querySummary": [
+    {
+      "query": "all",
+      "medianMilliseconds": 38.259115999986534,
+      "worstMilliseconds": 58.88412500001141
+    },
+    {
+      "query": "fulltext",
+      "medianMilliseconds": 11.706317000003764,
+      "worstMilliseconds": 13.571643999996013
+    },
+    {
+      "query": "fulltext-cjk",
+      "medianMilliseconds": 10.370255999994697,
+      "worstMilliseconds": 14.511379000003217
+    },
+    {
+      "query": "fulltext-tag",
+      "medianMilliseconds": 8.525198999996064,
+      "worstMilliseconds": 10.373019999999087
+    },
+    {
+      "query": "tag",
+      "medianMilliseconds": 10.329274000003352,
+      "worstMilliseconds": 10.763937999989139
+    },
+    {
+      "query": "rating",
+      "medianMilliseconds": 8.285819999990053,
+      "worstMilliseconds": 11.593928000002052
+    },
+    {
+      "query": "type",
+      "medianMilliseconds": 38.36779899999965,
+      "worstMilliseconds": 45.84803300000203
+    },
+    {
+      "query": "color",
+      "medianMilliseconds": 45.74786599999061,
+      "worstMilliseconds": 55.36979599999904
+    },
+    {
+      "query": "source",
+      "medianMilliseconds": 41.3612540000031,
+      "worstMilliseconds": 52.53624200000195
+    },
+    {
+      "query": "date",
+      "medianMilliseconds": 37.79517899999337,
+      "worstMilliseconds": 50.06222899998829
+    },
+    {
+      "query": "dimension",
+      "medianMilliseconds": 40.15900499999407,
+      "worstMilliseconds": 42.9259999999922
+    },
+    {
+      "query": "folder",
+      "medianMilliseconds": 4.447383000006084,
+      "worstMilliseconds": 5.525504999997793
+    },
+    {
+      "query": "combined",
+      "medianMilliseconds": 4.484878999995999,
+      "worstMilliseconds": 5.495460000005551
+    },
+    {
+      "query": "similar",
+      "medianMilliseconds": 40.89987000000838,
+      "worstMilliseconds": 80.51174199998786
+    }
+  ],
+  "gridScroll": {
+    "frames": [
+      16.699999999999818, 16.699999999999818, 16.700000000000273,
+      16.59999999999991, 16.699999999999818, 16.600000000000364,
+      16.699999999999818, 16.59999999999991, 16.700000000000273,
+      16.699999999999818, 16.59999999999991, 16.800000000000182,
+      16.59999999999991, 16.699999999999818, 16.600000000000364,
+      16.699999999999818, 16.699999999999818, 16.600000000000364,
+      16.59999999999991, 16.699999999999818, 16.700000000000273,
+      16.59999999999991, 16.699999999999818, 16.700000000000273,
+      16.699999999999818, 16.59999999999991, 16.700000000000273,
+      16.699999999999818, 16.59999999999991, 16.800000000000182,
+      16.59999999999991, 16.59999999999991, 16.700000000000273,
+      16.699999999999818, 16.699999999999818, 16.600000000000364,
+      16.699999999999818, 16.59999999999991, 16.700000000000273,
+      16.699999999999818, 16.699999999999818, 16.600000000000364,
+      16.699999999999818, 16.59999999999991, 16.59999999999991,
+      16.800000000000182, 16.59999999999991, 16.700000000000273,
+      16.699999999999818, 16.59999999999991, 16.700000000000273,
+      16.699999999999818, 16.699999999999818, 16.600000000000364,
+      16.699999999999818, 16.59999999999991, 16.700000000000273,
+      16.59999999999991, 16.699999999999818, 16.700000000000273,
+      16.699999999999818, 16.699999999999818, 16.600000000000364,
+      16.59999999999991, 16.799999999999727, 16.600000000000364,
+      16.699999999999818, 16.59999999999991, 16.700000000000273,
+      16.59999999999991, 16.699999999999818, 33.30000000000018,
+      16.699999999999818, 16.59999999999991, 16.800000000000182,
+      16.59999999999991, 16.59999999999991, 33.40000000000009,
+      16.59999999999991, 33.40000000000009, 16.700000000000273,
+      16.59999999999991, 16.699999999999818, 16.700000000000273,
+      16.59999999999991, 16.699999999999818, 16.700000000000273,
+      16.699999999999818, 16.59999999999991, 16.700000000000273,
+      16.59999999999991, 16.699999999999818, 16.59999999999991,
+      16.800000000000182, 16.5, 16.800000000000182, 16.59999999999991,
+      16.699999999999818, 16.59999999999991, 16.700000000000273,
+      16.699999999999818, 16.59999999999991, 16.700000000000273,
+      50.09999999999991, 16.59999999999991, 16.59999999999991,
+      16.800000000000182, 16.5, 16.699999999999818, 16.800000000000182,
+      16.59999999999991, 16.700000000000273, 16.59999999999991,
+      16.699999999999818, 16.700000000000273, 16.599999999999454,
+      16.700000000000728, 16.599999999999454, 16.699999999999818,
+      16.700000000000728
+    ],
+    "longTasks": [52],
+    "maximumScroll": 55052,
+    "frameMedianMs": 16.699999999999818,
+    "frameP95Ms": 16.800000000000182,
+    "frameMaximumMs": 50.09999999999991,
+    "maximumRenderedItems": 40,
+    "minimumRenderedItems": 24
+  },
+  "listScroll": {
+    "frames": [
+      16.699999999999818, 16.700000000000728, 16.599999999999454,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.699999999999818, 16.700000000000728, 16.599999999999454,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.699999999999818, 16.700000000000728, 16.699999999999818,
+      16.599999999999454, 16.600000000000364, 16.699999999999818,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.699999999999818, 16.700000000000728, 16.599999999999454,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.699999999999818, 16.700000000000728, 16.599999999999454,
+      16.699999999999818, 16.600000000000364, 16.600000000000364,
+      16.799999999999272, 16.700000000000728, 16.599999999999454,
+      16.600000000000364, 16.699999999999818, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.699999999999818,
+      16.699999999999818, 16.600000000000364, 16.600000000000364,
+      16.799999999999272, 16.600000000000364, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.600000000000364,
+      16.799999999999272, 16.600000000000364, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.699999999999818,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.699999999999818, 16.700000000000728, 16.599999999999454,
+      16.600000000000364, 16.699999999999818, 16.699999999999818,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.699999999999818,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.699999999999818,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.699999999999818,
+      16.699999999999818, 16.600000000000364, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.600000000000364,
+      16.799999999999272, 16.600000000000364, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.699999999999818,
+      16.600000000000364, 16.699999999999818, 16.600000000000364,
+      16.699999999999818, 16.699999999999818, 16.600000000000364,
+      16.699999999999818, 16.699999999999818, 16.600000000000364,
+      16.699999999999818, 16.699999999999818, 16.699999999999818
+    ],
+    "longTasks": [],
+    "maximumScroll": 63552,
+    "frameMedianMs": 16.699999999999818,
+    "frameP95Ms": 16.700000000000728,
+    "frameMaximumMs": 16.799999999999272,
+    "maximumRenderedItems": 15,
+    "minimumRenderedItems": 10
+  },
+  "watcherApiMilliseconds": 304.93061700000544,
+  "watcherBrowserMilliseconds": 871.0614050000004,
+  "cleanupFileErrors": [],
+  "source": {
+    "verifiedCommit": "0638b602226315fb3a3bb0d32d1aa8f29cc1e529",
+    "note": "Production source built and unit-tested at c904f91; final full browser run includes the exact process prompt correction committed in 0638b60. No production code changed between them."
+  }
+}
