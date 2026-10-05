@@ -242,7 +242,9 @@ export class InboxMigrationStore {
       source.rootId !== record.rootId ||
       source.relativePath !==
         (relocated ? record.newRelativePath : record.oldRelativePath) ||
-      source.actualRelativePath !==
+      (relocated
+        ? normalizeRelativePath(source.actualRelativePath)
+        : source.actualRelativePath) !==
         (relocated ? record.newRelativePath : record.oldActualRelativePath) ||
       (strict && source.lastHash !== record.lastHash)
     ) {

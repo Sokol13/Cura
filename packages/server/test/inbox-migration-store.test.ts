@@ -328,27 +328,47 @@ describe('Inbox migration journal', () => {
     expect(() => journal.update(plan.id, { state: 'planned' })).toThrow();
   });
 
-  it('finishes recovery after a same-hash rescan changes source timestamps', async () => {
-    const f = await fixture();
-    f.db.sqlite
-      .prepare('UPDATE asset_sources SET updated_at=? WHERE id=?')
-      .run('2020-01-01T00:00:00.000Z', f.source.id);
-    const journal = f.store.inboxMigrations;
-    const plan = journal.plan(f.source.id, '2026-10-05/file.png', observed);
-    journal.update(plan.id, { state: 'published', target });
-    journal.relocate(plan.id);
-    f.store.ingest({
-      libraryId: f.library.id,
-      rootId: f.root.id,
-      relativePath: plan.newRelativePath,
-      actualRelativePath: plan.newRelativePath,
-      processed: processed(observed.hash),
-    });
-    const current = f.store.getSource(f.root.id, plan.newRelativePath)!;
-    expect(current.updatedAt).not.toBe(plan.sourceUpdatedAt);
-    expect(journal.complete(plan.id).state).toBe('complete');
-    expect(f.store.getSource(f.root.id, plan.newRelativePath)).toEqual(current);
-  });
+  it.each(['complete', 'rollback'] as const)(
+    '%s recovers after a same-hash Windows rescan changes path spelling and timestamps',
+    async (action) => {
+      const f = await fixture();
+      f.db.sqlite
+        .prepare('UPDATE asset_sources SET updated_at=? WHERE id=?')
+        .run('2020-01-01T00:00:00.000Z', f.source.id);
+      const journal = f.store.inboxMigrations;
+      const plan = journal.plan(f.source.id, '2026-10-05/角色-é.png', observed);
+      journal.update(plan.id, { state: 'published', target });
+      journal.relocate(plan.id);
+      f.store.ingest({
+        libraryId: f.library.id,
+        rootId: f.root.id,
+        relativePath: plan.newRelativePath,
+        actualRelativePath: plan.newRelativePath
+          .replaceAll('/', '\\')
+          .normalize('NFD'),
+        processed: processed(observed.hash),
+      });
+      const current = f.store.getSource(f.root.id, plan.newRelativePath)!;
+      expect(current.updatedAt).not.toBe(plan.sourceUpdatedAt);
+      expect(journal[action](plan.id).state).toBe(
+        action === 'complete' ? 'complete' : 'reserved',
+      );
+      expect(
+        f.store.getSource(
+          f.root.id,
+          action === 'complete' ? plan.newRelativePath : plan.oldRelativePath,
+        ),
+      ).toEqual(
+        action === 'complete'
+          ? current
+          : {
+              ...current,
+              relativePath: plan.oldRelativePath,
+              actualRelativePath: plan.oldActualRelativePath,
+            },
+      );
+    },
+  );
 
   it('preserves offline state while completing a migration after root revival', async () => {
     const f = await fixture();
