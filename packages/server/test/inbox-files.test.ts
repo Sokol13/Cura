@@ -108,6 +108,66 @@ it('preserves a valid long extension when the complete basename fits', async () 
   expect(basename(result.absolutePath)).toBe(name);
 });
 
+it('reserves a migration name even when the pending target is not on disk', async () => {
+  const directory = await root();
+  const result = await chooseInboxMigrationPath(directory, 'café.png', date, [
+    '2026-10-05/CAFE\u0301.PNG',
+  ]);
+  expect(result).toMatch(/^2026-10-05\/café-[a-f0-9]{8}\.png$/);
+  expect(await fs.readdir(join(directory, '2026-10-05'))).toEqual([]);
+});
+
+it('uploads under a suffix when the unsuffixed path is reserved but not on disk', async () => {
+  const directory = await root();
+  const result = await createInboxUpload(
+    directory,
+    'picture.png',
+    Buffer.from('upload'),
+    date,
+    undefined,
+    ['2026-10-05\\PICTURE.PNG'],
+  );
+  expect(result.relativePath).toMatch(/^2026-10-05\/picture-[a-f0-9]{8}\.png$/);
+  expect(await fs.readFile(result.absolutePath, 'utf8')).toBe('upload');
+});
+
+it('ignores reservations from another date when the requested basename is free', async () => {
+  const directory = await root();
+  expect(
+    await chooseInboxMigrationPath(directory, 'picture.png', date, [
+      '2026-10-04/picture.png',
+    ]),
+  ).toBe('2026-10-05/picture.png');
+});
+
+it('remembers an exclusive-open collision even when the directory listing stays empty', async () => {
+  const directory = await root();
+  vi.spyOn(fs, 'open').mockRejectedValueOnce(
+    Object.assign(new Error('exists'), { code: 'EEXIST' }),
+  );
+  const result = await createInboxUpload(
+    directory,
+    'picture.png',
+    Buffer.from('upload'),
+    date,
+  );
+  expect(result.relativePath).toMatch(/^2026-10-05\/picture-[a-f0-9]{8}\.png$/);
+  expect(await fs.readFile(result.absolutePath, 'utf8')).toBe('upload');
+});
+
+it('preserves disk-full guidance without exposing the original filesystem error message', async () => {
+  const directory = await root();
+  vi.spyOn(fs, 'open').mockRejectedValueOnce(
+    Object.assign(new Error('private path canary'), { code: 'ENOSPC' }),
+  );
+  await expect(
+    createInboxUpload(directory, 'picture.png', Buffer.from('upload'), date),
+  ).rejects.toMatchObject({
+    code: 'ENOSPC',
+    message: 'Inbox operation failed: ENOSPC',
+  });
+});
+
 it('uses Unicode case folding for portable collision detection', async () => {
   const directory = await root();
   await createInboxUpload(directory, 'STRASSE.png', Buffer.from('first'), date);

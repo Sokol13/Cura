@@ -20,6 +20,7 @@ export type InboxFileErrorCode =
   | 'EACCES'
   | 'EBUSY'
   | 'ENOENT'
+  | 'ENOSPC'
   | 'IO';
 
 export class InboxFileError extends Error {
@@ -53,7 +54,8 @@ async function safely<T>(operation: () => Promise<T>): Promise<T> {
       reason === 'EPERM' ||
       reason === 'EACCES' ||
       reason === 'EBUSY' ||
-      reason === 'ENOENT'
+      reason === 'ENOENT' ||
+      reason === 'ENOSPC'
     )
       fail(reason);
     fail(reason === 'ELOOP' ? 'UNSAFE_PATH' : 'IO');
@@ -181,9 +183,15 @@ async function availableName(
   root: string,
   day: string,
   name: string,
+  reservedRelativePaths: readonly string[],
 ): Promise<string> {
   const folder = await directory(root, day);
   const names = new Set((await fs.readdir(folder)).map(folded));
+  for (const reserved of reservedRelativePaths) {
+    const segments = parts(reserved);
+    if (segments.length === 2 && segments[0] === day)
+      names.add(folded(segments[1]!));
+  }
   let candidate = filename(name);
   while (names.has(folded(candidate)))
     candidate = filename(name, `-${randomBytes(4).toString('hex')}`);
@@ -193,8 +201,16 @@ export async function chooseInboxMigrationPath(
   root: string,
   name: string,
   date: Date,
+  reservedRelativePaths: readonly string[] = [],
 ): Promise<string> {
-  return safely(() => availableName(root, localDate(date), parsedName(name)));
+  return safely(() =>
+    availableName(
+      root,
+      localDate(date),
+      parsedName(name),
+      reservedRelativePaths,
+    ),
+  );
 }
 
 export async function createInboxUpload(
@@ -203,13 +219,15 @@ export async function createInboxUpload(
   bytes: Buffer,
   date = new Date(),
   shouldStop?: () => boolean,
+  reservedRelativePaths: readonly string[] = [],
 ): Promise<{ absolutePath: string; relativePath: string }> {
   return safely(async () => {
     const parsed = parsedName(name);
     const day = localDate(date);
+    const reservations = [...reservedRelativePaths];
     for (;;) {
       stopped(shouldStop);
-      const relativePath = await availableName(root, day, parsed);
+      const relativePath = await availableName(root, day, parsed, reservations);
       const absolutePath = await contained(root, relativePath, true);
       let handle;
       try {
@@ -222,7 +240,12 @@ export async function createInboxUpload(
           0o600,
         );
       } catch (error) {
-        if (code(error) === 'EEXIST') continue;
+        if (code(error) === 'EEXIST') {
+          // The filesystem is authoritative even when its listing has not
+          // exposed a conflicting name (or folds names differently).
+          reservations.push(relativePath);
+          continue;
+        }
         throw error;
       }
       let complete = false;
