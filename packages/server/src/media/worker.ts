@@ -4,6 +4,7 @@ import { join, relative, resolve } from 'node:path';
 import { savePreview } from './preview-upload.js';
 import { processFile } from './image.js';
 import { resolveContained } from './path-utils.js';
+import { discoverFiles } from './scan.js';
 
 interface Job {
   id: number;
@@ -17,6 +18,7 @@ interface Job {
   bytes: Uint8Array;
   root: string;
   relativePath: string;
+  knownRelativePaths?: readonly string[];
   dataDir: string;
   cacheDir: string;
 }
@@ -43,35 +45,6 @@ async function registeredRoot(root: string) {
       { code: 'ROOT_CHANGED' },
     );
   return canonical;
-}
-async function scan(
-  root: string,
-): Promise<{ files: string[]; errors: FileFailure[] }> {
-  const canonicalRoot = await registeredRoot(root);
-  const files: string[] = [];
-  const errors: FileFailure[] = [];
-  const pending = [canonicalRoot];
-  while (pending.length && !stopping) {
-    const directory = pending.pop()!;
-    try {
-      const safe =
-        directory === canonicalRoot
-          ? await registeredRoot(root)
-          : await resolveContained(
-              canonicalRoot,
-              relative(canonicalRoot, directory),
-            );
-      for (const entry of await readdir(safe, { withFileTypes: true })) {
-        if (entry.isSymbolicLink()) continue;
-        const file = join(safe, entry.name);
-        if (entry.isDirectory()) pending.push(file);
-        else if (entry.isFile()) files.push(file);
-      }
-    } catch (error) {
-      errors.push(failure(error));
-    }
-  }
-  return { files, errors };
 }
 async function process(job: Job) {
   const root = await registeredRoot(job.root);
@@ -185,7 +158,11 @@ port.on('message', (job: Job) => {
           job.kind === 'preview'
             ? await savePreview(job.cacheDir, job.bytes)
             : job.kind === 'scan'
-              ? await scan(job.root)
+              ? await discoverFiles(
+                  job.root,
+                  job.knownRelativePaths ?? [],
+                  () => stopping,
+                )
               : job.kind === 'cache-info' || job.kind === 'cache-clear'
                 ? await cache(job.cacheDir, job.kind === 'cache-clear')
                 : await process(job),
