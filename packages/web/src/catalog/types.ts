@@ -13,4 +13,5 @@ export type Filters = {
   similarTo?: string | undefined;
   trash?: boolean | undefined;
   archived?: boolean | undefined;
+  missing?: boolean | undefined;
 };

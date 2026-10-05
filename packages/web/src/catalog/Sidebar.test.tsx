@@ -107,6 +107,179 @@ beforeEach(async () => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('catalog sidebar', () => {
+  it('defaults root removal to recoverable trash and keeps the original-file explanation clear', async () => {
+    const callbacks = mount({
+      roots: [
+        {
+          ...stamp,
+          id: 'root-1',
+          libraryId: 'library-1',
+          path: '/Pictures',
+          kind: 'reference',
+        },
+      ],
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Unregister directory' }),
+    );
+    const dialog = within(screen.getByRole('dialog'));
+    expect(
+      dialog.getByRole('radio', {
+        name: 'Also remove these assets (move to Trash; recoverable)',
+      }),
+    ).toBeChecked();
+    expect(
+      dialog.getByRole('radio', {
+        name: 'Only stop watching (keep history; mark assets offline)',
+      }),
+    ).not.toBeChecked();
+    expect(
+      dialog.getByText(/Original files stay in their current folder/),
+    ).toBeVisible();
+    expect(fetchMock).not.toHaveBeenCalled();
+    fireEvent.click(
+      dialog.getByRole('button', { name: 'Unregister directory' }),
+    );
+    await waitFor(() => expect(callbacks.onChanged).toHaveBeenCalledOnce());
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/roots/root-1?mode=trash',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+  });
+
+  it('supports offline removal and restores the trash default after cancelling and reopening', async () => {
+    const callbacks = mount({
+      roots: [
+        {
+          ...stamp,
+          id: 'root-1',
+          libraryId: 'library-1',
+          path: '/Pictures',
+          kind: 'reference',
+        },
+      ],
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Unregister directory' }),
+    );
+    let dialog = within(screen.getByRole('dialog'));
+    fireEvent.click(dialog.getByRole('radio', { name: /Only stop watching/ }));
+    fireEvent.click(dialog.getByRole('button', { name: 'Cancel' }));
+    expect(fetchMock).not.toHaveBeenCalled();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Unregister directory' }),
+    );
+    dialog = within(screen.getByRole('dialog'));
+    expect(
+      dialog.getByRole('radio', { name: /Also remove these assets/ }),
+    ).toBeChecked();
+    fireEvent.click(dialog.getByRole('radio', { name: /Only stop watching/ }));
+    fireEvent.click(
+      dialog.getByRole('button', { name: 'Unregister directory' }),
+    );
+    await waitFor(() => expect(callbacks.onChanged).toHaveBeenCalledOnce());
+    expect(fetchMock).toHaveBeenCalledWith(
+      '/api/roots/root-1?mode=offline',
+      expect.objectContaining({ method: 'DELETE' }),
+    );
+  });
+
+  it('keeps reverse keyboard navigation inside the dialog after selecting offline mode', () => {
+    mount({
+      roots: [
+        {
+          ...stamp,
+          id: 'root-1',
+          libraryId: 'library-1',
+          path: '/Pictures',
+          kind: 'reference',
+        },
+      ],
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Unregister directory' }),
+    );
+    const dialog = within(screen.getByRole('dialog'));
+    const offline = dialog.getByRole('radio', { name: /Only stop watching/ });
+    fireEvent.click(offline);
+    offline.focus();
+    fireEvent.keyDown(offline, { key: 'Tab', shiftKey: true });
+    expect(
+      dialog.getByRole('button', { name: 'Unregister directory' }),
+    ).toHaveFocus();
+    fireEvent.keyDown(document.activeElement!, { key: 'Tab' });
+    expect(offline).toHaveFocus();
+  });
+
+  it('shows both explicit root-removal choices in Chinese', async () => {
+    await i18n.changeLanguage('zh-CN');
+    mount({
+      roots: [
+        {
+          ...stamp,
+          id: 'root-1',
+          libraryId: 'library-1',
+          path: '/Pictures',
+          kind: 'reference',
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', { name: '取消登记目录' }));
+    expect(
+      screen.getByRole('radio', {
+        name: '同时移除这些资产（进回收站，可恢复）',
+      }),
+    ).toBeChecked();
+    expect(
+      screen.getByRole('radio', {
+        name: '仅停止监听（保留历史版本，资产标记为离线）',
+      }),
+    ).not.toBeChecked();
+  });
+
+  it('restores, edits and clears the unavailable-source rule in saved searches', async () => {
+    const callbacks = mount({
+      filters: { missing: true },
+      collections: [
+        {
+          ...collections[0],
+          rules: { ...collections[0]!.rules, missing: true },
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Favorites' }));
+    expect(callbacks.onFilterChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ missing: true }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'All assets' }));
+    expect(callbacks.onFilterChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ missing: undefined }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Favorites' }));
+    const dialog = within(screen.getByRole('dialog'));
+    expect(dialog.getByLabelText('Source file unavailable')).toBeChecked();
+    fireEvent.click(dialog.getByLabelText('Source file unavailable'));
+    fireEvent.click(dialog.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
+    expect(body.rules).not.toHaveProperty('missing');
+  });
+
+  it('keeps unavailable-source filtering when saving a new smart folder', async () => {
+    mount({ filters: { missing: true } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save search' }));
+    const dialog = within(screen.getByRole('dialog'));
+    fireEvent.change(dialog.getByLabelText('Name'), {
+      target: { value: 'Offline assets' },
+    });
+    expect(dialog.getByLabelText('Source file unavailable')).toBeChecked();
+    fireEvent.click(dialog.getByRole('button', { name: 'Create' }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(
+      JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)),
+    ).toMatchObject({ name: 'Offline assets', rules: { missing: true } });
+  });
+
   it('opens archived assets and restores archived filters from a saved search', () => {
     const callbacks = mount({
       filters: { archived: true },

@@ -44,6 +44,7 @@ type EditDialog = {
 type DialogState =
   | EditDialog
   | { kind: 'root' }
+  | { kind: 'remove-root'; id: string; path: string; mode: 'trash' | 'offline' }
   | {
       kind: 'delete';
       path: string;
@@ -67,6 +68,7 @@ const emptyFilters: Filters = {
   similarTo: undefined,
   trash: false,
   archived: false,
+  missing: undefined,
 };
 
 function savedFilters(rules: Collection['rules']): Filters {
@@ -101,6 +103,7 @@ function savedFilters(rules: Collection['rules']): Filters {
     similarTo,
     trash,
     archived,
+    missing: 'missing' in rules && rules.missing === true ? true : undefined,
   };
 }
 
@@ -138,7 +141,10 @@ export function Sidebar({
   const activeLibrary = libraries.find((library) => library.id === libraryId);
   const close = () => setDialog(null);
   const edit =
-    dialog && dialog.kind !== 'delete' && dialog.kind !== 'root'
+    dialog &&
+    dialog.kind !== 'delete' &&
+    dialog.kind !== 'root' &&
+    dialog.kind !== 'remove-root'
       ? dialog
       : null;
 
@@ -545,13 +551,10 @@ export function Sidebar({
                   '×',
                   () =>
                     setDialog({
-                      kind: 'delete',
-                      name: root.path,
-                      path: `/api/roots/${encodeURIComponent(root.id)}`,
-                      hint: t(
-                        'unregisterFolderHint',
-                        'Cura stops watching this folder. Your originals and retained versions remain available.',
-                      ),
+                      kind: 'remove-root',
+                      id: root.id,
+                      path: root.path,
+                      mode: 'trash',
                     }),
                 )}
             </div>
@@ -597,6 +600,49 @@ export function Sidebar({
           onClose={close}
           onRegistered={onChanged}
         />
+      )}
+      {dialog?.kind === 'remove-root' && (
+        <OrganizationDialog
+          title={t('unregisterFolder')}
+          submitLabel={t('unregisterFolder')}
+          danger={dialog.mode === 'trash'}
+          onClose={close}
+          onSubmit={async () => {
+            await request(
+              `/api/roots/${encodeURIComponent(dialog.id)}?mode=${dialog.mode}`,
+              { method: 'DELETE' },
+            );
+            onChanged();
+            close();
+          }}
+        >
+          <p className="root-path" title={dialog.path}>
+            {dialog.path}
+          </p>
+          <p className="field-hint">{t('unregisterFolderHint')}</p>
+          <fieldset className="root-removal-options">
+            <legend>{t('unregisterFolderOptions')}</legend>
+            {(['trash', 'offline'] as const).map((mode) => (
+              <label className="root-removal-option" key={mode}>
+                <input
+                  type="radio"
+                  name="root-removal-mode"
+                  value={mode}
+                  checked={dialog.mode === mode}
+                  onChange={() => setDialog({ ...dialog, mode })}
+                />
+                <span>
+                  {t(
+                    mode === 'trash'
+                      ? 'unregisterAndTrash'
+                      : 'unregisterKeepOffline',
+                  )}
+                </span>
+              </label>
+            ))}
+          </fieldset>
+          <p className="field-hint">{t('unregisterOtherSourceHint')}</p>
+        </OrganizationDialog>
       )}
       {dialog?.kind === 'delete' && (
         <OrganizationDialog
@@ -838,6 +884,18 @@ export function Sidebar({
                       />
                     </label>
                   ))}
+                  <label className="checkbox-field">
+                    <input
+                      type="checkbox"
+                      checked={edit.rules?.missing ?? false}
+                      onChange={(event) =>
+                        updateRule({
+                          missing: event.target.checked ? true : undefined,
+                        })
+                      }
+                    />
+                    {t('sourceUnavailable')}
+                  </label>
                   <label className="checkbox-field">
                     <input
                       type="checkbox"

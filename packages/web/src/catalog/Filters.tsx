@@ -104,6 +104,16 @@ export function FilterPanel({
           />
         </label>
       ))}
+      <label className="checkbox-field">
+        <input
+          type="checkbox"
+          checked={filters.missing ?? false}
+          onChange={(event) =>
+            onChange({ missing: event.target.checked ? true : undefined })
+          }
+        />
+        {t('sourceUnavailable')}
+      </label>
       <button onClick={onClear}>{t('clearFilters')}</button>
     </section>
   );

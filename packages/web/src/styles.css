@@ -979,6 +979,29 @@ progress {
   flex-direction: column;
   gap: 6px;
 }
+.root-removal-options {
+  display: grid;
+  gap: 14px;
+  border: 0;
+  padding: 0;
+  min-width: 0;
+}
+.root-removal-options legend {
+  margin-bottom: 12px;
+}
+.root-removal-option {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+.root-removal-option input[type='radio'] {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
 .directory-path {
   display: flex;
   gap: 7px;

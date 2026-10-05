@@ -44,11 +44,30 @@ export function OrganizationDialog({
         ? document.activeElement
         : null;
     const node = panel.current;
-    node
-      ?.querySelector<HTMLElement>(
-        'input:not(:disabled), select:not(:disabled), textarea:not(:disabled), button:not(:disabled)',
-      )
-      ?.focus();
+    const focusableControls = () => {
+      const controls = Array.from(
+        node?.querySelectorAll<HTMLElement>(
+          ':is(button, input, select, textarea, [tabindex="0"]):not(:disabled)',
+        ) ?? [],
+      );
+      return controls.filter((control) => {
+        if (
+          !(control instanceof HTMLInputElement) ||
+          control.type !== 'radio' ||
+          !control.name
+        )
+          return true;
+        const group = controls.filter(
+          (candidate): candidate is HTMLInputElement =>
+            candidate instanceof HTMLInputElement &&
+            candidate.type === 'radio' &&
+            candidate.name === control.name &&
+            candidate.form === control.form,
+        );
+        return control === (group.find((radio) => radio.checked) ?? group[0]);
+      });
+    };
+    focusableControls()[0]?.focus();
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
@@ -56,11 +75,7 @@ export function OrganizationDialog({
         if (!busyRef.current) close.current();
       }
       if (event.key !== 'Tab') return;
-      const controls = Array.from(
-        node?.querySelectorAll<HTMLElement>(
-          'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]',
-        ) ?? [],
-      );
+      const controls = focusableControls();
       const first = controls[0];
       const last = controls.at(-1);
       if (event.shiftKey && document.activeElement === first) {

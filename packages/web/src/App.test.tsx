@@ -167,6 +167,42 @@ beforeEach(async () => {
 });
 
 describe('Cura catalog', () => {
+  it('combines unavailable-source filtering with search and clears it from requests', async () => {
+    render(<App />);
+    await screen.findByRole('button', { name: 'Select Forest.png' });
+    fireEvent.change(screen.getByRole('searchbox'), {
+      target: { value: 'Forest' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+    fireEvent.click(
+      screen.getByRole('checkbox', { name: 'Source file unavailable' }),
+    );
+    await waitFor(() =>
+      expect(
+        queries.some(
+          (url) =>
+            url.searchParams.get('missing') === 'true' &&
+            url.searchParams.get('q') === 'Forest',
+        ),
+      ).toBe(true),
+    );
+    queries = [];
+    fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(
+      screen.getByRole('checkbox', { name: 'Source file unavailable' }),
+    ).not.toBeChecked();
+    await waitFor(() =>
+      expect(
+        queries.some(
+          (url) =>
+            url.pathname.endsWith('/assets') &&
+            !url.searchParams.has('missing') &&
+            !url.searchParams.has('q'),
+        ),
+      ).toBe(true),
+    );
+  });
+
   it('restores the server-selected library, selects an asset and saves metadata', async () => {
     render(<App />);
     expect(screen.getByRole('heading', { name: 'Cura' })).toBeVisible();

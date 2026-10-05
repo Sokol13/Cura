@@ -43,7 +43,14 @@ const en = {
   searchTrash: 'Search in trash',
   unrated: 'Unrated',
   unregisterFolderHint:
-    'Cura stops watching this directory. Your originals and retained versions remain available.',
+    'Original files stay in their current folder and are not deleted. Cura stops watching for changes. Saved versions can still be previewed or downloaded.',
+  unregisterFolderOptions: 'What should happen to the assets?',
+  unregisterAndTrash: 'Also remove these assets (move to Trash; recoverable)',
+  unregisterKeepOffline:
+    'Only stop watching (keep history; mark assets offline)',
+  unregisterOtherSourceHint:
+    'Assets with another available registered copy stay in the library.',
+  sourceUnavailable: 'Source file unavailable',
   library: 'Library',
   newLibrary: 'New library',
   renameLibrary: 'Rename library',
@@ -252,7 +259,14 @@ const zh: Record<keyof typeof en, string> = {
   libraryNavigation: '资产库导航',
   searchTrash: '搜索回收站',
   unrated: '未评分',
-  unregisterFolderHint: 'Cura 将停止监听此目录，原文件与保留的版本仍然可用。',
+  unregisterFolderHint:
+    '原文件仍在原来的文件夹中，不会被删除。Cura 不再监听文件变化；已保存的版本仍可预览或下载。',
+  unregisterFolderOptions: '如何处理此目录中的资产？',
+  unregisterAndTrash: '同时移除这些资产（进回收站，可恢复）',
+  unregisterKeepOffline: '仅停止监听（保留历史版本，资产标记为离线）',
+  unregisterOtherSourceHint:
+    '如果资产在其他已登记目录中还有可用副本，它会继续保留在库中。',
+  sourceUnavailable: '源文件不可用',
   library: '资产库',
   newLibrary: '新建资产库',
   renameLibrary: '重命名资产库',
