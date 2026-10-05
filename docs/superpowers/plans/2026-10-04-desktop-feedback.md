@@ -156,7 +156,7 @@
 
 - [x] Write and observe a failing regression covering two different assets plus historical versions, exact source bytes after replacement, actor/time persistence/cloud/export, deleted-source history and accessible side-by-side UI.
 - [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
-- [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
+- [x] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 14: Explain export dependencies before download
 
