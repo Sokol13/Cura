@@ -102,7 +102,7 @@ For a consistent backup, stop Cura and copy the **whole data directory**, plus r
 - **Upload rejected:** Browser import/replacement accepts at most 100 MiB per file. Names must be portable filenames, not paths or Windows reserved device names.
 - **Port already used:** Stop the other Cura process or select another port. Do not run two servers against the same data directory.
 
-Export **Settings → Export diagnostics** after reproducing a problem. The ZIP contains `diagnostics.json` (system/runtime/version and database statistics) and `logs.json` (bounded, filtered log records). It excludes asset bytes and full metadata; inspect the archive before sharing. If Cura cannot start, include the terminal error and relevant `cura.log` lines. See [SMOKE_TEST.md](SMOKE_TEST.md) for the desktop report checklist.
+Export **Settings → Export diagnostics** after reproducing a problem. The ZIP contains `diagnostics.json` (system/runtime/version, database statistics, latest registered-folder scans, thumbnail worker queue, retained-version preview counts and database integrity/foreign-key results) and `logs.json` (the last 200 warnings/errors/fatal records, retained across restarts independently of HTTP traffic). Each section reports unavailable/partial capture explicitly. It excludes asset bytes, full metadata, credentials and file paths; scan root IDs, stages, error codes and extension counts remain useful for debugging. Inspect the archive before sharing. If Cura cannot start, include the terminal error and relevant `cura.log` lines. See [SMOKE_TEST.md](SMOKE_TEST.md) for the desktop report checklist.
 
 ## Native modules and development
 

@@ -1,7 +1,12 @@
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { HealthResponseJsonSchema, HealthResponseSchema } from '@cura/shared';
+import {
+  DIAGNOSTIC_MESSAGES,
+  HealthResponseJsonSchema,
+  HealthResponseSchema,
+} from '@cura/shared';
 import Fastify, { type FastifyBaseLogger } from 'fastify';
+import pino from 'pino';
 import type { AppDatabase } from './database.js';
 import type { UserPaths } from './paths.js';
 import { CatalogStore } from './catalog-store.js';
@@ -18,6 +23,8 @@ import { registerFcpxmlRoutes } from './fcpxml/routes.js';
 import { SyncService, registerSyncRoutes } from './sync/index.js';
 import { isAllowedLocalRequest } from './security.js';
 import { registerStaticFiles } from './static-files.js';
+import { WarningJournal } from './diagnostics/journal.js';
+import { withDiagnosticJournal } from './diagnostics/logger.js';
 
 export const DEFAULT_WEB_ROOT = fileURLToPath(
   new URL('../../web/dist/', import.meta.url),
@@ -32,9 +39,17 @@ export interface AppOptions {
 }
 
 export async function createApp(options: AppOptions = {}) {
-  const app = Fastify(
-    options.loggerInstance ? { loggerInstance: options.loggerInstance } : {},
-  );
+  const journal = options.paths
+    ? new WarningJournal(options.paths.log)
+    : undefined;
+  const logger = journal
+    ? withDiagnosticJournal(
+        options.loggerInstance ?? pino({ enabled: false }),
+        journal,
+      )
+    : options.loggerInstance;
+  const app = Fastify(logger ? { loggerInstance: logger } : {});
+  if (journal) app.addHook('onClose', () => journal.close());
 
   app.addHook('onRequest', async (request, reply) => {
     if (
@@ -61,21 +76,13 @@ export async function createApp(options: AppOptions = {}) {
 
   if (options.database && options.paths) {
     const store = new CatalogStore(options.database);
-    const media = new MediaService(store, options.paths);
-    media.subscribe((event) => {
-      if (event.type === 'error')
-        app.log.error(
-          {
-            operation: 'media',
-            code: event.code ?? 'MEDIA_FAILURE',
-            libraryId: event.libraryId,
-            rootId: event.rootId,
-            assetId: event.assetId,
-          },
-          'Media operation failed; inspect the affected registered root.',
-        );
+    const media = new MediaService(store, options.paths, (event) => {
+      const { level, ...context } = event;
+      app.log[level](context, DIAGNOSTIC_MESSAGES[event.operation]);
     });
-    await registerCatalogRoutes(app, store, media, options.paths);
+    await registerCatalogRoutes(app, store, media, options.paths, {
+      diagnosticLogs: () => journal!.snapshot(),
+    });
     await registerPreviewRoutes(app, media);
     registerBrandRoutes(app, options.database, store, options.paths);
     registerBoardRoutes(app, new BoardStore(options.database), (event) =>

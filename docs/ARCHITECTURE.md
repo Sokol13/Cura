@@ -87,7 +87,7 @@ All JSON request bodies and query strings are parsed with shared Zod schemas. Re
 | `PATCH, DELETE /api/collections/:id`              | Update/remove saved rules                                                   |
 | `DELETE /api/roots/:id`                           | Unregister root and stop watcher; retained snapshots remain                 |
 | `PATCH /api/libraries/:libraryId`                 | Rename catalog                                                              |
-| `GET /api/diagnostics`                            | ZIP with version, platform, database stats and sanitized logs               |
+| `GET /api/diagnostics`                            | ZIP with scans, warnings, queues, database integrity and system stats       |
 | `GET /api/cache`                                  | Thumbnail cache file count and bytes                                        |
 | `POST /api/cache/clear`                           | Remove cached previews only; preserve originals and retained snapshots      |
 | `POST /api/cache/rebuild`                         | Rebuild previews for all retained versions, including trashed assets        |
@@ -97,7 +97,9 @@ Asset queries: `q`, `folderId`, `tagId`, `rating`, `type`, `color`, `source`, `a
 
 WebSocket events: `{ type: 'scan' | 'asset' | 'error' | 'thumbnail' | 'board', libraryId, rootId?, assetId?, boardId?, completed?, total?, scanId?, status?, scanSummary?, message?, code? }`. UI refetches active data and the open preview; reconnect also refreshes. A bounded recent-error buffer replays startup scan failures to later subscribers and clears repaired-root errors. HTTP remains authoritative when sockets disconnect. The browser uses error codes to render localized permission guidance.
 
-Settings patches contain only explicitly supplied fields; changing one preference does not reset omitted language/theme/library/layout values. Diagnostics contain system/version/statistics plus allowlisted log fields from the last 128 KiB of the log, excluding asset bytes, database contents, arbitrary log payloads and source paths. Media failures are subscribed before startup resume so early errors reach diagnostics.
+Settings patches contain only explicitly supplied fields; changing one preference does not reset omitted language/theme/library/layout values. Diagnostics retain `diagnostics.json` and `logs.json`. The former includes system/version/statistics, each active registered root's latest scan (or explicit no history), the immediate bounded worker queue, retained-version preview state counts, and read-only SQLite integrity/foreign-key checks. Browser activity is not inferred from stored pending states. Each section reports capture failure independently; even a corrupt database can produce a useful ZIP. Integrity runs in a separate read-only worker with a five-second deadline, shared in-flight work and at most 20 safe issues.
+
+The last 200 warning/error/fatal records are persisted independently of HTTP info traffic in `diagnostic-warnings.json` under the user log directory, using atomic writes and startup restoration. Fastify and child logger warnings plus actual scan, metadata and thumbnail failures enter the same journal before startup work. Only fixed messages, known codes, timestamps, severity, UUIDs and counts survive capture; scan error paths are redacted on export. Asset bytes, full metadata, arbitrary messages/objects, stack traces, credentials and paths are excluded. A damaged/unwritable journal is explicit in the ZIP; production console/`cura.log` output remains separate.
 
 ## Ingestion pipeline
 

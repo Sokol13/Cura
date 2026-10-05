@@ -67,8 +67,8 @@
 **Files:** server/app.ts, diagnostics route/store, media/service.ts and worker.ts; shared diagnostics schemas and tests.
 **Interfaces:** Bundle exposes per-root last ScanSummary, bounded recent 200 warning/error records, queue counters and SQLite integrity/foreign-key results; redact secrets.
 
-- [ ] Write and observe a failing regression covering real scan denial, metadata warning and thumbnail failure, log rotation/order/200 cap, idle/active queue state, integrity response and ZIP inspection.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Write and observe a failing regression covering real scan denial, metadata warning and thumbnail failure, log rotation/order/200 cap, idle/active queue state, integrity response and ZIP inspection.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 5: Localized preset slots
