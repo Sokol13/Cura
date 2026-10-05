@@ -1,0 +1,43 @@
+{
+  "runtime": "v22.23.3",
+  "cleanDistBeforeBuild": true,
+  "sequential": true,
+  "commands": [
+    {
+      "source": "released-v0.3.0",
+      "command": "pnpm --filter @cura/shared build",
+      "exitCode": 0,
+      "durationSeconds": 2.079
+    },
+    {
+      "source": "released-v0.3.0",
+      "command": "pnpm --filter @cura/server build",
+      "exitCode": 0,
+      "durationSeconds": 5.46
+    },
+    {
+      "source": "candidate-v0.3.1",
+      "command": "pnpm --filter @cura/shared build",
+      "exitCode": 0,
+      "durationSeconds": 2.268
+    },
+    {
+      "source": "candidate-v0.3.1",
+      "command": "pnpm --filter @cura/server build",
+      "exitCode": 0,
+      "durationSeconds": 5.927
+    },
+    {
+      "source": "candidate-v0.3.1",
+      "command": "node docs/evidence/v0.3.1/upgrade.mjs RELEASED_ROOT CANDIDATE_ROOT OUTPUT_JSON",
+      "exitCode": 0,
+      "durationSeconds": 4.414
+    }
+  ],
+  "sourceCommit": "d90a567fbfe8989241bce8e65db27ffc31640c66",
+  "candidateCommit": "93f7cbd70b202ff779c7a34186fafb7ddd3ac624",
+  "cleanup": {
+    "activeNodeProcesses": 0,
+    "remainingPrivateFixtureDirectories": 0
+  }
+}

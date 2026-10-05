@@ -30,6 +30,25 @@ summary. Original files, retained snapshots and the closed backup are verified
 by SHA-256; SQLite integrity and foreign-key checks must pass. The temporary
 fixture and backup are removed in `finally` on success or failure.
 
+## Executed candidate acceptance
+
+[upgrade.json](upgrade.json) records the successful run against frozen candidate
+`93f7cbd70b202ff779c7a34186fafb7ddd3ac624` on Linux x64 / Node 22.23.3.
+All 13 checks passed: 48 legacy tables, six assets, seven retained versions,
+four roots (one unregistered), four slot revisions, and two idempotent reopens.
+The migration ledger advanced from nine to ten entries; both SQLite integrity
+checks returned `ok` and both foreign-key checks returned no violations.
+
+Immediately before that run, both source worktrees had their shared/server
+`dist` directories removed, followed sequentially by
+`pnpm --filter @cura/shared build` and `pnpm --filter @cura/server build` in
+each checkout. All four builds exited successfully. The candidate also passed
+`pnpm install --frozen-lockfile --offline`, including SQLite/Sharp prebuilt
+verification without compilation. [Build commands and results](upgrade-builds.json)
+record this separately because a clean Git source tree alone cannot establish
+ignored build-output freshness. The final verifier exited successfully, all
+owned Node workers stopped, and no private fixture directory remained.
+
 ## Reproduce
 
 Use Node 22 for this cross-version check because that is the runtime declared by

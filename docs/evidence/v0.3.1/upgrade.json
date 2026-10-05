@@ -1,0 +1,474 @@
+{
+  "status": "passed",
+  "verifiedAt": "2026-10-05T08:08:00.335Z",
+  "runtime": {
+    "node": "v22.23.3",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "scope": "Actual exact-tagged v0.3.0 services create private synthetic data; v0.3.1 applies real Drizzle migrations. No browser, physical desktop, hosted cloud or model inference claim.",
+  "source": {
+    "release": "v0.3.0",
+    "commit": "d90a567fbfe8989241bce8e65db27ffc31640c66",
+    "serverSourceTree": "26f8a6177ba2001b88b1ee0934bc806ff7a5cf97",
+    "sharedSourceTree": "e949d3975e154ba05d271e5c1e0f3fbe622f951a",
+    "migrations": [
+      {
+        "tag": "0000_infrastructure",
+        "sha256": "940c3048b9cb98eab1d7cefad7a9534e1a29a2a7feddc6dfa9cc6bd8c33af9a1"
+      },
+      {
+        "tag": "0001_catalog",
+        "sha256": "ff7d6444145872385399a4f89884158f7df38cc51b4536cd84472487a3fd0aea"
+      },
+      {
+        "tag": "0002_source_availability",
+        "sha256": "2da02fcf56a08015c3539b4130abb5672b11c285a67d6f2aeea5f9b41e95bb27"
+      },
+      {
+        "tag": "0003_process",
+        "sha256": "621b989e0c97b352891a1a85e70d5e99042d904b93bdf777e61e38931f9a8875"
+      },
+      {
+        "tag": "0004_boards",
+        "sha256": "4f7e3c64ba56fdf535b10314e89c3ce16f0ec12c91a01f3f47947f55086d11af"
+      },
+      {
+        "tag": "0005_brands",
+        "sha256": "9c3072a04385e150de9bfab9355fa5039a697e1c1cec6a7670edb36b969d4c4c"
+      },
+      {
+        "tag": "0006_automation",
+        "sha256": "6cc0348162b443b70d4e532d8efa5a7d060f569e062d8925e619fd19cbf7bc15"
+      },
+      {
+        "tag": "0007_sync",
+        "sha256": "6f74ca2a6493c9ba11bb30bb1a8b462c3280c3377c32308f6f6dca68a5639edb"
+      },
+      {
+        "tag": "0008_fcpxml",
+        "sha256": "4658ff17e4f849736725e7add733616eeca8cb58f5597e871d5d90827c33695e"
+      }
+    ]
+  },
+  "target": {
+    "milestone": "v0.3.1 candidate",
+    "commit": "93f7cbd70b202ff779c7a34186fafb7ddd3ac624",
+    "serverSourceTree": "989d9c2e9eaaf83b6019b342c3e7c7e43202935c",
+    "sharedSourceTree": "b423eff34bb56a753177f20059553ae1879a49cb",
+    "migrations": [
+      {
+        "tag": "0000_infrastructure",
+        "sha256": "940c3048b9cb98eab1d7cefad7a9534e1a29a2a7feddc6dfa9cc6bd8c33af9a1"
+      },
+      {
+        "tag": "0001_catalog",
+        "sha256": "ff7d6444145872385399a4f89884158f7df38cc51b4536cd84472487a3fd0aea"
+      },
+      {
+        "tag": "0002_source_availability",
+        "sha256": "2da02fcf56a08015c3539b4130abb5672b11c285a67d6f2aeea5f9b41e95bb27"
+      },
+      {
+        "tag": "0003_process",
+        "sha256": "621b989e0c97b352891a1a85e70d5e99042d904b93bdf777e61e38931f9a8875"
+      },
+      {
+        "tag": "0004_boards",
+        "sha256": "4f7e3c64ba56fdf535b10314e89c3ce16f0ec12c91a01f3f47947f55086d11af"
+      },
+      {
+        "tag": "0005_brands",
+        "sha256": "9c3072a04385e150de9bfab9355fa5039a697e1c1cec6a7670edb36b969d4c4c"
+      },
+      {
+        "tag": "0006_automation",
+        "sha256": "6cc0348162b443b70d4e532d8efa5a7d060f569e062d8925e619fd19cbf7bc15"
+      },
+      {
+        "tag": "0007_sync",
+        "sha256": "6f74ca2a6493c9ba11bb30bb1a8b462c3280c3377c32308f6f6dca68a5639edb"
+      },
+      {
+        "tag": "0008_fcpxml",
+        "sha256": "4658ff17e4f849736725e7add733616eeca8cb58f5597e871d5d90827c33695e"
+      },
+      {
+        "tag": "0009_scan_summaries",
+        "sha256": "e3d24820db715dcb732c6530a2cd1878e5699af96026218cbbba35ba357737b3"
+      }
+    ]
+  },
+  "fixture": {
+    "libraryId": "c472701d-f820-431c-8fba-c2b76def58d0",
+    "exactSeed": "18446744073709551615",
+    "assetCount": 6,
+    "versionCount": 7,
+    "rootCount": 4,
+    "removedRootCount": 1,
+    "annotationCount": 2,
+    "boardCount": 2,
+    "slotRevisionCount": 4,
+    "finalOwnerCount": 3,
+    "automationJobs": 1,
+    "scripts": 1,
+    "settingDocuments": 1,
+    "scriptId": "55b7886e-0249-4da2-ad02-3a39d2db835a",
+    "documentId": "8c19557a-c333-4167-8355-9ee753812c12",
+    "versions": [
+      {
+        "id": "f9738f42-fd9e-41c2-8887-44b3fb1d3caa",
+        "assetId": "5a6c4401-6f5d-49cb-acba-3ec4eca6d0d3",
+        "ordinal": 1,
+        "sha256": "1325188790e5d018ad25fd69a46e1fcdbf1064d50d85ecb607ec0aa30c2b4deb"
+      },
+      {
+        "id": "14cd5811-999a-486a-b676-46d4b6ecc148",
+        "assetId": "5c47380e-1088-4cda-ad8b-137a220483d5",
+        "ordinal": 2,
+        "sha256": "c57927bd3c838e3e053e6e433eb2dd4c80c55bf2a448ae849ff8b327108b73ef"
+      },
+      {
+        "id": "2fea43a0-f980-4737-b2d2-38e7e214efb2",
+        "assetId": "5c47380e-1088-4cda-ad8b-137a220483d5",
+        "ordinal": 1,
+        "sha256": "7ac773eb0af9537b1e59afb0a0ab67776a7ddcc14b93396eb531fe516188a255"
+      },
+      {
+        "id": "1ed9e214-9378-4311-a3b4-22645b4c9f15",
+        "assetId": "a007d451-c2ba-4ccc-8761-177ca21a48a4",
+        "ordinal": 1,
+        "sha256": "7ba7d37d78991f8176c15bb875f3f53d7088cd5ae41587516beb8f7baaacff35"
+      },
+      {
+        "id": "915797cd-aae4-4c2f-926d-ef5eb8be8c1b",
+        "assetId": "bd941848-3577-4c36-97ba-aca460e40e99",
+        "ordinal": 1,
+        "sha256": "acd1126f2ea34974979ab055b464633122d282b9fa770749c5f787ea73b41f0c"
+      },
+      {
+        "id": "67d8176d-c0c7-4373-bef5-cf547686f336",
+        "assetId": "ce1883aa-6818-4af6-bc7f-c79e6bba595b",
+        "ordinal": 1,
+        "sha256": "109b5fe1d63028dcc19c9e1769ca2a693cd7d9760b9056f5ead125122c336fab"
+      },
+      {
+        "id": "a18e0a85-490c-4462-a37c-77806c225f45",
+        "assetId": "d4978164-57df-4fb2-a9fd-551331757e98",
+        "ordinal": 1,
+        "sha256": "f81e3680c63ea91e0ee8e95ba18fb552c7465ccea2ffe491d5deac5e3cf6a468"
+      }
+    ],
+    "originalSources": [
+      {
+        "id": "07f7e060-4ed9-42c7-895a-42a293c917e7",
+        "sha256": "7ac773eb0af9537b1e59afb0a0ab67776a7ddcc14b93396eb531fe516188a255"
+      },
+      {
+        "id": "2ac2d6dc-de8b-418f-b7f9-6814a3d1606c",
+        "sha256": "7ba7d37d78991f8176c15bb875f3f53d7088cd5ae41587516beb8f7baaacff35"
+      },
+      {
+        "id": "41115379-a521-40a5-afaa-833e01bfc27f",
+        "sha256": "7ac773eb0af9537b1e59afb0a0ab67776a7ddcc14b93396eb531fe516188a255"
+      },
+      {
+        "id": "88a4a866-51bf-466e-90f2-f57c18d242d2",
+        "sha256": "1325188790e5d018ad25fd69a46e1fcdbf1064d50d85ecb607ec0aa30c2b4deb"
+      },
+      {
+        "id": "bbf104c9-090f-44f5-885b-f23107da0657",
+        "sha256": "acd1126f2ea34974979ab055b464633122d282b9fa770749c5f787ea73b41f0c"
+      },
+      {
+        "id": "c5432283-19bd-4f1e-8a35-940c718c14d3",
+        "sha256": "109b5fe1d63028dcc19c9e1769ca2a693cd7d9760b9056f5ead125122c336fab"
+      },
+      {
+        "id": "d1940c65-dd00-4a9b-8966-5970351f85a6",
+        "sha256": "f81e3680c63ea91e0ee8e95ba18fb552c7465ccea2ffe491d5deac5e3cf6a468"
+      }
+    ]
+  },
+  "upgrade": {
+    "migrationCounts": {
+      "before": 9,
+      "after": 10,
+      "afterReopens": [10, 10]
+    },
+    "legacyTablesCompared": [
+      {
+        "name": "activity",
+        "columns": 7,
+        "rows": 24
+      },
+      {
+        "name": "annotations",
+        "columns": 8,
+        "rows": 2
+      },
+      {
+        "name": "app_metadata",
+        "columns": 4,
+        "rows": 0
+      },
+      {
+        "name": "archive_rules",
+        "columns": 5,
+        "rows": 1
+      },
+      {
+        "name": "asset_fts",
+        "columns": 2,
+        "rows": 6
+      },
+      {
+        "name": "asset_fts_config",
+        "columns": 2,
+        "rows": 1
+      },
+      {
+        "name": "asset_fts_content",
+        "columns": 3,
+        "rows": 6
+      },
+      {
+        "name": "asset_fts_data",
+        "columns": 2,
+        "rows": 8
+      },
+      {
+        "name": "asset_fts_docsize",
+        "columns": 2,
+        "rows": 6
+      },
+      {
+        "name": "asset_fts_idx",
+        "columns": 3,
+        "rows": 6
+      },
+      {
+        "name": "asset_sources",
+        "columns": 9,
+        "rows": 7
+      },
+      {
+        "name": "asset_tags",
+        "columns": 4,
+        "rows": 1
+      },
+      {
+        "name": "asset_versions",
+        "columns": 8,
+        "rows": 7
+      },
+      {
+        "name": "assets",
+        "columns": 11,
+        "rows": 6
+      },
+      {
+        "name": "automation_changes",
+        "columns": 9,
+        "rows": 2
+      },
+      {
+        "name": "automation_jobs",
+        "columns": 5,
+        "rows": 1
+      },
+      {
+        "name": "automation_proposals",
+        "columns": 8,
+        "rows": 1
+      },
+      {
+        "name": "board_edges",
+        "columns": 8,
+        "rows": 1
+      },
+      {
+        "name": "board_items",
+        "columns": 15,
+        "rows": 3
+      },
+      {
+        "name": "boards",
+        "columns": 12,
+        "rows": 2
+      },
+      {
+        "name": "brand_colors",
+        "columns": 7,
+        "rows": 2
+      },
+      {
+        "name": "brand_fonts",
+        "columns": 9,
+        "rows": 1
+      },
+      {
+        "name": "brand_logos",
+        "columns": 8,
+        "rows": 2
+      },
+      {
+        "name": "brands",
+        "columns": 7,
+        "rows": 1
+      },
+      {
+        "name": "cmf_boards",
+        "columns": 6,
+        "rows": 1
+      },
+      {
+        "name": "cmf_entries",
+        "columns": 11,
+        "rows": 1
+      },
+      {
+        "name": "collections",
+        "columns": 6,
+        "rows": 1
+      },
+      {
+        "name": "export_jobs",
+        "columns": 6,
+        "rows": 0
+      },
+      {
+        "name": "fcpxml_jobs",
+        "columns": 6,
+        "rows": 0
+      },
+      {
+        "name": "final_selections",
+        "columns": 8,
+        "rows": 3
+      },
+      {
+        "name": "folders",
+        "columns": 6,
+        "rows": 2
+      },
+      {
+        "name": "generation_jobs",
+        "columns": 5,
+        "rows": 2
+      },
+      {
+        "name": "libraries",
+        "columns": 4,
+        "rows": 1
+      },
+      {
+        "name": "library_roots",
+        "columns": 8,
+        "rows": 4
+      },
+      {
+        "name": "recorded_generations",
+        "columns": 8,
+        "rows": 7
+      },
+      {
+        "name": "script_breakdowns",
+        "columns": 7,
+        "rows": 1
+      },
+      {
+        "name": "setting_documents",
+        "columns": 5,
+        "rows": 1
+      },
+      {
+        "name": "settings",
+        "columns": 4,
+        "rows": 1
+      },
+      {
+        "name": "slot_revisions",
+        "columns": 8,
+        "rows": 4
+      },
+      {
+        "name": "slot_templates",
+        "columns": 8,
+        "rows": 5
+      },
+      {
+        "name": "slots",
+        "columns": 17,
+        "rows": 5
+      },
+      {
+        "name": "sync_baselines",
+        "columns": 10,
+        "rows": 0
+      },
+      {
+        "name": "sync_conflicts",
+        "columns": 7,
+        "rows": 0
+      },
+      {
+        "name": "sync_links",
+        "columns": 9,
+        "rows": 0
+      },
+      {
+        "name": "sync_outbox",
+        "columns": 7,
+        "rows": 0
+      },
+      {
+        "name": "sync_staged_commits",
+        "columns": 6,
+        "rows": 0
+      },
+      {
+        "name": "tag_groups",
+        "columns": 5,
+        "rows": 1
+      },
+      {
+        "name": "tags",
+        "columns": 7,
+        "rows": 1
+      }
+    ],
+    "newSummaryId": "cdd7d173-a790-4339-8a4c-7d2f5a447430",
+    "idempotentReopens": [
+      {
+        "reopen": 1,
+        "migrationCount": 10,
+        "logicalDigest": "f10503e925b07e85806c79237c3ade4e5c7f2dffeeabf4b8306a5046861a7b91",
+        "integrity": "ok",
+        "foreignKeyViolations": 0
+      },
+      {
+        "reopen": 2,
+        "migrationCount": 10,
+        "logicalDigest": "f10503e925b07e85806c79237c3ade4e5c7f2dffeeabf4b8306a5046861a7b91",
+        "integrity": "ok",
+        "foreignKeyViolations": 0
+      }
+    ]
+  },
+  "checks": {
+    "exactTaggedV030ServicesCreatedFixture": true,
+    "closedBackupDatabaseAndRetainedBytesVerified": true,
+    "nineToTenMigrationsPreserveJournal": true,
+    "everyLegacyRowIdColumnTimestampAndFtsUnchanged": true,
+    "newOperationalScanTableStartsEmpty": true,
+    "manualReplacementAndSourceLastHashesPreserved": true,
+    "aliasesRemovedRootsInboxTrashArchiveAndSettingsPreserved": true,
+    "generationIdsExactSeedsAnnotationsAndHistoricalFinalPinsPreserved": true,
+    "boardMatrixTemplateBrandAndAutomationHistoryPreserved": true,
+    "scanSummaryPersistsAndRejectsLateWritesWithoutLegacyMutation": true,
+    "twoReopensIdempotentAcrossAllTables": true,
+    "originalSourcesAndRetainedBytesUnchanged": true,
+    "sqliteIntegrityAndForeignKeys": true
+  }
+}
