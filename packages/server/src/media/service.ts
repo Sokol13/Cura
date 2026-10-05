@@ -29,11 +29,14 @@ import {
   type LibraryRoot,
   type RootRemovalMode,
   type RemoveRootResult,
+  type ScanSummary,
 } from '@cura/shared';
 import type { CatalogStore, VersionFile } from '../catalog-store.js';
 import type { UserPaths } from '../paths.js';
 import type { ProcessedFile } from './types.js';
 import { normalizeRelativePath } from './path-utils.js';
+import { shouldAutoImport, type ScanDiscovery } from './scan.js';
+import { addScanFailure } from './scan-summary.js';
 
 export function fileOperationMessage(error: unknown): string {
   const code = (error as NodeJS.ErrnoException | undefined)?.code;
@@ -122,6 +125,7 @@ export class MediaService {
     private readonly store: CatalogStore,
     private readonly paths: UserPaths,
   ) {
+    this.store.scanStore.interruptRunning();
     const compiled = new URL('./worker.js', import.meta.url);
     // Production uses compiled JS; tsx development uses an explicit bootstrap.
     this.worker = existsSync(fileURLToPath(compiled))
@@ -222,6 +226,19 @@ export class MediaService {
       !this.watchers.has(root.id)
     )
       return;
+    try {
+      if (
+        !shouldAutoImport(file) &&
+        !this.store.getSource(
+          root.id,
+          normalizeRelativePath(relative(root.path, file)),
+        )
+      )
+        return;
+    } catch (error) {
+      this.reportError(root, error);
+      return;
+    }
     this.rootChanged(root);
     const key = `${root.id}:${file}`;
     if (!this.pending.has(key) && this.pending.size >= MAX_QUEUED_JOBS) {
@@ -354,6 +371,7 @@ export class MediaService {
           await this.watch(root);
           void this.scan(root);
         } catch (error) {
+          this.recordScanStartFailure(root, error);
           await this.markRootUnavailable(root, error);
           this.reportError(root, error);
         }
@@ -421,7 +439,12 @@ export class MediaService {
       .find((root) => root.path === resolved);
     if (existing && this.removingRoots.has(existing.id)) throw rootRemoving();
     const root = this.store.addRoot(libraryId, resolved, 'reference');
-    await this.watch(root);
+    try {
+      await this.watch(root);
+    } catch (error) {
+      this.recordScanStartFailure(root, error);
+      throw error;
+    }
     if (this.removingRoots.has(root.id)) throw rootRemoving();
     this.store.getRoot(root.id);
     void this.scan(root);
@@ -494,6 +517,49 @@ export class MediaService {
     this.watching.set(root.id, running);
     return running;
   }
+  private publishScan(summary: ScanSummary): void {
+    summary.updatedAt = new Date(
+      Math.max(Date.now(), Date.parse(summary.updatedAt)),
+    ).toISOString();
+    if (!this.store.scanStore.save(summary)) return;
+    this.emit({
+      type: 'scan',
+      libraryId: summary.libraryId,
+      rootId: summary.rootId,
+      completed: summary.processed,
+      total: summary.supportedFound + summary.existingGenericFound,
+      scanId: summary.scanId,
+      status: summary.status,
+      scanSummary: structuredClone(summary),
+    });
+  }
+  private finishScan(
+    summary: ScanSummary,
+    status: ScanSummary['status'],
+  ): void {
+    summary.status = status;
+    summary.phase = 'finished';
+    summary.finishedAt = new Date(
+      Math.max(Date.now(), Date.parse(summary.updatedAt)),
+    ).toISOString();
+    this.publishScan(summary);
+  }
+  private recordScanStartFailure(root: LibraryRoot, error: unknown): void {
+    if (
+      this.closed ||
+      this.removingRoots.has(root.id) ||
+      this.scans.has(root.id)
+    )
+      return;
+    try {
+      this.store.getRoot(root.id);
+    } catch {
+      return;
+    }
+    const summary = this.store.scanStore.start(root);
+    addScanFailure(summary, null, 'enumerate', error);
+    this.finishScan(summary, 'failed');
+  }
   private scan(root: LibraryRoot): Promise<void> {
     if (
       this.closed ||
@@ -504,55 +570,86 @@ export class MediaService {
     const existing = this.scans.get(root.id);
     if (existing) return existing;
     const revision = this.rootChanges.get(root.id) ?? 0;
+    const summary = this.store.scanStore.start(root);
+    this.publishScan(summary);
+    const active = () =>
+      !this.closed &&
+      !this.removingRoots.has(root.id) &&
+      this.watchers.has(root.id);
     const running = (async () => {
+      let outcome: ScanSummary['status'] = 'failed';
       try {
-        const { files, errors } = await this.job<{
-          files: string[];
-          errors: FileFailure[];
-        }>({
+        const discovery = await this.job<ScanDiscovery>({
           kind: 'scan',
           root: root.path,
+          knownRelativePaths: this.store.listSourcePaths(root.id),
         });
-        for (const failure of errors) this.reportError(root, failure);
-        let completed = 0;
-        let complete = errors.length === 0;
-        this.emit({
-          type: 'scan',
-          libraryId: root.libraryId,
-          rootId: root.id,
-          completed,
-          total: files.length,
-        });
-        for (const file of files) {
-          if (this.closed || !this.watchers.has(root.id)) break;
+        Object.assign(summary, discovery.summary, { phase: 'processing' });
+        for (const failure of summary.errors)
+          this.reportError(
+            root,
+            Object.assign(
+              new Error(
+                'A directory entry could not be read. See its scan summary.',
+              ),
+              { code: failure.code },
+            ),
+          );
+        this.publishScan(summary);
+        let lastProgress = performance.now();
+        let interrupted = discovery.interrupted;
+        for (const file of discovery.files) {
+          if (interrupted || !active()) {
+            interrupted = true;
+            break;
+          }
           try {
-            await this.ingest(root, file);
+            const asset = await this.ingest(root, file);
+            if (!active()) {
+              interrupted = true;
+              break;
+            }
+            if (asset) summary.succeeded++;
+            else
+              addScanFailure(
+                summary,
+                normalizeRelativePath(relative(root.path, file)),
+                'read',
+                { code: 'SOURCE_UNAVAILABLE' },
+              );
           } catch (error) {
-            complete = false;
+            if (!active()) {
+              interrupted = true;
+              break;
+            }
+            addScanFailure(
+              summary,
+              relative(root.path, file).split(sep).join('/').normalize('NFC'),
+              'read',
+              error,
+            );
             this.reportError(root, error);
           }
-          completed++;
-          this.emit({
-            type: 'scan',
-            libraryId: root.libraryId,
-            rootId: root.id,
-            completed,
-            total: files.length,
-          });
+          summary.processed++;
+          if (performance.now() - lastProgress >= 250) {
+            this.publishScan(summary);
+            lastProgress = performance.now();
+          }
         }
+        interrupted ||= !active();
+        outcome = interrupted
+          ? 'interrupted'
+          : summary.readErrors
+            ? 'partial'
+            : 'completed';
         if (
-          complete &&
-          completed === files.length &&
-          !this.closed &&
-          this.watchers.has(root.id) &&
+          outcome === 'completed' &&
           revision === (this.rootChanges.get(root.id) ?? 0)
         ) {
           this.clearRootErrors(root.id);
           const assets = this.store.reconcileSources(
             root.id,
-            files.map((file) =>
-              normalizeRelativePath(relative(root.path, file)),
-            ),
+            discovery.presentRelativePaths,
           );
           for (const asset of assets)
             this.emit({
@@ -563,11 +660,30 @@ export class MediaService {
             });
         }
       } catch (error) {
-        await this.markRootUnavailable(root, error);
-        this.reportError(root, error);
+        if (!active()) outcome = 'interrupted';
+        else {
+          outcome = 'failed';
+          addScanFailure(summary, null, 'enumerate', error);
+          await this.markRootUnavailable(root, error);
+          this.reportError(root, error);
+        }
       } finally {
-        this.scans.delete(root.id);
-        this.reconcile();
+        try {
+          this.finishScan(summary, outcome);
+        } catch {
+          this.reportError(
+            root,
+            Object.assign(
+              new Error('The scan summary could not be saved. Retry the scan.'),
+              {
+                code: 'SCAN_SAVE_FAILED',
+              },
+            ),
+          );
+        } finally {
+          this.scans.delete(root.id);
+          this.reconcile();
+        }
       }
     })();
     this.scans.set(root.id, running);
@@ -579,6 +695,7 @@ export class MediaService {
       try {
         await this.watch(root);
       } catch (error) {
+        this.recordScanStartFailure(root, error);
         await this.markRootUnavailable(root, error);
         throw error;
       }

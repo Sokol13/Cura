@@ -116,6 +116,11 @@ export async function registerCatalogRoutes(
       store.listRoots(id(request.params, 'libraryId')),
     ),
   );
+  app.get('/api/libraries/:libraryId/scans', (request) => {
+    const libraryId = id(request.params, 'libraryId');
+    store.getLibrary(libraryId);
+    return s.ScanSummariesSchema.parse(store.scanStore.list(libraryId));
+  });
   app.post('/api/libraries/:libraryId/roots', async (request, reply) => {
     const input = s.RegisterRootSchema.parse(request.body);
     const root = await media.registerRoot(
