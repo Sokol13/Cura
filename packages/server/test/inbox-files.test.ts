@@ -394,7 +394,8 @@ it('reserves an owned copy target and recovers the reservation before the journa
 
 it('resumes a partial copy only through its durable reserved inode', async () => {
   const directory = await root();
-  const migration = await plan(directory, Buffer.alloc(1024 * 1024, 7));
+  const bytes = Buffer.alloc(1024 * 1024, 7);
+  const migration = await plan(directory, bytes);
   vi.spyOn(fs, 'link').mockRejectedValue(
     Object.assign(new Error('unsupported'), { code: 'ENOTSUP' }),
   );
@@ -404,11 +405,17 @@ it('resumes a partial copy only through its durable reserved inode', async () =>
   await expect(
     publishInboxMigration(directory, journal, () => ++checks > 5),
   ).rejects.toMatchObject({ code: 'STOPPED' });
+  const targetPath = join(directory, migration.newRelativePath);
+  const partial = await fs.readFile(targetPath);
+  const partialInfo = await fs.stat(targetPath, { bigint: true });
+  expect(partial.length).toBeGreaterThan(0);
+  expect(partial.length).toBeLessThan(bytes.length);
+  expect(partial.equals(bytes.subarray(0, partial.length))).toBe(true);
+  expect(String(partialInfo.dev)).toBe(reserved.target.dev);
+  expect(String(partialInfo.ino)).toBe(reserved.target.ino);
   const published = await publishInboxMigration(directory, journal);
   expect(published.target.hash).toBe(migration.observed.hash);
-  expect(await fs.readFile(join(directory, migration.newRelativePath))).toEqual(
-    Buffer.alloc(1024 * 1024, 7),
-  );
+  expect((await fs.readFile(targetPath)).equals(bytes)).toBe(true);
 });
 
 it('never truncates a replacement of a reserved copy target', async () => {
