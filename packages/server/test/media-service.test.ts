@@ -7,6 +7,7 @@ import {
   publishInboxMigration,
   cleanupInboxMigration,
 } from '../src/media/inbox-files.js';
+import type { MediaDiagnostic } from '../src/media/types.js';
 import type { InboxMigration } from '../src/media/inbox-migration-store.js';
 import {
   mkdtemp,
@@ -183,7 +184,7 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
-async function setup() {
+async function setup(onDiagnostic?: (event: MediaDiagnostic) => void) {
   const directory = await mkdtemp(join(tmpdir(), 'cura-service-'));
   cleanup.push(async () => {
     await expect
@@ -200,7 +201,7 @@ async function setup() {
   cleanup.push(async () => db.close());
   const store = new CatalogStore(db);
   const library = store.createLibrary({ name: 'Service test' });
-  const media = new MediaService(store, paths);
+  const media = new MediaService(store, paths, onDiagnostic);
   cleanup.push(() => media.close());
   const originals = join(directory, 'originals');
   await mkdir(originals);
@@ -973,8 +974,8 @@ it('marks old directory sources offline when its path has been replaced by a reg
   expect(store.getAsset(asset.id).deletedAt).toBeNull();
 });
 
-async function legacyInbox() {
-  const context = await setup();
+async function legacyInbox(onDiagnostic?: (event: MediaDiagnostic) => void) {
+  const context = await setup(onDiagnostic);
   const rootPath = await ensureInboxRoot(
     context.paths.data,
     context.library.id,
@@ -1060,8 +1061,9 @@ it('serializes upload, rescan and removal behind Inbox migration readiness', asy
 });
 
 it('excludes locked old Inbox aliases until cleanup resumes without manual-version churn', async () => {
+  const diagnostics: MediaDiagnostic[] = [];
   const { media, paths, library, store, root, asset, file, db } =
-    await legacyInbox();
+    await legacyInbox((event) => diagnostics.push(event));
   const replacement = join(paths.data, 'manual-v2.bin');
   await writeFile(replacement, 'manual V2 different bytes');
   store.replaceAsset(
@@ -1089,6 +1091,21 @@ it('excludes locked old Inbox aliases until cleanup resumes without manual-versi
     .poll(() => store.scanStore.get(root.id)?.status)
     .toBe('completed');
   expect(store.inboxMigrations.pending(root.id)[0]?.state).toBe('relocated');
+  expect(diagnostics).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        operation: 'media',
+        code: 'INBOX_MIGRATION_FAILED',
+        rootId: root.id,
+      }),
+      expect.objectContaining({
+        operation: 'media',
+        code: 'EPERM',
+        rootId: root.id,
+      }),
+    ]),
+  );
+  expect(JSON.stringify(diagnostics)).not.toContain(root.path);
   expect(
     errors.find((event) => event.code === 'INBOX_MIGRATION_FAILED')?.message,
   ).toContain('Full Disk Access');

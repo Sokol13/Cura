@@ -148,6 +148,19 @@ export class MediaService {
           libraryId: root.libraryId,
           rootId: root.id,
         });
+        if (
+          code === 'EPERM' ||
+          code === 'EACCES' ||
+          code === 'EBUSY' ||
+          code === 'ENOSPC'
+        )
+          this.diagnostic({
+            level: 'warn',
+            operation: 'media',
+            code,
+            libraryId: root.libraryId,
+            rootId: root.id,
+          });
         this.emit({
           type: 'error',
           libraryId: root.libraryId,
