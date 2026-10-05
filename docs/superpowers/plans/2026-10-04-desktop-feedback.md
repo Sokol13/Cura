@@ -147,7 +147,7 @@
 
 - [x] Write and observe a failing regression covering actual canvas node drag into empty/filled slot, finalized pin/history, unchanged drag outside slots and stale selection guard.
 - [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
-- [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
+- [x] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 13: Slot history comparison
 
