@@ -47,23 +47,62 @@ async function video(bytes: ArrayBuffer, signal: AbortSignal): Promise<Blob> {
   element.preload = 'auto';
   try {
     await new Promise<void>((resolve, reject) => {
+      let loaded = false,
+        presented = false,
+        finished = false;
+      let frame: number | undefined, animation: number | undefined;
+      const supportsFrameCallback =
+        typeof element.requestVideoFrameCallback === 'function';
       const timeout = setTimeout(() => finish(new Error('TIMEOUT')), 10000);
       const abort = () => finish(new DOMException('Cancelled', 'AbortError'));
       const finish = (error?: Error) => {
+        if (finished) return;
+        finished = true;
         clearTimeout(timeout);
+        if (frame !== undefined) element.cancelVideoFrameCallback(frame);
+        if (animation !== undefined) cancelAnimationFrame(animation);
         signal.removeEventListener('abort', abort);
         element.onloadeddata = null;
         element.onerror = null;
         if (error) reject(error);
         else resolve();
       };
+      const ready = () => {
+        if (loaded && presented) finish();
+      };
+      // Older browsers lack video frame callbacks. Preserve exact time zero,
+      // checking decoded data across two render opportunities instead of seeking.
+      const fallbackFrame = (remaining: number) => {
+        animation = requestAnimationFrame(() => {
+          animation = undefined;
+          if (finished) return;
+          if (remaining > 1 || element.readyState < element.HAVE_CURRENT_DATA)
+            fallbackFrame(Math.max(1, remaining - 1));
+          else {
+            presented = true;
+            ready();
+          }
+        });
+      };
       signal.addEventListener('abort', abort, { once: true });
-      element.onloadeddata = () => finish();
+      element.onloadeddata = () => {
+        loaded = true;
+        if (supportsFrameCallback) ready();
+        else fallbackFrame(2);
+      };
       element.onerror = () => finish(new Error('VIDEO_CODEC'));
+      // Register before loading: presentation can precede loadeddata or follow it.
+      if (supportsFrameCallback)
+        frame = element.requestVideoFrameCallback(() => {
+          frame = undefined;
+          presented = true;
+          ready();
+        });
       element.src = url;
       element.load();
       if (signal.aborted) abort();
     });
+    signal.throwIfAborted();
     if (
       !element.videoWidth ||
       !element.videoHeight ||
