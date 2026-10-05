@@ -87,15 +87,15 @@
 
 - [x] Observe the incorrect Windows/Linux baseline, then verify rendered Mac/Windows/Linux hints and keyboard focus/editable-field boundaries with a real-browser platform simulation. Keep this small display change free of implementation-mirroring unit tests.
 - [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
-- [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
+- [x] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 7: Full-width preview messages
 
 **Files:** web/catalog/Inspector.tsx, AssetPreview.tsx and preview/media styles.
 **Interfaces:** Generic preview icon and status text stack vertically; text wraps across panel width at narrow sizes.
 
-- [ ] Write and observe a failing regression covering long Chinese and English preview errors at narrow inspector width; no horizontal clipping and icon above message.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Reproduce the narrow message in a real browser and verify the corrected geometry with a before/after probe covering long Chinese and English preview errors at narrow inspector width; no horizontal clipping and icon above message.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 8: Node 24 support and matrix

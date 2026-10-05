@@ -373,3 +373,7 @@ Localize the four built-in template families and all 13 slot labels through stab
 ## Platform shortcut hints
 
 All primary-modifier hints use one web formatter: prefer the browser's User-Agent Client Hints platform when available, then its legacy platform string. macOS displays `⌘ F`; Windows/Linux and an unknown non-Mac host display `Ctrl F`. This affects presentation only; keyboard handlers continue accepting both Meta and Control and respecting editable fields. A source inventory found one existing rendered primary-modifier hint, in the catalog search field. Verify actual rendered text and keyboard focus in Chromium with simulated platform metadata; do not claim that simulation is physical macOS/Windows acceptance. No new implementation-mirroring unit tests are needed for this small display change; the existing full suite and the browser probe provide verification.
+
+## Preview explanation layout
+
+Place the noninteractive preview status paragraph directly after the Inspector's preview button. The former paragraph shared the button's horizontal flex layout with a full-width image and was squeezed into a narrow strip. Keeping the image/expand action together and the explanation as a normal block gives the caption the full panel width, including pending/ready/error states, without changing image dimensions or introducing special error-specific CSS. Verify bilingual long messages and preview interaction in a real browser; a seeded SIZE_LIMIT state is a layout fixture, not evidence of decoder size-limit behavior.

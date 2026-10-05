@@ -1,0 +1,582 @@
+{
+  "before": {
+    "mode": "before",
+    "date": "2026-10-05T07:21:36.925Z",
+    "environment": "Linux Chromium, production local server",
+    "fixture": "Corrupt MOV with SIZE_LIMIT seeded via the validated preview-failure API before browser startup; tests layout only, not decoder size acceptance. Healthy SVG is imported and previewed normally.",
+    "cases": [
+      {
+        "language": "en",
+        "inspectorWidth": 320,
+        "geometry": {
+          "inspector": {
+            "x": 1120,
+            "y": 0,
+            "width": 320,
+            "height": 1000,
+            "right": 1440,
+            "bottom": 1000
+          },
+          "paragraph": {
+            "x": 1370,
+            "y": 86.359375,
+            "width": 51,
+            "height": 163.265625,
+            "right": 1421,
+            "bottom": 249.625
+          },
+          "button": {
+            "x": 1139,
+            "y": 83,
+            "width": 283,
+            "height": 170,
+            "right": 1422,
+            "bottom": 253
+          },
+          "image": {
+            "x": 1140,
+            "y": 84,
+            "width": 224,
+            "height": 168,
+            "right": 1364,
+            "bottom": 252
+          },
+          "availableWidth": 283,
+          "paragraphWidthRatio": 0.18021201413427562,
+          "afterButton": false,
+          "afterImage": false,
+          "paragraphInsideButton": true,
+          "contentHasHorizontalOverflow": false,
+          "pageHasHorizontalOverflow": false
+        },
+        "healthyGeometry": {
+          "buttonWidth": 283,
+          "buttonHeight": 170,
+          "imageWidth": 281,
+          "imageHeight": 168,
+          "naturalWidth": 512,
+          "naturalHeight": 384,
+          "statusCount": 0
+        },
+        "failedPreviewOpened": true,
+        "healthyPreviewOpened": true
+      },
+      {
+        "language": "en",
+        "inspectorWidth": 300,
+        "geometry": {
+          "inspector": {
+            "x": 1140,
+            "y": 0,
+            "width": 300,
+            "height": 1000,
+            "right": 1440,
+            "bottom": 1000
+          },
+          "paragraph": {
+            "x": 1382.265625,
+            "y": 86.359375,
+            "width": 46.46875,
+            "height": 163.265625,
+            "right": 1428.734375,
+            "bottom": 249.625
+          },
+          "button": {
+            "x": 1159,
+            "y": 83,
+            "width": 263,
+            "height": 170,
+            "right": 1422,
+            "bottom": 253
+          },
+          "image": {
+            "x": 1152.265625,
+            "y": 84,
+            "width": 224,
+            "height": 168,
+            "right": 1376.265625,
+            "bottom": 252
+          },
+          "availableWidth": 263,
+          "paragraphWidthRatio": 0.17668726235741444,
+          "afterButton": false,
+          "afterImage": false,
+          "paragraphInsideButton": true,
+          "contentHasHorizontalOverflow": false,
+          "pageHasHorizontalOverflow": false
+        },
+        "healthyGeometry": {
+          "buttonWidth": 263,
+          "buttonHeight": 170,
+          "imageWidth": 261,
+          "imageHeight": 168,
+          "naturalWidth": 512,
+          "naturalHeight": 384,
+          "statusCount": 0
+        },
+        "failedPreviewOpened": true,
+        "healthyPreviewOpened": true
+      },
+      {
+        "language": "zh-CN",
+        "inspectorWidth": 320,
+        "geometry": {
+          "inspector": {
+            "x": 1120,
+            "y": 0,
+            "width": 320,
+            "height": 1000,
+            "right": 1440,
+            "bottom": 1000
+          },
+          "paragraph": {
+            "x": 1370,
+            "y": 122.640625,
+            "width": 51,
+            "height": 90.703125,
+            "right": 1421,
+            "bottom": 213.34375
+          },
+          "button": {
+            "x": 1139,
+            "y": 83,
+            "width": 283,
+            "height": 170,
+            "right": 1422,
+            "bottom": 253
+          },
+          "image": {
+            "x": 1140,
+            "y": 84,
+            "width": 224,
+            "height": 168,
+            "right": 1364,
+            "bottom": 252
+          },
+          "availableWidth": 283,
+          "paragraphWidthRatio": 0.18021201413427562,
+          "afterButton": false,
+          "afterImage": false,
+          "paragraphInsideButton": true,
+          "contentHasHorizontalOverflow": false,
+          "pageHasHorizontalOverflow": false
+        },
+        "healthyGeometry": {
+          "buttonWidth": 283,
+          "buttonHeight": 170,
+          "imageWidth": 281,
+          "imageHeight": 168,
+          "naturalWidth": 512,
+          "naturalHeight": 384,
+          "statusCount": 0
+        },
+        "failedPreviewOpened": true,
+        "healthyPreviewOpened": true
+      },
+      {
+        "language": "zh-CN",
+        "inspectorWidth": 300,
+        "geometry": {
+          "inspector": {
+            "x": 1140,
+            "y": 0,
+            "width": 300,
+            "height": 1000,
+            "right": 1440,
+            "bottom": 1000
+          },
+          "paragraph": {
+            "x": 1390,
+            "y": 77.296875,
+            "width": 31,
+            "height": 181.40625,
+            "right": 1421,
+            "bottom": 258.703125
+          },
+          "button": {
+            "x": 1159,
+            "y": 83,
+            "width": 263,
+            "height": 170,
+            "right": 1422,
+            "bottom": 253
+          },
+          "image": {
+            "x": 1160,
+            "y": 84,
+            "width": 224,
+            "height": 168,
+            "right": 1384,
+            "bottom": 252
+          },
+          "availableWidth": 263,
+          "paragraphWidthRatio": 0.11787072243346007,
+          "afterButton": false,
+          "afterImage": false,
+          "paragraphInsideButton": true,
+          "contentHasHorizontalOverflow": false,
+          "pageHasHorizontalOverflow": false
+        },
+        "healthyGeometry": {
+          "buttonWidth": 263,
+          "buttonHeight": 170,
+          "imageWidth": 261,
+          "imageHeight": 168,
+          "naturalWidth": 512,
+          "naturalHeight": 384,
+          "statusCount": 0
+        },
+        "failedPreviewOpened": true,
+        "healthyPreviewOpened": true
+      }
+    ],
+    "allMessagesBelowImageAtFullWidth": false
+  },
+  "after": {
+    "mode": "after",
+    "date": "2026-10-05T07:22:34.138Z",
+    "environment": "Linux Chromium, production local server",
+    "fixture": "Corrupt MOV with SIZE_LIMIT seeded via the validated preview-failure API before browser startup; tests layout only, not decoder size acceptance. Healthy SVG is imported and previewed normally.",
+    "cases": [
+      {
+        "language": "en",
+        "inspectorWidth": 320,
+        "geometry": {
+          "inspector": {
+            "x": 1120,
+            "y": 0,
+            "width": 320,
+            "height": 1000,
+            "right": 1440,
+            "bottom": 1000
+          },
+          "paragraph": {
+            "x": 1139,
+            "y": 257.5,
+            "width": 283,
+            "height": 36.28125,
+            "right": 1422,
+            "bottom": 293.78125
+          },
+          "button": {
+            "x": 1139,
+            "y": 83,
+            "width": 283,
+            "height": 170,
+            "right": 1422,
+            "bottom": 253
+          },
+          "image": {
+            "x": 1140,
+            "y": 84,
+            "width": 281,
+            "height": 168,
+            "right": 1421,
+            "bottom": 252
+          },
+          "availableWidth": 283,
+          "paragraphWidthRatio": 1,
+          "afterButton": true,
+          "afterImage": true,
+          "paragraphInsideButton": false,
+          "contentHasHorizontalOverflow": false,
+          "pageHasHorizontalOverflow": false
+        },
+        "healthyGeometry": {
+          "buttonWidth": 283,
+          "buttonHeight": 170,
+          "imageWidth": 281,
+          "imageHeight": 168,
+          "naturalWidth": 512,
+          "naturalHeight": 384,
+          "statusCount": 0
+        },
+        "failedPreviewOpened": true,
+        "healthyPreviewOpened": true
+      },
+      {
+        "language": "en",
+        "inspectorWidth": 300,
+        "geometry": {
+          "inspector": {
+            "x": 1140,
+            "y": 0,
+            "width": 300,
+            "height": 1000,
+            "right": 1440,
+            "bottom": 1000
+          },
+          "paragraph": {
+            "x": 1159,
+            "y": 257.5,
+            "width": 263,
+            "height": 36.28125,
+            "right": 1422,
+            "bottom": 293.78125
+          },
+          "button": {
+            "x": 1159,
+            "y": 83,
+            "width": 263,
+            "height": 170,
+            "right": 1422,
+            "bottom": 253
+          },
+          "image": {
+            "x": 1160,
+            "y": 84,
+            "width": 261,
+            "height": 168,
+            "right": 1421,
+            "bottom": 252
+          },
+          "availableWidth": 263,
+          "paragraphWidthRatio": 1,
+          "afterButton": true,
+          "afterImage": true,
+          "paragraphInsideButton": false,
+          "contentHasHorizontalOverflow": false,
+          "pageHasHorizontalOverflow": false
+        },
+        "healthyGeometry": {
+          "buttonWidth": 263,
+          "buttonHeight": 170,
+          "imageWidth": 261,
+          "imageHeight": 168,
+          "naturalWidth": 512,
+          "naturalHeight": 384,
+          "statusCount": 0
+        },
+        "failedPreviewOpened": true,
+        "healthyPreviewOpened": true
+      },
+      {
+        "language": "en",
+        "inspectorWidth": 260,
+        "geometry": {
+          "inspector": {
+            "x": 1180,
+            "y": 0,
+            "width": 260,
+            "height": 1000,
+            "right": 1440,
+            "bottom": 1000
+          },
+          "paragraph": {
+            "x": 1199,
+            "y": 257.5,
+            "width": 223,
+            "height": 36.28125,
+            "right": 1422,
+            "bottom": 293.78125
+          },
+          "button": {
+            "x": 1199,
+            "y": 83,
+            "width": 223,
+            "height": 170,
+            "right": 1422,
+            "bottom": 253
+          },
+          "image": {
+            "x": 1200,
+            "y": 84,
+            "width": 221,
+            "height": 168,
+            "right": 1421,
+            "bottom": 252
+          },
+          "availableWidth": 223,
+          "paragraphWidthRatio": 1,
+          "afterButton": true,
+          "afterImage": true,
+          "paragraphInsideButton": false,
+          "contentHasHorizontalOverflow": false,
+          "pageHasHorizontalOverflow": false
+        },
+        "healthyGeometry": {
+          "buttonWidth": 223,
+          "buttonHeight": 170,
+          "imageWidth": 221,
+          "imageHeight": 168,
+          "naturalWidth": 512,
+          "naturalHeight": 384,
+          "statusCount": 0
+        },
+        "failedPreviewOpened": true,
+        "healthyPreviewOpened": true
+      },
+      {
+        "language": "zh-CN",
+        "inspectorWidth": 320,
+        "geometry": {
+          "inspector": {
+            "x": 1120,
+            "y": 0,
+            "width": 320,
+            "height": 1000,
+            "right": 1440,
+            "bottom": 1000
+          },
+          "paragraph": {
+            "x": 1139,
+            "y": 256.5,
+            "width": 283,
+            "height": 18.140625,
+            "right": 1422,
+            "bottom": 274.640625
+          },
+          "button": {
+            "x": 1139,
+            "y": 83,
+            "width": 283,
+            "height": 170,
+            "right": 1422,
+            "bottom": 253
+          },
+          "image": {
+            "x": 1140,
+            "y": 84,
+            "width": 281,
+            "height": 168,
+            "right": 1421,
+            "bottom": 252
+          },
+          "availableWidth": 283,
+          "paragraphWidthRatio": 1,
+          "afterButton": true,
+          "afterImage": true,
+          "paragraphInsideButton": false,
+          "contentHasHorizontalOverflow": false,
+          "pageHasHorizontalOverflow": false
+        },
+        "healthyGeometry": {
+          "buttonWidth": 283,
+          "buttonHeight": 170,
+          "imageWidth": 281,
+          "imageHeight": 168,
+          "naturalWidth": 512,
+          "naturalHeight": 384,
+          "statusCount": 0
+        },
+        "failedPreviewOpened": true,
+        "healthyPreviewOpened": true
+      },
+      {
+        "language": "zh-CN",
+        "inspectorWidth": 300,
+        "geometry": {
+          "inspector": {
+            "x": 1140,
+            "y": 0,
+            "width": 300,
+            "height": 1000,
+            "right": 1440,
+            "bottom": 1000
+          },
+          "paragraph": {
+            "x": 1159,
+            "y": 256.5,
+            "width": 263,
+            "height": 18.140625,
+            "right": 1422,
+            "bottom": 274.640625
+          },
+          "button": {
+            "x": 1159,
+            "y": 83,
+            "width": 263,
+            "height": 170,
+            "right": 1422,
+            "bottom": 253
+          },
+          "image": {
+            "x": 1160,
+            "y": 84,
+            "width": 261,
+            "height": 168,
+            "right": 1421,
+            "bottom": 252
+          },
+          "availableWidth": 263,
+          "paragraphWidthRatio": 1,
+          "afterButton": true,
+          "afterImage": true,
+          "paragraphInsideButton": false,
+          "contentHasHorizontalOverflow": false,
+          "pageHasHorizontalOverflow": false
+        },
+        "healthyGeometry": {
+          "buttonWidth": 263,
+          "buttonHeight": 170,
+          "imageWidth": 261,
+          "imageHeight": 168,
+          "naturalWidth": 512,
+          "naturalHeight": 384,
+          "statusCount": 0
+        },
+        "failedPreviewOpened": true,
+        "healthyPreviewOpened": true
+      },
+      {
+        "language": "zh-CN",
+        "inspectorWidth": 260,
+        "geometry": {
+          "inspector": {
+            "x": 1180,
+            "y": 0,
+            "width": 260,
+            "height": 1000,
+            "right": 1440,
+            "bottom": 1000
+          },
+          "paragraph": {
+            "x": 1199,
+            "y": 256.5,
+            "width": 223,
+            "height": 18.140625,
+            "right": 1422,
+            "bottom": 274.640625
+          },
+          "button": {
+            "x": 1199,
+            "y": 83,
+            "width": 223,
+            "height": 170,
+            "right": 1422,
+            "bottom": 253
+          },
+          "image": {
+            "x": 1200,
+            "y": 84,
+            "width": 221,
+            "height": 168,
+            "right": 1421,
+            "bottom": 252
+          },
+          "availableWidth": 223,
+          "paragraphWidthRatio": 1,
+          "afterButton": true,
+          "afterImage": true,
+          "paragraphInsideButton": false,
+          "contentHasHorizontalOverflow": false,
+          "pageHasHorizontalOverflow": false
+        },
+        "healthyGeometry": {
+          "buttonWidth": 223,
+          "buttonHeight": 170,
+          "imageWidth": 221,
+          "imageHeight": 168,
+          "naturalWidth": 512,
+          "naturalHeight": 384,
+          "statusCount": 0
+        },
+        "failedPreviewOpened": true,
+        "healthyPreviewOpened": true
+      }
+    ],
+    "allMessagesBelowImageAtFullWidth": true
+  },
+  "baselineRevision": "4bfd84fe45c6ac2bc1bdcc95fb0363c24bd40d44",
+  "fixedRevision": "5357bbcf4cb6739ff1762429796b50e153d42b53"
+}
