@@ -90,7 +90,7 @@ it('recovers pre-upgrade size-limit failures on resume even with an offline sour
     state: 'unsupported',
     error: 'SIZE_LIMIT',
   });
-  await media.unregisterRoot(root.id);
+  await media.unregisterRoot(root.id, 'offline');
   await rm(source);
   await media.resume();
   await expect.poll(() => store.getAsset(asset!.id).previewState).toBe('ready');

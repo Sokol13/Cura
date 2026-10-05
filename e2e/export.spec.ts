@@ -233,7 +233,9 @@ test('offline user downloads whole and selected portable archives with complete 
         })
       ).ok(),
     ).toBe(true);
-    expect((await request.delete(`/api/roots/${root.id}`)).ok()).toBe(true);
+    expect(
+      (await request.delete(`/api/roots/${root.id}?mode=offline`)).ok(),
+    ).toBe(true);
     await page
       .getByRole('button', { name: 'Creative process', exact: true })
       .click();

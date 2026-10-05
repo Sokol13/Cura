@@ -125,8 +125,10 @@ export async function registerCatalogRoutes(
     return reply.code(201).send(s.LibraryRootSchema.parse(root));
   });
   app.delete('/api/roots/:id', async (request) => {
-    await media.unregisterRoot(id(request.params, 'id'));
-    return success();
+    const query = s.RemoveRootQuerySchema.parse(request.query);
+    return s.RemoveRootResultSchema.parse(
+      await media.unregisterRoot(id(request.params, 'id'), query.mode),
+    );
   });
   app.post('/api/libraries/:libraryId/rescan', async (request) => {
     await media.rescan(id(request.params, 'libraryId'));

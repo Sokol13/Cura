@@ -49,8 +49,8 @@
 **Files:** shared/catalog.ts, server/catalog-store.ts, catalog-search.ts, catalog-routes.ts, media/service.ts; web/catalog/SettingsDialog.tsx and Filters.tsx.
 **Interfaces:** Explicit root-removal mode defaults to trash; store applies it atomically after watcher drain. Availability query is derived from active sources, not snapshot existence.
 
-- [ ] Write and observe a failing regression covering two confirmation modes, trash/restore/history, multiple source aliases, re-registration identity, concurrent scan/removal, Chinese/English filter UI.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Write and observe a failing regression covering two confirmation modes, trash/restore/history, multiple source aliases, re-registration identity, concurrent scan/removal, Chinese/English filter UI.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 3: Persistent recursive scan summaries

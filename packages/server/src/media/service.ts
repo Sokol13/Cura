@@ -1,5 +1,12 @@
 import { Worker } from 'node:worker_threads';
-import { mkdir, realpath, stat, writeFile, unlink } from 'node:fs/promises';
+import {
+  mkdir,
+  opendir,
+  realpath,
+  stat,
+  writeFile,
+  unlink,
+} from 'node:fs/promises';
 import {
   basename,
   dirname,
@@ -20,6 +27,8 @@ import {
   type Asset,
   type CatalogEvent,
   type LibraryRoot,
+  type RootRemovalMode,
+  type RemoveRootResult,
 } from '@cura/shared';
 import type { CatalogStore, VersionFile } from '../catalog-store.js';
 import type { UserPaths } from '../paths.js';
@@ -69,6 +78,15 @@ function busy() {
     statusCode: 503,
   });
 }
+function rootRemoving() {
+  return Object.assign(
+    new Error('This directory is being removed. Retry when removal finishes.'),
+    {
+      code: 'ROOT_REMOVING',
+      statusCode: 409,
+    },
+  );
+}
 function overlaps(a: string, b: string): boolean {
   const within = (root: string, target: string) => {
     const part = relative(root, target);
@@ -98,6 +116,7 @@ export class MediaService {
   private readonly operations = new Set<Promise<unknown>>();
   private readonly recentErrors: CatalogEvent[] = [];
   private readonly nativePreviews = new Map<string, number>();
+  private readonly removingRoots = new Map<string, Promise<RemoveRootResult>>();
 
   constructor(
     private readonly store: CatalogStore,
@@ -191,12 +210,18 @@ export class MediaService {
     for (const [id, root] of this.reconcileRoots) {
       if (this.scans.has(id)) continue;
       this.reconcileRoots.delete(id);
-      if (this.watchers.has(id)) void this.scan(root);
+      if (this.watchers.has(id) && !this.removingRoots.has(id))
+        void this.scan(root);
       break;
     }
   }
   private enqueue(root: LibraryRoot, file: string) {
-    if (this.closed || !this.watchers.has(root.id)) return;
+    if (
+      this.closed ||
+      this.removingRoots.has(root.id) ||
+      !this.watchers.has(root.id)
+    )
+      return;
     this.rootChanged(root);
     const key = `${root.id}:${file}`;
     if (!this.pending.has(key) && this.pending.size >= MAX_QUEUED_JOBS) {
@@ -255,6 +280,45 @@ export class MediaService {
         this.recentErrors.splice(index, 1);
     }
   }
+  private async markRootUnavailable(
+    root: LibraryRoot,
+    error: unknown,
+  ): Promise<void> {
+    const codes = ['ENOENT', 'ENOTDIR', 'EACCES', 'EPERM', 'ROOT_CHANGED'];
+    const code = (error as NodeJS.ErrnoException | undefined)?.code;
+    if (this.closed || !codes.includes(code ?? '')) return;
+    await this.track(async () => {
+      // Watchers also report denied children. Confirm the root itself is unusable
+      // before clearing availability for every source beneath it.
+      let unavailable = false;
+      try {
+        const canonical = await realpath(root.path);
+        if (relative(root.path, canonical)) unavailable = true;
+        else {
+          const directory = await opendir(root.path);
+          await directory.close();
+        }
+      } catch (failure) {
+        unavailable = codes.includes(
+          (failure as NodeJS.ErrnoException).code ?? '',
+        );
+      }
+      if (!unavailable || this.closed || this.removingRoots.has(root.id))
+        return;
+      try {
+        this.store.getRoot(root.id);
+      } catch {
+        return; // Ignore late errors from a root already removed elsewhere.
+      }
+      for (const asset of this.store.reconcileSources(root.id, []))
+        this.emit({
+          type: 'asset',
+          libraryId: root.libraryId,
+          rootId: root.id,
+          assetId: asset.id,
+        });
+    });
+  }
   private emit(event: CatalogEvent) {
     if (event.type === 'error') {
       this.recentErrors.push(event);
@@ -290,6 +354,7 @@ export class MediaService {
           await this.watch(root);
           void this.scan(root);
         } catch (error) {
+          await this.markRootUnavailable(root, error);
           this.reportError(root, error);
         }
       }
@@ -351,18 +416,29 @@ export class MediaService {
           { statusCode: 400, code: 'INVALID_DIRECTORY' },
         );
     }
+    const existing = this.store
+      .listRoots(libraryId)
+      .find((root) => root.path === resolved);
+    if (existing && this.removingRoots.has(existing.id)) throw rootRemoving();
     const root = this.store.addRoot(libraryId, resolved, 'reference');
     await this.watch(root);
+    if (this.removingRoots.has(root.id)) throw rootRemoving();
+    this.store.getRoot(root.id);
     void this.scan(root);
     return root;
   }
   private watch(root: LibraryRoot): Promise<void> {
     if (this.closed) return Promise.reject(stopped());
+    if (this.removingRoots.has(root.id)) return Promise.reject(rootRemoving());
     const initializing = this.watching.get(root.id);
     if (initializing) return initializing;
     if (this.watchers.has(root.id)) return Promise.resolve();
     const running = (async () => {
-      await stat(root.path);
+      if (!(await stat(root.path)).isDirectory())
+        throw Object.assign(
+          new Error('Registered directory is no longer a directory.'),
+          { code: 'ENOTDIR' },
+        );
       if (this.closed) throw stopped();
       const watcher = chokidar.watch(root.path, {
         ignoreInitial: true,
@@ -381,6 +457,7 @@ export class MediaService {
         .on('change', (file) => this.enqueue(root, file))
         .on('unlink', (file) => this.sourceMissing(root, file));
       watcher.on('error', (error) => {
+        void this.markRootUnavailable(root, error).catch(() => undefined);
         this.reportError(root, error);
         void remove().catch(() => undefined);
       });
@@ -418,6 +495,12 @@ export class MediaService {
     return running;
   }
   private scan(root: LibraryRoot): Promise<void> {
+    if (
+      this.closed ||
+      this.removingRoots.has(root.id) ||
+      !this.watchers.has(root.id)
+    )
+      return Promise.resolve();
     const existing = this.scans.get(root.id);
     if (existing) return existing;
     const revision = this.rootChanges.get(root.id) ?? 0;
@@ -480,6 +563,7 @@ export class MediaService {
             });
         }
       } catch (error) {
+        await this.markRootUnavailable(root, error);
         this.reportError(root, error);
       } finally {
         this.scans.delete(root.id);
@@ -492,7 +576,14 @@ export class MediaService {
   async rescan(libraryId: string): Promise<void> {
     this.store.getLibrary(libraryId);
     for (const root of this.store.listRoots(libraryId)) {
-      await this.watch(root);
+      try {
+        await this.watch(root);
+      } catch (error) {
+        await this.markRootUnavailable(root, error);
+        throw error;
+      }
+      if (this.removingRoots.has(root.id)) throw rootRemoving();
+      this.store.getRoot(root.id);
       void this.scan(root);
     }
   }
@@ -611,21 +702,33 @@ export class MediaService {
       }
     });
   }
-  async unregisterRoot(id: string): Promise<void> {
-    await this.watching.get(id)?.catch(() => undefined);
-    const watcher = this.watchers.get(id);
-    this.watchers.delete(id);
-    this.reconcileRoots.delete(id);
-    this.rootChanges.delete(id);
-    this.clearRootErrors(id);
-    await watcher?.close();
-    await this.scans.get(id);
-    await Promise.allSettled(
-      [...this.pending]
-        .filter(([key]) => key.startsWith(`${id}:`))
-        .map(([, state]) => state.promise),
-    );
-    this.store.deleteRoot(id);
+  async unregisterRoot(
+    id: string,
+    mode: RootRemovalMode = 'trash',
+  ): Promise<RemoveRootResult> {
+    if (this.removingRoots.has(id)) throw rootRemoving();
+    this.store.getRoot(id);
+    const running = this.track(async () => {
+      await this.watching.get(id)?.catch(() => undefined);
+      const watcher = this.watchers.get(id);
+      this.watchers.delete(id);
+      this.reconcileRoots.delete(id);
+      this.rootChanges.delete(id);
+      this.clearRootErrors(id);
+      await watcher?.close();
+      await this.scans.get(id);
+      await Promise.allSettled(
+        [...this.pending]
+          .filter(([key]) => key.startsWith(`${id}:`))
+          .map(([, state]) => state.promise),
+      );
+      if (this.closed) throw stopped();
+      const result = this.store.deleteRoot(id, mode);
+      this.emit({ type: 'asset', libraryId: result.libraryId, rootId: id });
+      return result;
+    }).finally(() => this.removingRoots.delete(id));
+    this.removingRoots.set(id, running);
+    return running;
   }
   submitPreview(
     versionId: string,

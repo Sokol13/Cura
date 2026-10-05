@@ -96,6 +96,7 @@ class Watcher extends EventEmitter {
 const watchers: Watcher[] = [];
 const cleanup: (() => Promise<unknown>)[] = [];
 let failWatch = false;
+let deniedWatchPath: string | undefined;
 
 function deferred() {
   let resolve!: () => void;
@@ -129,6 +130,7 @@ async function dispatch(job: Payload) {
 
 beforeEach(() => {
   failWatch = false;
+  deniedWatchPath = undefined;
   watchers.length = 0;
   transport.instances.length = 0;
   transport.dispatch = dispatch;
@@ -140,7 +142,10 @@ beforeEach(() => {
         failWatch = false;
         watcher.emit(
           'error',
-          Object.assign(new Error('Denied'), { code: 'EACCES' }),
+          Object.assign(new Error('Denied'), {
+            code: 'EACCES',
+            path: deniedWatchPath,
+          }),
         );
       } else watcher.emit('ready');
     });
@@ -257,7 +262,10 @@ it('keeps worker permission codes for actionable messages', async () => {
   const { media, library } = await setup();
   transport.dispatch = async (job) => {
     if (job.kind === 'process')
-      throw Object.assign(new Error('Denied'), { code: 'EACCES' });
+      throw Object.assign(new Error('Denied'), {
+        code: 'EACCES',
+        path: deniedWatchPath,
+      });
     return dispatch(job);
   };
   const error: unknown = await media
@@ -740,4 +748,100 @@ it('refuses cache cleanup through a thumbnail-directory symlink to snapshots', a
       'utf8',
     ),
   ).toBe('private original');
+});
+
+it('drains a root removal without allowing concurrent registration or rescans to restart its watcher', async () => {
+  const { media, originals, library, store } = await setup();
+  const file = join(originals, 'design.png');
+  await writeFile(file, 'retained first version');
+  const root = await media.registerRoot(library.id, originals);
+  await expect.poll(() => store.listAssets(library.id).total).toBe(1);
+  const asset = store.listAssets(library.id).items[0]!;
+  const entered = deferred(),
+    release = deferred();
+  cleanup.push(async () => release.resolve());
+  transport.dispatch = async (job) => {
+    const result = await dispatch(job);
+    if (job.kind === 'process') {
+      entered.resolve();
+      await release.promise;
+    }
+    return result;
+  };
+  await writeFile(file, 'edited while scan was pending');
+  await media.rescan(library.id);
+  await entered.promise;
+  const removal = media.unregisterRoot(root.id);
+  await expect(media.registerRoot(library.id, originals)).rejects.toMatchObject(
+    { code: 'ROOT_REMOVING', statusCode: 409 },
+  );
+  await expect(media.rescan(library.id)).rejects.toMatchObject({
+    code: 'ROOT_REMOVING',
+    statusCode: 409,
+  });
+  release.resolve();
+  await removal;
+  expect(watchers).toHaveLength(1);
+  expect(watchers[0]!.closed).toBe(true);
+  expect(store.listRoots(library.id)).toEqual([]);
+  expect(store.listAssets(library.id).total).toBe(0);
+  expect(store.listAssets(library.id, { trash: true }).items[0]?.id).toBe(
+    asset.id,
+  );
+  expect(store.getAsset(asset.id).hash).toBe(asset.hash);
+  expect(store.listVersions(asset.id)).toHaveLength(1);
+  expect(await readFile(file, 'utf8')).toBe('edited while scan was pending');
+});
+
+it('marks a registered directory unavailable after it disappears between server runs', async () => {
+  const { media, originals, library, store, paths } = await setup();
+  await writeFile(join(originals, 'design.png'), 'retained bytes');
+  await media.registerRoot(library.id, originals);
+  await expect.poll(() => store.listAssets(library.id).total).toBe(1);
+  const asset = store.listAssets(library.id).items[0]!;
+  await media.close();
+  await rm(originals, { recursive: true });
+  const restarted = new MediaService(store, paths);
+  cleanup.push(() => restarted.close());
+  await restarted.resume();
+  expect(store.getAsset(asset.id).missing).toBe(true);
+  expect(store.getAsset(asset.id).deletedAt).toBeNull();
+  expect(
+    await readFile(
+      store.getVersionFile(asset.currentVersionId).snapshotPath,
+      'utf8',
+    ),
+  ).toBe('retained bytes');
+});
+
+it('keeps readable sources online when a watcher permission error concerns only a child', async () => {
+  const { media, originals, library, store, paths } = await setup();
+  await writeFile(join(originals, 'first.png'), 'first bytes');
+  await writeFile(join(originals, 'second.png'), 'second bytes');
+  await media.registerRoot(library.id, originals);
+  await expect.poll(() => store.listAssets(library.id).total).toBe(2);
+  await media.close();
+  failWatch = true;
+  deniedWatchPath = join(originals, 'private-child');
+  const restarted = new MediaService(store, paths);
+  cleanup.push(() => restarted.close());
+  await restarted.resume();
+  expect(
+    store.listAssets(library.id).items.map((asset) => asset.missing),
+  ).toEqual([false, false]);
+});
+it('marks old directory sources offline when its path has been replaced by a regular file', async () => {
+  const { media, originals, library, store, paths } = await setup();
+  await writeFile(join(originals, 'design.png'), 'retained bytes');
+  await media.registerRoot(library.id, originals);
+  await expect.poll(() => store.listAssets(library.id).total).toBe(1);
+  const asset = store.listAssets(library.id).items[0]!;
+  await media.close();
+  await rm(originals, { recursive: true });
+  await writeFile(originals, 'a file replaced this directory');
+  const restarted = new MediaService(store, paths);
+  cleanup.push(() => restarted.close());
+  await restarted.resume();
+  expect(store.getAsset(asset.id).missing).toBe(true);
+  expect(store.getAsset(asset.id).deletedAt).toBeNull();
 });
