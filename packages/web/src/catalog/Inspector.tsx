@@ -116,14 +116,11 @@ function InspectorForm({
           )}
           alt={assetDisplayName(asset)}
         />
-        {richPreviewFormat(asset.name, asset.type) && (
-          <PreviewStatus
-            state={asset.previewState}
-            error={asset.previewError}
-          />
-        )}
         <span>⤢</span>
       </button>
+      {richPreviewFormat(asset.name, asset.type) && (
+        <PreviewStatus state={asset.previewState} error={asset.previewError} />
+      )}
       <h3 className="asset-title">{assetDisplayName(asset)}</h3>
       <p className="asset-path">{asset.relativePath}</p>
       <label>
