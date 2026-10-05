@@ -339,3 +339,7 @@ Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate cor
 **Alternatives rejected:** Deleting originals, losing historical versions, treating retained snapshots as evidence that an original is online, creating duplicate assets on re-registration, or silently retaining every orphan in the main library.
 
 **Review refinements:** Whole-root unavailability is confirmed with canonical-path and directory-open checks; a denied child must not mark readable siblings offline. A former directory replaced by a regular file is unavailable. Saved source-availability filters preserve absent/true/false distinctly, so the UI exposes All sources / Source file unavailable / Source file available rather than losing an imported available-only rule.
+
+## Deterministic source-filter CI verification
+
+CI 37269871098 reached the initialized library and loading grid but timed out on the first new source-filter test before any filter action. The parameterized available-source case passed. Control only that test's actual 60 ms query debounce with fake timers and flush startup effects before asserting the real rendered asset. This retains all API-query assertions and avoids increasing global wait budgets or changing product behavior.

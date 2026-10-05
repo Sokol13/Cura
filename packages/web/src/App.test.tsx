@@ -173,31 +173,43 @@ describe('Cura catalog', () => {
   ])(
     'combines %s-source filtering with search and clears it from requests',
     async (selection, queryValue) => {
-      render(<App />);
-      await screen.findByRole('button', { name: 'Select Forest.png' });
-      fireEvent.change(screen.getByRole('searchbox'), {
-        target: { value: 'Forest' },
-      });
-      fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
-      fireEvent.change(
-        screen.getByRole('combobox', { name: 'Source availability' }),
-        { target: { value: selection } },
-      );
-      await waitFor(() =>
+      // Control the query debounce, including cold startup, independently of
+      // CPU contention between browser and server unit-test workers.
+      vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+      const flushQuery = async () => {
+        await act(async () => {});
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(60);
+        });
+      };
+      try {
+        render(<App />);
+        await flushQuery();
+        expect(
+          screen.getByRole('button', { name: 'Select Forest.png' }),
+        ).toBeVisible();
+        fireEvent.change(screen.getByRole('searchbox'), {
+          target: { value: 'Forest' },
+        });
+        fireEvent.click(screen.getByRole('button', { name: 'Filters' }));
+        fireEvent.change(
+          screen.getByRole('combobox', { name: 'Source availability' }),
+          { target: { value: selection } },
+        );
+        await flushQuery();
         expect(
           queries.some(
             (url) =>
               url.searchParams.get('missing') === queryValue &&
               url.searchParams.get('q') === 'Forest',
           ),
-        ).toBe(true),
-      );
-      queries = [];
-      fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
-      expect(
-        screen.getByRole('combobox', { name: 'Source availability' }),
-      ).toHaveValue('');
-      await waitFor(() =>
+        ).toBe(true);
+        queries = [];
+        fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
+        expect(
+          screen.getByRole('combobox', { name: 'Source availability' }),
+        ).toHaveValue('');
+        await flushQuery();
         expect(
           queries.some(
             (url) =>
@@ -205,8 +217,10 @@ describe('Cura catalog', () => {
               !url.searchParams.has('missing') &&
               !url.searchParams.has('q'),
           ),
-        ).toBe(true),
-      );
+        ).toBe(true);
+      } finally {
+        vi.useRealTimers();
+      }
     },
   );
 
