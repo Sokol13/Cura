@@ -20,6 +20,7 @@ export type InboxFileErrorCode =
   | 'EACCES'
   | 'EBUSY'
   | 'ENOENT'
+  | 'ENOTDIR'
   | 'ENOSPC'
   | 'IO';
 
@@ -55,6 +56,7 @@ async function safely<T>(operation: () => Promise<T>): Promise<T> {
       reason === 'EACCES' ||
       reason === 'EBUSY' ||
       reason === 'ENOENT' ||
+      reason === 'ENOTDIR' ||
       reason === 'ENOSPC'
     )
       fail(reason);
@@ -78,11 +80,8 @@ function parts(relative: string): string[] {
 async function canonicalRoot(root: string): Promise<string> {
   const absolute = path.resolve(root);
   const info = await fs.lstat(absolute);
-  if (
-    !info.isDirectory() ||
-    info.isSymbolicLink() ||
-    (await fs.realpath(absolute)) !== absolute
-  )
+  if (!info.isSymbolicLink() && !info.isDirectory()) fail('ENOTDIR');
+  if (info.isSymbolicLink() || (await fs.realpath(absolute)) !== absolute)
     fail('UNSAFE_PATH');
   return absolute;
 }
@@ -107,11 +106,8 @@ async function contained(
         return current;
       throw error;
     }
-    if (
-      info.isSymbolicLink() ||
-      (index < segments.length - 1 && !info.isDirectory())
-    )
-      fail('UNSAFE_PATH');
+    if (info.isSymbolicLink()) fail('UNSAFE_PATH');
+    if (index < segments.length - 1 && !info.isDirectory()) fail('ENOTDIR');
   }
   return current;
 }
@@ -127,7 +123,7 @@ async function directory(root: string, relative: string): Promise<string> {
       if (code(error) !== 'EEXIST') throw error;
     }
     current = await contained(root, traversed);
-    if (!(await fs.lstat(current)).isDirectory()) fail('UNSAFE_PATH');
+    if (!(await fs.lstat(current)).isDirectory()) fail('ENOTDIR');
   }
   return current;
 }
