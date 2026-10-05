@@ -1,0 +1,14 @@
+{
+  "commit": "93f7cbd70b202ff779c7a34186fafb7ddd3ac624",
+  "version": "0.3.1",
+  "trees": {
+    "package.json": "1a4d74544d3da648caf61cb1178285a55b7bf5d7",
+    "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615",
+    "packages/server": "7fd4d872f1b6910e08c54cc36cb2902e182efc6b",
+    "packages/shared": "f2096978e6c6cd3ee3373c93ad67b5b4d1c28230",
+    "packages/web": "a3f8c53482cdaa42f79e5bf4d21fe3abaac56135",
+    "scripts/ensure-sqlite-prebuilt.mjs": "b0c34df6cbe3b9cc02ec9bc2ca8ffce239334868",
+    "scripts/ensure-sharp-prebuilt.mjs": "651bf885ef8a6d28e8f09c0432e29c48d012644e",
+    "scripts/psd-benchmark.mjs": "c50b2427329767ed41b14c333a147fac76afeb77"
+  }
+}

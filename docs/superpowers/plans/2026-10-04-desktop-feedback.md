@@ -114,12 +114,12 @@
 
 - [x] Write and observe a failing regression covering valid Chinese UTF-8 prompt/model, Latin-1 accents, malformed UTF-8 fallback, keyword separation and exact uint64 metadata.
 - [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
-- [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
+- [x] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### v0.3.1 release gate — required before task 10
 
 - [ ] All nine rows delivered on main; fresh install/start and inherited acceptance verified on Node22/24; actual CI green.
-- [ ] Update four package versions, CHANGELOG, SMOKE_TEST and REPORT-v0.3.1.md; review every completion row and physical/file limits.
+- [x] Update four package versions, CHANGELOG, SMOKE_TEST and REPORT-v0.3.1.md; review every completion row and physical/file limits.
 - [ ] Publish annotated v0.3.1 and verify tag/release CI and GitHub Release; report in chat and immediately continue task10.
 
 ### Task 10: Folder-first empty state

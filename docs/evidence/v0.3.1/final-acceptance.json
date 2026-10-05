@@ -1,0 +1,280 @@
+{
+  "schemaVersion": 1,
+  "version": "0.3.1",
+  "status": "passed",
+  "recordedAt": "2026-10-05T08:19:47.062054+00:00",
+  "implementationCommit": "93f7cbd70b202ff779c7a34186fafb7ddd3ac624",
+  "runtimeTrees": {
+    "package.json": "1a4d74544d3da648caf61cb1178285a55b7bf5d7",
+    "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615",
+    "packages/server": "7fd4d872f1b6910e08c54cc36cb2902e182efc6b",
+    "packages/shared": "f2096978e6c6cd3ee3373c93ad67b5b4d1c28230",
+    "packages/web": "a3f8c53482cdaa42f79e5bf4d21fe3abaac56135",
+    "scripts/ensure-sqlite-prebuilt.mjs": "b0c34df6cbe3b9cc02ec9bc2ca8ffce239334868",
+    "scripts/ensure-sharp-prebuilt.mjs": "651bf885ef8a6d28e8f09c0432e29c48d012644e",
+    "scripts/psd-benchmark.mjs": "c50b2427329767ed41b14c333a147fac76afeb77"
+  },
+  "nodeRuntimes": {
+    "24": {
+      "node": "v24.21.0",
+      "nativeAbi": "137",
+      "independentClone": true,
+      "freshNodeModules": true,
+      "frozenLockfile": true,
+      "packageVersions": {
+        "package.json": "0.3.1",
+        "packages/server/package.json": "0.3.1",
+        "packages/shared/package.json": "0.3.1",
+        "packages/web/package.json": "0.3.1"
+      },
+      "sqlitePrebuiltVerified": true,
+      "sharpPrebuiltVerified": true,
+      "nativeCompilation": false,
+      "checks": {
+        "install": {
+          "passed": true,
+          "seconds": 1.908
+        },
+        "setup": {
+          "passed": true,
+          "seconds": 5.337
+        },
+        "lint": {
+          "passed": true,
+          "seconds": 16.542
+        },
+        "typecheck": {
+          "passed": true,
+          "seconds": 12.473
+        },
+        "test": {
+          "passed": true,
+          "seconds": 53.247
+        },
+        "e2e": {
+          "passed": true,
+          "seconds": 166.317
+        },
+        "psd": {
+          "passed": true,
+          "seconds": 5.751
+        },
+        "start": {
+          "passed": true,
+          "seconds": 25.89
+        }
+      },
+      "fullUnitSuiteIncluded": true,
+      "fullBrowserSuiteIncluded": true,
+      "startup": {
+        "command": "NODE_PATH= PORT=<isolated-port> pnpm start (default browser opening)",
+        "startupSeconds": 20.3,
+        "emptyDataCacheLogDirectories": true,
+        "buildPassed": true,
+        "health": {
+          "status": "ok"
+        },
+        "host": "127.0.0.1",
+        "defaultBrowserOpened": true,
+        "defaultBrowserMethod": "Isolated XDG HTTP/HTTPS desktop association invoked headless Chromium; global associations unchanged.",
+        "freshBrowserProfile": true,
+        "attachedWith": "Playwright connectOverCDP to the already automatically opened page",
+        "pageGotoCalled": false,
+        "newPageCalled": false
+      },
+      "persistence": {
+        "language": "zh-CN",
+        "libraryName": "v0.3.1 Node 24 启动验证 · 设计资料库",
+        "createdThroughChineseUI": true,
+        "sameLibraryIdAfterReload": true,
+        "activeLibraryIdAfterReload": true,
+        "closedDatabaseContainsLibrary": true,
+        "closedDatabaseIntegrityCheck": "ok",
+        "closedDatabaseForeignKeyViolations": 0,
+        "migrationCount": 10
+      },
+      "cleanup": {
+        "privateServerStopped": true,
+        "privateBrowserStopped": true,
+        "serverAndCdpPortsReleased": true
+      },
+      "psd": {
+        "passed": true,
+        "limits": {
+          "processingMs": 10000,
+          "absoluteRssBytes": 500000000,
+          "minSourceBytes": 52428800
+        },
+        "cases": [
+          {
+            "name": "resource-1036",
+            "width": 3866,
+            "height": 6871,
+            "processingMs": 219.55955400000005,
+            "absoluteMaxRssBytes": 376406016,
+            "sourceAndSnapshotHashesPreserved": true
+          },
+          {
+            "name": "resource-1033",
+            "width": 8192,
+            "height": 8192,
+            "processingMs": 381.09661299999993,
+            "absoluteMaxRssBytes": 387731456,
+            "sourceAndSnapshotHashesPreserved": true
+          },
+          {
+            "name": "merged-raw",
+            "width": 13391,
+            "height": 7032,
+            "processingMs": 550.0118429999999,
+            "absoluteMaxRssBytes": 372043776,
+            "sourceAndSnapshotHashesPreserved": true
+          }
+        ]
+      },
+      "artifacts": {
+        "startup": "final-node24-start.json",
+        "screenshot": "../../screenshots/v0.3.1-final-node24-start.png",
+        "psd": "final-node24-psd.json",
+        "logs": "Untracked acceptance workspace /workspace/cura-v031-acceptance/node24-*.log"
+      },
+      "testCounts": {
+        "unitAndToolPassed": 596,
+        "unconfiguredCloudSkipped": 17,
+        "browserPassed": 33
+      },
+      "stress": {
+        "fixtureCount": 1000,
+        "ingestionMilliseconds": 10130.573340999996,
+        "gridFrameP95Ms": 16.800000000000182,
+        "listFrameP95Ms": 16.800000000000182,
+        "watcherBrowserMilliseconds": 873.1498820000124
+      }
+    },
+    "22": {
+      "node": "v22.23.3",
+      "nativeAbi": "127",
+      "independentClone": true,
+      "freshNodeModules": true,
+      "frozenLockfile": true,
+      "packageVersions": {
+        "package.json": "0.3.1",
+        "packages/server/package.json": "0.3.1",
+        "packages/shared/package.json": "0.3.1",
+        "packages/web/package.json": "0.3.1"
+      },
+      "sqlitePrebuiltVerified": true,
+      "sharpPrebuiltVerified": true,
+      "nativeCompilation": false,
+      "checks": {
+        "install": {
+          "passed": true,
+          "seconds": 2.0
+        },
+        "start": {
+          "passed": true,
+          "seconds": 27.306
+        },
+        "psd": {
+          "passed": true,
+          "seconds": 5.638
+        }
+      },
+      "fullUnitSuiteIncluded": false,
+      "fullBrowserSuiteIncluded": false,
+      "startup": {
+        "command": "NODE_PATH= PORT=<isolated-port> pnpm start (default browser opening)",
+        "startupSeconds": 21.6,
+        "emptyDataCacheLogDirectories": true,
+        "buildPassed": true,
+        "health": {
+          "status": "ok"
+        },
+        "host": "127.0.0.1",
+        "defaultBrowserOpened": true,
+        "defaultBrowserMethod": "Isolated XDG HTTP/HTTPS desktop association invoked headless Chromium; global associations unchanged.",
+        "freshBrowserProfile": true,
+        "attachedWith": "Playwright connectOverCDP to the already automatically opened page",
+        "pageGotoCalled": false,
+        "newPageCalled": false
+      },
+      "persistence": {
+        "language": "zh-CN",
+        "libraryName": "v0.3.1 Node 22 启动验证 · 设计资料库",
+        "createdThroughChineseUI": true,
+        "sameLibraryIdAfterReload": true,
+        "activeLibraryIdAfterReload": true,
+        "closedDatabaseContainsLibrary": true,
+        "closedDatabaseIntegrityCheck": "ok",
+        "closedDatabaseForeignKeyViolations": 0,
+        "migrationCount": 10
+      },
+      "cleanup": {
+        "privateServerStopped": true,
+        "privateBrowserStopped": true,
+        "serverAndCdpPortsReleased": true
+      },
+      "psd": {
+        "passed": true,
+        "limits": {
+          "processingMs": 10000,
+          "absoluteRssBytes": 500000000,
+          "minSourceBytes": 52428800
+        },
+        "cases": [
+          {
+            "name": "resource-1036",
+            "width": 3866,
+            "height": 6871,
+            "processingMs": 224.6385879999999,
+            "absoluteMaxRssBytes": 220483584,
+            "sourceAndSnapshotHashesPreserved": true
+          },
+          {
+            "name": "resource-1033",
+            "width": 8192,
+            "height": 8192,
+            "processingMs": 425.99723400000005,
+            "absoluteMaxRssBytes": 220168192,
+            "sourceAndSnapshotHashesPreserved": true
+          },
+          {
+            "name": "merged-raw",
+            "width": 13391,
+            "height": 7032,
+            "processingMs": 634.1280959999999,
+            "absoluteMaxRssBytes": 229679104,
+            "sourceAndSnapshotHashesPreserved": true
+          }
+        ]
+      },
+      "artifacts": {
+        "startup": "final-node22-start.json",
+        "screenshot": "../../screenshots/v0.3.1-final-node22-start.png",
+        "psd": "final-node22-psd.json",
+        "logs": "Untracked acceptance workspace /workspace/cura-v031-acceptance/node22-*.log"
+      },
+      "verificationScope": "Fresh install, ordinary default-browser startup, persistence and final PSD benchmark. Node22 full-suite evidence is supplied separately by root and CI; this harness does not repeat it."
+    }
+  },
+  "scope": {
+    "platform": "linux",
+    "architecture": "x64",
+    "physicalMacOSVerified": false,
+    "physicalWindowsVerified": false,
+    "liveCloudIncluded": false,
+    "liveCloudRequirement": "Mandatory separate Node22/24 CI matrix; local 17 unconfigured cloud cases intentionally skipped."
+  },
+  "oldItem8EvidenceModified": false,
+  "nativeIsolation": {
+    "separateRealFiles": true,
+    "allDistinctInodes": true,
+    "node22BinarySha256": "74ab8380917903b45ed535e56fbc1350cdd5c9f1082ded1eb5536667dc7aa700",
+    "node24BinarySha256": "90c27dc0d431feef669795799271448d5d9fa4da6dab88724edfb43ad3a85221"
+  },
+  "releasePreparation": {
+    "verifiedEquivalentToCommit": "1dec52df5c36cf5bd1af253bf391fb4e40d31fcc",
+    "allEightRuntimeTreesIdentical": true,
+    "note": "Only report/evidence files changed after frozen runtime acceptance; recheck these immutable Git identities before tagging."
+  }
+}
