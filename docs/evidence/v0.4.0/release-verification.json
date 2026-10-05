@@ -1,0 +1,500 @@
+{
+  "schemaVersion": 1,
+  "version": "0.4.0",
+  "release": {
+    "id": 403695666,
+    "tag": "v0.4.0",
+    "url": "https://github.com/Sokol13/Cura/releases/tag/v0.4.0",
+    "draft": false,
+    "prerelease": false,
+    "publishedAt": "2026-10-05T12:35:19Z",
+    "targetCommitish": "30ed2a63ba023b756afc943a508767f88ef85eca"
+  },
+  "tag": {
+    "annotated": true,
+    "object": "c5299a467160dea00018ffa6e4e5dc13ad591d2d",
+    "peeledTarget": "30ed2a63ba023b756afc943a508767f88ef85eca",
+    "remoteMainAtVerification": "30ed2a63ba023b756afc943a508767f88ef85eca"
+  },
+  "ci": {
+    "id": 37309523618,
+    "url": "https://github.com/Sokol13/Cura/actions/runs/37309523618",
+    "headSha": "30ed2a63ba023b756afc943a508767f88ef85eca",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 111761227721,
+        "name": "Lint, types, unit tests and Chromium E2E (Node 24)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run pnpm/action-setup@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare independent FCPXML grammar validation",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install locked dependencies and verify SQLite prebuilt binary",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install Chromium and codec-capable Chrome",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Verify browser rendering and declared video capability",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Lint and formatting",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Typecheck",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Unit tests",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real-server Chromium E2E",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Large PSD time and memory acceptance",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Print browser failure context",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "name": "Upload failure diagnostics",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run pnpm/action-setup@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "id": 111761227851,
+        "name": "Lint, types, unit tests and Chromium E2E (Node 22)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run pnpm/action-setup@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare independent FCPXML grammar validation",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install locked dependencies and verify SQLite prebuilt binary",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install Chromium and codec-capable Chrome",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Verify browser rendering and declared video capability",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Lint and formatting",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Typecheck",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Unit tests",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real-server Chromium E2E",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Large PSD time and memory acceptance",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Print browser failure context",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "name": "Upload failure diagnostics",
+            "status": "completed",
+            "conclusion": "skipped"
+          },
+          {
+            "name": "Post Run actions/setup-python@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run pnpm/action-setup@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "id": 111761227962,
+        "name": "Mandatory real cloud integration (Node 24) / Real Supabase Auth, RLS, Storage and two-device sync (Node 24)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run pnpm/action-setup@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run supabase/setup-cli@v1",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare private local test state",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install locked dependencies and build",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Verify credential-safe report summaries",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Start only the disposable database, Auth, REST, Storage and gateway",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real SQL, RLS, CAS, revocation and immutable Storage checks",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real session persistence, refresh and file transfer checks",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real two-device graph, offline recovery and corruption checks",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Reject warning-level security advisor findings",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Seed four private browser accounts",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install Chromium and codec-capable Chrome",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real owner/editor/viewer browser workflow on two Cura servers",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Stop only this disposable stack and remove private test files",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run pnpm/action-setup@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "id": 111761228135,
+        "name": "Mandatory real cloud integration (Node 22) / Real Supabase Auth, RLS, Storage and two-device sync (Node 22)",
+        "conclusion": "success",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run pnpm/action-setup@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run supabase/setup-cli@v1",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Prepare private local test state",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install locked dependencies and build",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Verify credential-safe report summaries",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Start only the disposable database, Auth, REST, Storage and gateway",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real SQL, RLS, CAS, revocation and immutable Storage checks",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real session persistence, refresh and file transfer checks",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real two-device graph, offline recovery and corruption checks",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Reject warning-level security advisor findings",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Seed four private browser accounts",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Install Chromium and codec-capable Chrome",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Real owner/editor/viewer browser workflow on two Cura servers",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Stop only this disposable stack and remove private test files",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run pnpm/action-setup@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v4",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      }
+    ]
+  },
+  "publisher": {
+    "id": 37310543061,
+    "url": "https://github.com/Sokol13/Cura/actions/runs/37310543061",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 111764580856,
+        "name": "Publish an explicitly requested milestone",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "publication": {
+    "localCheckpoint": "1d060d0e85a874337596af9b62e35b052cd9a5d2",
+    "verifiedRootTree": "6a010259b6fd5e8cb4a3ce3562659dbe57b3f8a5",
+    "nonForceMainUpdate": true,
+    "implementationInputsMatched": true,
+    "actionsTokenTagDoesNotTriggerAdditionalTagWorkflow": true
+  },
+  "limits": {
+    "physicalMacOSVerified": false,
+    "physicalWindowsVerified": false,
+    "actualUserPsdFilesVerified": false,
+    "reportedWindowsFreezeReproduced": false
+  }
+}

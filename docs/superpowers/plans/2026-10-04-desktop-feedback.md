@@ -175,10 +175,12 @@
 - [x] Audit canvas effects, resize/scroll handling and thumbnail polling. No self-sustaining React Flow loop is proven by source review; the empty preview queue has a bounded two-second GET timer.
 - [x] Measure the unchanged production baseline with four cases: 100-node canvas, slot-history comparison, filled 10×10 matrix at DPR 1, and canvas at emulated DPR 1.25. Separate 15 seconds of untouched idle Performance API samples from ten bounded CDP screenshots; retain raw evidence and the existing strict frame gates, with trace/video recording disabled.
 - [x] The Linux baseline passed after correcting harness setup/capture assumptions. No production defect was reproduced, so production behavior is unchanged. The reported physical Windows screenshot freeze remains unverified; no failing product regression or fix is claimed.
-- [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
+- [x] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### v0.4.0 release gate
 
-- [x] All 15 numbered rows verified locally, including 95 upgrade checks and explicit device-only limits in REPORT-v0.4.0.md; final exact-main CI still gates the tag.
-- [ ] Fresh whole-branch review; resolve material findings, full Node22/24 local/CI gates, clean install/start and final migration/exports acceptance.
-- [ ] Update versions/CHANGELOG/SMOKE_TEST/PROGRESS, publish annotated v0.4.0 and verify Release. Stop owned processes and finish with clean main and green CI.
+- [x] All 15 numbered rows verified locally, including 95 upgrade checks and explicit device-only limits in REPORT-v0.4.0.md; final exact-main CI 37309523618 passed all four cells before the verified tag.
+- [x] Fresh whole-branch review; resolve material findings, full Node22/24 local/CI gates, clean install/start and final migration/exports acceptance.
+- [x] Update versions/CHANGELOG/SMOKE_TEST/PROGRESS, publish annotated v0.4.0 and verify Release. Stop owned processes and finish with clean main and green CI.
+
+Release closure: annotated v0.4.0 targets `30ed2a6`; all four final CI cells and publisher 37310543061 passed. The consumed request is removed and owned processes are stopped. The final documentation commit runs complete CI again before chat handoff.
