@@ -103,7 +103,10 @@ function savedFilters(rules: Collection['rules']): Filters {
     similarTo,
     trash,
     archived,
-    missing: 'missing' in rules && rules.missing === true ? true : undefined,
+    missing:
+      'missing' in rules && typeof rules.missing === 'boolean'
+        ? rules.missing
+        : undefined,
   };
 }
 
@@ -884,17 +887,29 @@ export function Sidebar({
                       />
                     </label>
                   ))}
-                  <label className="checkbox-field">
-                    <input
-                      type="checkbox"
-                      checked={edit.rules?.missing ?? false}
+                  <label className="form-field">
+                    <span>{t('sourceAvailability')}</span>
+                    <select
+                      value={
+                        edit.rules?.missing === undefined
+                          ? ''
+                          : edit.rules.missing
+                            ? 'missing'
+                            : 'available'
+                      }
                       onChange={(event) =>
                         updateRule({
-                          missing: event.target.checked ? true : undefined,
+                          missing:
+                            event.target.value === ''
+                              ? undefined
+                              : event.target.value === 'missing',
                         })
                       }
-                    />
-                    {t('sourceUnavailable')}
+                    >
+                      <option value="">{t('allSources')}</option>
+                      <option value="missing">{t('sourceUnavailable')}</option>
+                      <option value="available">{t('sourceAvailable')}</option>
+                    </select>
                   </label>
                   <label className="checkbox-field">
                     <input

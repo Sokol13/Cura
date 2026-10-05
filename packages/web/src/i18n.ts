@@ -50,7 +50,10 @@ const en = {
     'Only stop watching (keep history; mark assets offline)',
   unregisterOtherSourceHint:
     'Assets with another available registered copy stay in the library.',
+  sourceAvailability: 'Source availability',
+  allSources: 'All sources',
   sourceUnavailable: 'Source file unavailable',
+  sourceAvailable: 'Source file available',
   library: 'Library',
   newLibrary: 'New library',
   renameLibrary: 'Rename library',
@@ -266,7 +269,10 @@ const zh: Record<keyof typeof en, string> = {
   unregisterKeepOffline: '仅停止监听（保留历史版本，资产标记为离线）',
   unregisterOtherSourceHint:
     '如果资产在其他已登记目录中还有可用副本，它会继续保留在库中。',
+  sourceAvailability: '源文件状态',
+  allSources: '全部源文件',
   sourceUnavailable: '源文件不可用',
+  sourceAvailable: '源文件可用',
   library: '资产库',
   newLibrary: '新建资产库',
   renameLibrary: '重命名资产库',

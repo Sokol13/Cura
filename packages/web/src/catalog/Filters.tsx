@@ -104,15 +104,29 @@ export function FilterPanel({
           />
         </label>
       ))}
-      <label className="checkbox-field">
-        <input
-          type="checkbox"
-          checked={filters.missing ?? false}
-          onChange={(event) =>
-            onChange({ missing: event.target.checked ? true : undefined })
+      <label>
+        {t('sourceAvailability')}
+        <select
+          value={
+            filters.missing === undefined
+              ? ''
+              : filters.missing
+                ? 'missing'
+                : 'available'
           }
-        />
-        {t('sourceUnavailable')}
+          onChange={(event) =>
+            onChange({
+              missing:
+                event.target.value === ''
+                  ? undefined
+                  : event.target.value === 'missing',
+            })
+          }
+        >
+          <option value="">{t('allSources')}</option>
+          <option value="missing">{t('sourceUnavailable')}</option>
+          <option value="available">{t('sourceAvailable')}</option>
+        </select>
       </label>
       <button onClick={onClear}>{t('clearFilters')}</button>
     </section>

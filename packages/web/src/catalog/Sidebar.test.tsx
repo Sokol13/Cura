@@ -257,12 +257,42 @@ describe('catalog sidebar', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Edit Favorites' }));
     const dialog = within(screen.getByRole('dialog'));
-    expect(dialog.getByLabelText('Source file unavailable')).toBeChecked();
-    fireEvent.click(dialog.getByLabelText('Source file unavailable'));
+    expect(dialog.getByLabelText('Source availability')).toHaveValue('missing');
+    fireEvent.change(dialog.getByLabelText('Source availability'), {
+      target: { value: '' },
+    });
     fireEvent.click(dialog.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body));
     expect(body.rules).not.toHaveProperty('missing');
+  });
+
+  it('applies an API-created available-source rule and preserves it when renaming the collection', async () => {
+    const callbacks = mount({
+      collections: [
+        {
+          ...collections[0],
+          rules: { ...collections[0]!.rules, missing: false },
+        },
+      ],
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Favorites' }));
+    expect(callbacks.onFilterChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ missing: false }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Favorites' }));
+    const dialog = within(screen.getByRole('dialog'));
+    expect(dialog.getByLabelText('Source availability')).toHaveValue(
+      'available',
+    );
+    fireEvent.change(dialog.getByLabelText('Name'), {
+      target: { value: 'Available favorites' },
+    });
+    fireEvent.click(dialog.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    expect(
+      JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)),
+    ).toMatchObject({ name: 'Available favorites', rules: { missing: false } });
   });
 
   it('keeps unavailable-source filtering when saving a new smart folder', async () => {
@@ -272,7 +302,7 @@ describe('catalog sidebar', () => {
     fireEvent.change(dialog.getByLabelText('Name'), {
       target: { value: 'Offline assets' },
     });
-    expect(dialog.getByLabelText('Source file unavailable')).toBeChecked();
+    expect(dialog.getByLabelText('Source availability')).toHaveValue('missing');
     fireEvent.click(dialog.getByRole('button', { name: 'Create' }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     expect(
