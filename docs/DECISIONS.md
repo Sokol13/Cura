@@ -387,3 +387,7 @@ Run every standard CI/release validation step and actual cloud acceptance on bot
 ## PNG tEXt compatibility
 
 Decode only the tEXt value as fatal UTF-8 first, then decode the entire original value as Latin-1 if UTF-8 decoding throws. Keep the keyword Latin-1 and leave zTXt Latin-1 and iTXt strict UTF-8 unchanged. A literal valid UTF-8 replacement character does not trigger fallback; no per-byte or heuristic mixing is used. Existing CRC, individual/aggregate byte limits and malformed-chunk handling stay in place. This affects newly parsed files; do not rewrite saved metadata or version records through an unsolicited reparse migration. The fixture generator now includes a Chinese prompt phrase in both SD and Comfy tEXt so the existing real-worker/browser stress scenario verifies the complete path.
+
+## v0.3.1 publication and upgrade evidence
+
+Use the normal annotated-tag release workflow once all numbered fixes, inherited definitions and final source CI pass. Keep the consumed v0.3.0 fallback inactive and pinned; its documentation is historical, not a second publisher for the new milestones. Final acceptance uses four package versions 0.3.1 and separate Node 22/24 fresh clones. Rebuild both the exact v0.3.0 source and candidate immediately before the upgrade verifier so ignored compiled files cannot weaken source provenance. Compare all 48 legacy tables and retained bytes, then verify the additive scan table and two idempotent reopens. Preserve earlier item-specific evidence with its original source identity.

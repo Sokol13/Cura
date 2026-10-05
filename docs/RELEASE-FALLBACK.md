@@ -1,10 +1,12 @@
-# Release publication after verified CI
+# Historical v0.3.0 publication fallback
 
 The user authorized milestone tags and Releases only after the milestone completion definitions and CI are verified. If the interactive GitHub credential cannot publish them, `.github/workflows/release-fallback.yml` can use the repository's Actions token. This fallback adds no new release authorization and does not weaken the acceptance checklist.
 
+For v0.3.1 and later desktop-feedback releases, use the normal annotated-tag `release.yml` path after all milestone checks and main CI pass. The recovery script below is intentionally pinned to v0.3.0 and cannot publish a newer version; do not reactivate it for these milestones.
+
 The fallback is inactive unless the successful CI commit contains `.github/release-request.json`. The current main branch does **not** include that file; its consumed copy remains in the immutable v0.3.0 tag. The coordinator creates it only after all v0.3.0 acceptance evidence is complete, including inherited milestones, live provider/cloud checks, independent FCPXML validation, documentation and known platform limits.
 
-## Future activation
+## Historical activation procedure
 
 1. Complete and review the milestone acceptance report. Set the root, server, shared and web package versions to `0.3.0` before calculating tree hashes.
 2. Add this exact readiness line to `docs/REPORT-v0.3.0.md` only after its completion checklist is satisfied:

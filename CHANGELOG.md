@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.1 — 2026-10-05
+
+- Decode large PSD embedded thumbnails and bounded merged composites without reading the layer tree; recover retained previews and verify strict time/memory limits.
+- Make registered-folder removal explicitly choose recoverable Trash or offline history, defaulting to Trash; add source-unavailable filtering.
+- Persist recursive scan summaries with supported/skipped totals, extension statistics and read errors, including clear empty/failed completion.
+- Export actionable diagnostics with recent scan summaries, a persistent last-200 warning/error journal, thumbnail queues and database integrity checks.
+- Localize all built-in slot labels and purposes, preserve custom names, show platform-aware shortcut hints and place preview explanations below the icon.
+- Support Node 22–24, verify native prebuilts on Node 24, and run complete standard/real-cloud CI and release validation on Node 22 and 24.
+- Decode PNG tEXt values as strict UTF-8 first with Latin-1 fallback; preserve existing compressed/international text rules.
+- Keep clean-clone tests usable without the optional ignored FCPXML DTD cache by skipping only its three dependent cases with one preparation hint.
+
 ## 0.3.0 — 2026-10-04
 
 - Add bilingual automation review with explicit offline metadata rules and a configured real vision provider, exact-version proposal apply/selective undo, source preservation and provider provenance.

@@ -1,6 +1,6 @@
-# v0.3.0 desktop smoke test
+# v0.3.1 desktop smoke test
 
-Run on physical macOS and Windows after [SETUP.md](SETUP.md). Allow about **10 minutes after installation/build**; an initial scan and optional cloud setup take longer. This is a manual checklist, not a claim that either platform has passed. Record the exact tag/commit, OS and architecture. Earlier evidence remains in the [v0.1](REPORT-v0.1.0.md) and [v0.2](REPORT-v0.2.0.md) reports.
+Run on physical macOS and Windows after [SETUP.md](SETUP.md). Allow about **10 minutes after installation/build**; an initial scan and optional cloud setup take longer. This is a manual checklist, not a claim that either platform has passed. Use a current Node 22 or 24 patch. Record the exact tag/commit, OS, architecture and Node version. Earlier evidence remains in the [v0.1](REPORT-v0.1.0.md) and [v0.2](REPORT-v0.2.0.md) reports.
 
 Prepare a disposable folder with 200–500 images and a Chinese filename. `node scripts/generate-fixtures.mjs <absolute-new-folder> 300` generates PNGs with SD/Comfy metadata without overwriting files. Keep two visibly different files for replacement. The original rich fixtures are in `e2e/fixtures/rich`. Back up an existing Cura user-data directory before upgrading; external edits in this checklist apply only to disposable sources.
 
@@ -26,6 +26,20 @@ We need the lantern.
 PROP: LANTERN
 SCENE: WORKSHOP
 ```
+
+## v0.3.1 desktop feedback checks
+
+Repeat these focused checks in addition to the core flow. Generated Linux fixtures pass automated gates; the actual Photoshop files and physical platform behavior still need this checklist.
+
+1. Register the three original large PSDs (reported sizes 3866×6871 through 13391×7032). Each should produce a meaningful thumbnail within 10 seconds; record elapsed time and Node process peak memory using Activity Monitor/Task Manager. The acceptance limit is 500 MB for the service process, including its workers. Rebuild previews and verify retained versions still display.
+2. Remove a disposable registered folder: the default **Also move these assets to Trash** option removes its orphaned assets from the normal catalog and allows restore; originals on disk stay untouched. Repeat with **Only stop watching** to keep offline assets. Filter **Source unavailable** and use the usual batch actions. Assets with another online source should remain available.
+3. Register an empty folder and a folder containing nested images plus unsupported files. Completion must show counts, rather than an endless 0/0 scan. Expand the summary to inspect skipped extensions and read errors. Nested subfolders are scanned recursively; symlinks are skipped. Test the Windows Downloads folder that previously yielded zero and retain its summary.
+4. Export diagnostics after an actual scan or preview problem. The ZIP should contain latest per-root scan summaries, up to 200 recent warnings/errors, thumbnail queue state and SQLite integrity results. `logs.json` may correctly be empty when no warnings occurred. Private source paths are redacted from the bundle.
+5. In Chinese, open all four built-in slot templates: labels and purposes should be Chinese, including existing boards. Switch to English and back; custom/renamed labels should stay as entered. Shortcut hints should show **⌘ F** on Mac and **Ctrl F** on Windows; both modifier handlers remain supported.
+6. Inspect an unsupported/oversized preview at a narrow detail panel. The explanation should wrap below the icon across the full panel width. Import UTF-8 Chinese tEXt SD/Comfy PNGs and a Latin-1 sample: prompt/model text should remain readable.
+7. From a clean clone with Node 24, run frozen install and normal start. Native SQLite/Sharp should install without local compilation. `pnpm test` should also pass without the optional local FCPXML DTD cache; exactly its three grammar-dependent cases skip with a preparation hint. CI prepares the cache and runs those cases.
+
+The user previously passed core Mac/Windows smoke at `6ed394b`; that does not certify this release. Still outstanding: Windows registered directories with Chinese paths, locked-file behavior and physical watcher latency. Record these explicitly when tested.
 
 ## FCPXML and platform follow-up
 
