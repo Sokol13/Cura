@@ -17,3 +17,4 @@ export * from './automation.js';
 export * from './sync.js';
 export * from './sync-portable.js';
 export * from './fcpxml.js';
+export * from './diagnostics.js';
