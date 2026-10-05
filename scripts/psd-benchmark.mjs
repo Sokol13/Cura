@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Reproduce PSD acceptance against the compiled production media worker:
+ * Reproduce PSD acceptance against the compiled full production server:
  *   pnpm --filter @cura/shared build && pnpm --filter @cura/server build
  *   node scripts/psd-benchmark.mjs [output.json]
  *
  * Fixture generation runs separately, never in a measured process. Each case
- * gets a fresh Node process, data directory and real worker_threads worker.
+ * gets a fresh Node process, Fastify server, SQLite database and media worker.
  * The 8192 x 8192 middle size is a proxy, not an undisclosed user file.
  */
 import assert from 'node:assert/strict';
@@ -24,7 +24,7 @@ import {
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Worker } from 'node:worker_threads';
+import { setTimeout as delay } from 'node:timers/promises';
 
 const script = fileURLToPath(import.meta.url);
 const repository = path.resolve(path.dirname(script), '..');
@@ -125,8 +125,10 @@ async function generate(directory) {
     '../packages/server/test/psd-fixtures.ts'
   );
   const manifest = [];
-  for (const fixture of cases) {
-    const name = `${fixture.name}.psd`;
+  for (const [index, fixture] of cases.entries()) {
+    const sourceDirectory = `source-${index}`;
+    await mkdir(path.join(directory, sourceDirectory));
+    const name = path.join(sourceDirectory, `${fixture.name}.psd`);
     const file = path.join(directory, name);
     await writePsdFixture(file, {
       width: fixture.width,
@@ -159,36 +161,115 @@ async function measure(directory, index) {
   );
   const fixture = manifest[index];
   assert(fixture, 'Unknown benchmark case');
-  const dataDir = path.join(directory, `data-${index}`),
-    cacheDir = path.join(directory, `cache-${index}`);
-  await mkdir(dataDir);
-  await mkdir(cacheDir);
-  const before = performance.now();
-  const worker = new Worker(workerPath, { execArgv: [] });
-  let result, elapsed;
+  const paths = {
+    data: path.join(directory, `data-${index}`),
+    cache: path.join(directory, `cache-${index}`),
+    log: path.join(directory, `log-${index}`),
+  };
+  const startupStarted = performance.now();
+  const [{ createApp }, { openDatabase }, { CatalogStore }] = await Promise.all(
+    [
+      import('../packages/server/dist/app.js'),
+      import('../packages/server/dist/database.js'),
+      import('../packages/server/dist/catalog-store.js'),
+    ],
+  );
+  const database = openDatabase(paths);
+  const pino = serverRequire('pino');
+  const destination = pino.destination({
+    dest: path.join(paths.log, 'cura.log'),
+    sync: true,
+  });
+  let app;
   try {
-    result = await new Promise((resolve, reject) => {
-      worker.once('error', reject);
-      worker.once('exit', (code) =>
-        reject(
-          new Error(`Production media worker exited before a result (${code})`),
-        ),
-      );
-      worker.once('message', (message) =>
-        message.error
-          ? reject(new Error(message.error.message))
-          : resolve(message.result),
-      );
-      worker.postMessage({
-        id: 1,
-        kind: 'process',
-        root: directory,
-        relativePath: fixture.file,
-        dataDir,
-        cacheDir,
-      });
+    // Same complete service graph and persistent logging as normal startup;
+    // only the automatic browser launch is absent from this headless benchmark.
+    app = await createApp({
+      database,
+      paths,
+      loggerInstance: pino({ level: 'info' }, destination),
     });
-    elapsed = performance.now() - before;
+    const address = await app.listen({ host: '127.0.0.1', port: 0 });
+    const startupMs = performance.now() - startupStarted;
+    const store = new CatalogStore(database);
+    async function request(
+      method,
+      route,
+      payload,
+      deadline = performance.now() + 5_000,
+    ) {
+      const remaining = deadline - performance.now();
+      assert(remaining > 0, 'PSD import exceeded the 10 second deadline');
+      const response = await fetch(`${address}${route}`, {
+        method,
+        signal: AbortSignal.timeout(Math.max(1, Math.ceil(remaining))),
+        ...(payload === undefined
+          ? {}
+          : {
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify(payload),
+            }),
+      });
+      assert(response.ok, `HTTP ${method} ${route} failed: ${response.status}`);
+      return response;
+    }
+    const library = await (
+      await request('POST', '/api/libraries', {
+        name: `PSD benchmark ${fixture.name}`,
+      })
+    ).json();
+    const before = performance.now();
+    const deadline = before + limits.processingMs;
+    await (
+      await request(
+        'POST',
+        `/api/libraries/${library.id}/roots`,
+        { path: path.dirname(path.join(directory, fixture.file)) },
+        deadline,
+      )
+    ).json();
+    let asset;
+    while (performance.now() < deadline) {
+      const page = await (
+        await request(
+          'GET',
+          `/api/libraries/${library.id}/assets`,
+          undefined,
+          deadline,
+        )
+      ).json();
+      assert(
+        page.total <= 1,
+        'Each benchmark must scan exactly one isolated source',
+      );
+      const current = page.items[0];
+      if (current?.previewState === 'ready') {
+        asset = current;
+        break;
+      }
+      assert(
+        current?.previewState !== 'failed' &&
+          current?.previewState !== 'unsupported',
+        `PSD preview failed: ${current?.previewError ?? current?.previewState}`,
+      );
+      await delay(Math.min(25, Math.max(1, deadline - performance.now())));
+    }
+    assert(asset, 'PSD did not become ready within the 10 second deadline');
+    const retained = store.getVersionFile(asset.currentVersionId);
+    const result = { ...store.getAsset(asset.id), ...retained };
+    const thumbnailResponse = await request(
+      'GET',
+      `/api/versions/${asset.currentVersionId}/thumbnail`,
+      undefined,
+      deadline,
+    );
+    const servedThumbnail = Buffer.from(await thumbnailResponse.arrayBuffer());
+    const elapsed = performance.now() - before;
+    assert.equal(
+      store.listVersions(asset.id).length,
+      1,
+      'Initial import must preserve a single immutable version',
+    );
     assert.equal(
       result.width,
       fixture.width,
@@ -213,7 +294,11 @@ async function measure(directory, index) {
       'Generated preview must supply its color palette',
     );
     const sharp = serverRequire('sharp');
-    const metadata = await sharp(result.thumbnailPath).metadata();
+    assert(
+      servedThumbnail.equals(await readFile(result.thumbnailPath)),
+      'HTTP thumbnail must match the retained cache file',
+    );
+    const metadata = await sharp(servedThumbnail).metadata();
     assert.equal(metadata.format, 'webp');
     assert(
       metadata.width > 0 &&
@@ -278,6 +363,7 @@ async function measure(directory, index) {
       originalHeight: fixture.height,
       sourceBytes: fixture.size,
       sourceSha256: fixture.sha256,
+      startupMs,
       processingMs: elapsed,
       maxRssKiB,
       maxRssBytes: maxRssKiB * 1024,
@@ -285,10 +371,18 @@ async function measure(directory, index) {
       thumbnailHeight: metadata.height,
       sampledColors,
       sourceAndSnapshotHashesPreserved: true,
+      fullProductionServer: true,
+      registeredViaHttp: true,
+      thumbnailRetrievedViaHttp: true,
       workerThreads: true,
     };
   } finally {
-    await worker.terminate();
+    try {
+      if (app) await app.close();
+    } finally {
+      database.close();
+      destination.end();
+    }
   }
 }
 
@@ -311,12 +405,20 @@ async function run(output) {
         await child([script, '--case', directory, String(index)], 30_000),
       );
     const productionFiles = {};
-    for (const name of ['worker.js', 'image.js', 'psd.js'])
+    for (const name of [
+      'app.js',
+      'database.js',
+      'catalog-store.js',
+      'media/service.js',
+      'media/worker.js',
+      'media/image.js',
+      'media/psd.js',
+    ])
       productionFiles[name] = await hashFile(
-        path.join(repository, 'packages/server/dist/media', name),
+        path.join(repository, 'packages/server/dist', name),
       );
     const evidence = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       recordedAt: new Date().toISOString(),
       commit: execFileSync('git', ['rev-parse', 'HEAD'], {
         cwd: repository,
@@ -328,7 +430,7 @@ async function run(output) {
       productionFiles,
       limits,
       method:
-        'Separate fixture-generation subprocess; a fresh plain-Node process per case with the compiled production worker_threads media worker. Processing time includes worker startup, source containment, hash, immutable snapshot and preview generation. Peak RSS is the absolute process-wide resourceUsage maxRSS including workers/native libraries and validation, not a heap or baseline delta.',
+        'Separate fixture-generation subprocess; a fresh plain-Node process per case with the complete compiled production Fastify server, SQLite database, persistent logger and internal media worker. Each source is isolated in its own registered folder. Real HTTP creates the library, registers its root, polls the ready asset and fetches its thumbnail. Startup is recorded separately; processing time starts before root registration and includes watching, scanning, queueing, source containment, hashing, immutable snapshot, preview generation, database commit, ready polling and thumbnail retrieval. Absolute process-wide resourceUsage maxRSS includes the entire server, workers, native libraries and validation; it is not a heap or baseline delta.',
       limitations: [
         'Generated PSD fixtures are not the user original files.',
         '8192 x 8192 is a representative middle size because only the smallest and largest sizes were supplied.',
