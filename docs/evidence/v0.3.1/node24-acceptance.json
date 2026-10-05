@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "recordedAt": "2026-10-05T07:39:47.451199+00:00",
+  "baselineRejectedCommit": "eed2e4761b8da133afd9837c8dcf7e789abd67ed",
+  "fullGateCommit": "2bc61ff8716f305dcc0dc6ae1c2eb21901ecf1f8",
+  "finalAcceptanceCommit": "96408c0a06819d1151f0a14930ce81683fa7c929",
+  "rootComparedCommit": "9ce624d44a920e6368b828e266bfac47a640d1ac",
+  "runtimeTrees": {
+    "packages/server": "d7b6e00acbf0ac2312a557aecb9b1154cbc5cbd0",
+    "packages/shared": "b7069aa477b6d59e6bae8c9df4db7bc50ecf8d68",
+    "packages/web": "e4de5ab34180c9e61102ed26cbb5c37b49985615",
+    "package.json": "67d433456093e6a2a962c349dcc8b603b290281c",
+    "pnpm-lock.yaml": "307e89060e7f24c4ba19b6e8dcdd11f23a5a6615"
+  },
+  "equivalentFinalRuntimeTrees": {
+    "packages/server": true,
+    "packages/shared": true,
+    "packages/web": true,
+    "package.json": true,
+    "pnpm-lock.yaml": true
+  },
+  "environment": {
+    "platform": "linux",
+    "architecture": "x64",
+    "node": "v24.21.0",
+    "nodeModulesAbi": "137",
+    "pnpm": "10.34.6",
+    "chromium": "151.0.7922.173",
+    "officialArchive": "https://nodejs.org/dist/v24.21.0/node-v24.21.0-linux-x64.tar.xz",
+    "officialChecksumSource": "https://nodejs.org/dist/v24.21.0/SHASUMS256.txt",
+    "officialSha256": "fd8e59d5a511510f6a298afb548f18c7d2b1be404d8b4a27d94fbe49f56cb2d6"
+  },
+  "cleanInstall": {
+    "independentGitClone": true,
+    "separateNodeModules": true,
+    "differentSqliteBinaryInodeFromNode22": true,
+    "frozenLockfile": true,
+    "seconds": 2.676,
+    "rejectedOriginalEngines": ">=22 <23",
+    "acceptedEngines": ">=22 <25",
+    "sqlitePrebuiltVerified": true,
+    "sharpPrebuiltVerified": true,
+    "nodeGypInvoked": false
+  },
+  "checks": {
+    "install": {
+      "passed": true,
+      "seconds": 2.676,
+      "node": "v24.21.0"
+    },
+    "lint": {
+      "passed": true,
+      "seconds": 18.021,
+      "node": "v24.21.0"
+    },
+    "typecheck": {
+      "passed": true,
+      "seconds": 13.541,
+      "node": "v24.21.0"
+    },
+    "test": {
+      "passed": true,
+      "seconds": 52.655,
+      "node": "v24.21.0"
+    },
+    "e2e": {
+      "passed": true,
+      "seconds": 167.591,
+      "node": "v24.21.0"
+    },
+    "psd": {
+      "passed": true,
+      "seconds": 5.92,
+      "node": "v24.21.0"
+    },
+    "setup": {
+      "passed": true,
+      "seconds": 5.275,
+      "node": "v24.21.0"
+    },
+    "final-lint": {
+      "passed": true,
+      "seconds": 15.208,
+      "node": "v24.21.0"
+    },
+    "start": {
+      "passed": true,
+      "seconds": 24.406,
+      "node": "v24.21.0"
+    }
+  },
+  "testCounts": {
+    "unitAndToolPassed": 584,
+    "unconfiguredCloudSkipped": 17,
+    "browserPassed": 33,
+    "browserSkipped": 0
+  },
+  "fcpxml": {
+    "dtdPrepared": true,
+    "dtdSha256": "d5d1db87d715cd99eddc407e61bb04e898b02aa8262d31ba2f8e5b038f702579",
+    "lxml": "6.1.1"
+  },
+  "psd": {
+    "limits": {
+      "processingMs": 10000,
+      "absoluteRssBytes": 500000000,
+      "minSourceBytes": 52428800
+    },
+    "passed": true,
+    "cases": [
+      {
+        "name": "resource-1036",
+        "width": 3866,
+        "height": 6871,
+        "processingMs": 215.06545200000005,
+        "absoluteMaxRssBytes": 379289600,
+        "sourceAndSnapshotHashesPreserved": true
+      },
+      {
+        "name": "resource-1033",
+        "width": 8192,
+        "height": 8192,
+        "processingMs": 406.060286,
+        "absoluteMaxRssBytes": 357220352,
+        "sourceAndSnapshotHashesPreserved": true
+      },
+      {
+        "name": "merged-raw",
+        "width": 13391,
+        "height": 7032,
+        "processingMs": 602.8131800000001,
+        "absoluteMaxRssBytes": 399765504,
+        "sourceAndSnapshotHashesPreserved": true
+      }
+    ]
+  },
+  "startup": {
+    "command": "NODE_PATH= PORT=<isolated-port> pnpm start (default browser opening)",
+    "startupSeconds": 18.9,
+    "emptyDataCacheLogDirectories": true,
+    "buildPassed": true,
+    "health": {
+      "status": "ok"
+    },
+    "host": "127.0.0.1",
+    "defaultBrowserOpened": true,
+    "defaultBrowserMethod": "Isolated XDG HTTP/HTTPS desktop association invoked headless Chromium; global associations unchanged.",
+    "freshBrowserProfile": true,
+    "attachedWith": "Playwright connectOverCDP to the already automatically opened page",
+    "pageGotoCalled": false,
+    "newPageCalled": false
+  },
+  "persistence": {
+    "language": "zh-CN",
+    "libraryName": "Node 24 启动验证 · 设计资料库",
+    "createdThroughChineseUI": true,
+    "sameLibraryIdAfterReload": true,
+    "activeLibraryIdAfterReload": true,
+    "closedDatabaseContainsLibrary": true,
+    "closedDatabaseIntegrityCheck": "ok",
+    "closedDatabaseForeignKeyViolations": 0,
+    "migrationCount": 10
+  },
+  "cleanup": {
+    "privateServerStopped": true,
+    "privateBrowserStopped": true,
+    "serverAndCdpPortsReleased": true
+  },
+  "scope": {
+    "physicalMacOSVerified": false,
+    "physicalWindowsVerified": false,
+    "liveCloudIncluded": false,
+    "note": "Linux fresh installation and actual default XDG browser launch; live cloud suites remain mandatory in both Node CI matrices."
+  },
+  "verificationNotes": [
+    "Final workflow/docs/setup commit leaves package and lockfile Git trees identical to the full-gate commit.",
+    "Node24 setup used the existing validated Chromium after OS-package installation was unavailable; the real browser and pixels passed.",
+    "A temporary acceptance-harness unused-import lint issue was corrected; product lint passed before and after the workflow checkpoint."
+  ],
+  "artifacts": {
+    "fullLogs": "Untracked acceptance workspace .tmp/node24-*.log; not part of the repository evidence bundle.",
+    "psd": "node24-psd-benchmark.json",
+    "stress": "node24-stress.json",
+    "startup": "node24-clean-start.json",
+    "screenshot": "../../screenshots/v0.3.1-node24-clean-start.png"
+  }
+}

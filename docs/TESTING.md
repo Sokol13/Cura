@@ -2,7 +2,7 @@
 
 ## Commands and isolation
 
-Use Node 22 and pnpm 10.34.6 from the repository root:
+Use a current Node 22 or 24 LTS patch and pnpm 10.34.6 from the repository root:
 
 ```bash
 pnpm install --frozen-lockfile
@@ -31,7 +31,7 @@ The following records module checks and the completed integrated release gate. E
 | Formats/scale      | `formats.spec.ts` covers all six P0 image formats using real encoded files and the server. `stress.spec.ts` covers real 1,000-image ingestion/search/watch/offline operation. `virtualization.spec.ts` separately exercises 10,000 synthetic browser records; its mocked pagination must never be cited as 10,000-file ingestion or database evidence.                                                                                                                                                                                       |
 | Release gate       | Focused browser checks, the final 1,000-image stress run (including input-to-paint), six-format previews and synthetic 10,000-record rendering have passed. Clean-clone install/start/default-browser launch and library creation also passed through an isolated Linux XDG association and real headless Chromium. The full integrated command chain and GitHub CI also passed (170 unit tests, 9 E2Es); the version report links the exact implementation commit and run. Two controlled directory-response race regressions are included. |
 
-The current Linux environment has verified Node 22.23.3, pnpm 10.34.6, published SQLite/Sharp prebuilt operation, and a provisioned Chromium launch. It cannot install system packages as root and has restricted Playwright CDN access. Local runs use the explicit `CURA_CHROMIUM_EXECUTABLE=/usr/bin/chromium` when required; this is not evidence that Playwright's pinned browser downloaded. P0 CI installed pinned Chromium; P1 CI installs Chromium plus the official Chrome channel and selects Chrome for native H.264 MP4/MOV acceptance. `scripts/codex-setup.sh` first attempts normal installation, then proves any configured fallback by launching it.
+The Linux acceptance environments use Node 22.23.3 and Node 24.21.0 with independent native dependency installations, pnpm 10.34.6 and a provisioned Chromium browser. SQLite/Sharp prebuilt installation is checked with actual database/image operations. Per-version full-gate results are recorded below and in PROGRESS.md. It cannot install system packages as root and has restricted Playwright CDN access. Local runs use the explicit `CURA_CHROMIUM_EXECUTABLE=/usr/bin/chromium` when required; this is not evidence that Playwright's pinned browser downloaded. P0 CI installed pinned Chromium; P1 CI installs Chromium plus the official Chrome channel and selects Chrome for native H.264 MP4/MOV acceptance. `scripts/codex-setup.sh` first attempts normal installation, then proves any configured fallback by launching it.
 
 ## Release checks beyond unit tests
 
@@ -151,3 +151,13 @@ An independent real-server Chromium probe simulated legacy Mac, Windows and Linu
 ## Inspector preview explanation (desktop item 7)
 
 A real-server Chromium geometry probe reproduced the message squeezed beside the image: 51 px at a 320 px inspector, and 31 px for Chinese at a 300 px inspector. After moving the status paragraph outside the preview button, English and Chinese cases at 320/300/260 px use 100% of available content width (283/263/223 px), lie entirely below the image/button, and have no horizontal overflow. Preview expansion still works for the failed fixture and a real healthy SVG; healthy image geometry matches the old layout at the shared widths. [Metrics](evidence/v0.3.1/preview-message.json), [default screenshot](screenshots/v0.3.1-preview-message.png), [narrow screenshot](screenshots/v0.3.1-preview-message-narrow-260.png). SIZE_LIMIT was seeded through the validated API before opening the browser: this proves layout, not the decoder's size boundary.
+
+## Node 22–24 compatibility (desktop item 8)
+
+The engines gate accepts `>=22 <25`; current Node 22 and 24 patches are the tested installation choices. CI and tag publication run full lint/types/units/Chromium/PSD checks and separate real Supabase integration on both Node versions. The single release publisher waits for all four jobs. No dependency or native-install policy changes were needed; SQLite and Sharp use published prebuilts.
+
+An independent fresh clone on official Node 24.21.0 first reproduced the old engine rejection, then installed the frozen lockfile in 2.676 s with its own ABI-137 SQLite binary and Sharp. The download store was warm; this is not a cold-network timing claim. All 584 unit/tool cases and 33 browser scenarios passed, with only the 17 deliberately unconfigured local cloud cases skipped. The corresponding configured cloud cases remain mandatory in both CI cells. Normal `pnpm start` built and listened in 18.9 s, invoked the actual default XDG browser association, and created/reloaded a Chinese library; the closed database retained it with clean integrity/foreign-key checks. [Full Node 24 acceptance](evidence/v0.3.1/node24-acceptance.json), [startup details](evidence/v0.3.1/node24-clean-start.json), [Chinese startup screenshot](screenshots/v0.3.1-node24-clean-start.png). This verifies Linux default-browser launch, not macOS/Windows shell integration.
+
+Sequential Node 24 full-server PSD measurements were 215/406/603 ms and 379/357/400 MB absolute RSS for the three existing fixture sizes, all below the unchanged strict limits; [benchmark](evidence/v0.3.1/node24-psd-benchmark.json). Its full browser stress run ingested 1,000 images in 10.116 s, measured grid/list frame p95 of 16.8/16.7 ms, and observed a new watched file after 877.7 ms; [stress evidence](evidence/v0.3.1/node24-stress.json). Physical-device and actual user PSD boundaries still apply.
+
+The integrated Node 22.23.3 run likewise passed lint, types, all 584 unit/tool cases and all 33 browser scenarios. Its [item 8 full-server PSD benchmark](evidence/v0.3.1/node22-item8-psd.json) passes the same limits. These item-specific artifacts retain their measured source identity; final milestone verification is recorded separately.

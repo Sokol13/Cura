@@ -96,15 +96,15 @@
 
 - [x] Reproduce the narrow message in a real browser and verify the corrected geometry with a before/after probe covering long Chinese and English preview errors at narrow inspector width; no horizontal clipping and icon above message.
 - [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
-- [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
+- [x] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 8: Node 24 support and matrix
 
 **Files:** root/package.json, setup/prebuilt scripts, docs/SETUP.md, CODEX_ENV.md, ci.yml, cloud-check.yml, release.yml and affected dependencies only if needed.
 **Interfaces:** Node 22/24 both install native prebuilts, build/start and pass lint/types/units/browser/cloud; engines >=22 <25.
 
-- [ ] Write and observe a failing regression covering fresh Node24 install/start and full suite; actual CI matrix includes core and configured cloud jobs on both versions.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Write and observe a failing regression covering fresh Node24 install/start and full suite; actual CI matrix includes core and configured cloud jobs on both versions.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 9: UTF-8 first PNG tEXt
