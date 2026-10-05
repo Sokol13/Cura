@@ -145,8 +145,8 @@
 **Files:** web/boards/BoardCanvas.tsx, SlotCard.tsx, useBoardDocument.ts and real browser board tests.
 **Interfaces:** Free-node drop resolves exact asset/version and invokes existing slot assignment; canvas coordinates alone do not assign.
 
-- [ ] Write and observe a failing regression covering actual canvas node drag into empty/filled slot, finalized pin/history, unchanged drag outside slots and stale selection guard.
-- [ ] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
+- [x] Write and observe a failing regression covering actual canvas node drag into empty/filled slot, finalized pin/history, unchanged drag outside slots and stale selection guard.
+- [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
 - [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 13: Slot history comparison

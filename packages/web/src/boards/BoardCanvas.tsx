@@ -24,6 +24,7 @@ import {
   type Node,
   type NodeProps,
   type OnConnect,
+  type OnNodeDrag,
 } from '@xyflow/react';
 import {
   BoardPinSchema,
@@ -55,7 +56,11 @@ type CanvasProps = {
   busy: boolean;
   selectedSlot: string | null;
   onChoose: (slot: BoardSlot) => void;
-  onAssign: (slot: BoardSlot, pin: BoardPin) => void;
+  onAssign: (
+    slot: BoardSlot,
+    pin: BoardPin,
+    expectedRevision?: number,
+  ) => Promise<boolean>;
   onHistory: (slot: BoardSlot) => void;
   onSave: (layout: Layout) => Promise<boolean>;
   onAddPin: (
@@ -71,6 +76,13 @@ type CuraNode = Node<
   { item: BoardItemInput | null; slot: BoardSlot | null },
   'curaItem' | 'curaSlot'
 >;
+type AssetDrag = {
+  boardId: string;
+  libraryId: string;
+  itemId: string;
+  pin: BoardPin;
+  slotRevisions: Map<string, number>;
+};
 type CanvasContextValue = Pick<
   CanvasProps,
   'busy' | 'selectedSlot' | 'onChoose' | 'onAssign' | 'onHistory'
@@ -158,6 +170,7 @@ function CanvasContent({
   const [editing, setEditing] = useState<BoardItemInput | 'new' | null>(null);
   const [edgeEditing, setEdgeEditing] = useState<Edge | null>(null);
   const [error, setError] = useState('');
+  const assetDrag = useRef<AssetDrag | null>(null);
   const [pendingViewport, setPendingViewport] = useState<BoardViewport | null>(
     null,
   );
@@ -324,6 +337,111 @@ function CanvasContent({
         ),
       ),
     );
+  const startDrag: OnNodeDrag<CuraNode> = (_event, node, dragged) => {
+    assetDrag.current = null;
+    const item = document.items.find((entry) => entry.id === node.id);
+    if (
+      busy ||
+      dragged.length !== 1 ||
+      dragged[0]?.id !== node.id ||
+      item?.kind !== 'asset' ||
+      !item.assetId ||
+      !item.versionId
+    )
+      return;
+    assetDrag.current = {
+      boardId: document.board.id,
+      libraryId: document.board.libraryId,
+      itemId: item.id,
+      pin: { assetId: item.assetId, versionId: item.versionId },
+      slotRevisions: new Map(
+        document.slots.map((slot) => [slot.id, slot.revision]),
+      ),
+    };
+  };
+  const stopDrag: OnNodeDrag<CuraNode> = (event, node, dragged) => {
+    const intent = assetDrag.current;
+    assetDrag.current = null;
+    if (intent && intent.itemId === node.id) {
+      const source = document.items.find((item) => item.id === intent.itemId);
+      const restorePosition = () => {
+        const saved = toFlowNodes(document.items).find(
+          (item) => item.id === intent.itemId,
+        );
+        if (saved)
+          setNodes((previous) =>
+            previous.map((item) =>
+              item.id === saved.id
+                ? { ...item, position: saved.position, dragging: false }
+                : item,
+            ),
+          );
+      };
+      if (
+        intent.boardId !== document.board.id ||
+        intent.libraryId !== document.board.libraryId ||
+        source?.kind !== 'asset' ||
+        source.assetId !== intent.pin.assetId ||
+        source.versionId !== intent.pin.versionId
+      ) {
+        restorePosition();
+        setError(t('conflict'));
+        return;
+      }
+      if (busy) {
+        restorePosition();
+        return;
+      }
+      const pointer =
+        'changedTouches' in event ? event.changedTouches[0] : event;
+      const bounds = container.current?.getBoundingClientRect();
+      if (
+        pointer &&
+        bounds &&
+        dragged.length === 1 &&
+        dragged[0]?.id === node.id &&
+        pointer.clientX >= bounds.left &&
+        pointer.clientX <= bounds.right &&
+        pointer.clientY >= bounds.top &&
+        pointer.clientY <= bounds.bottom
+      ) {
+        const point = flow.screenToFlowPosition({
+          x: pointer.clientX,
+          y: pointer.clientY,
+        });
+        const targets = document.slots.filter(
+          (slot) =>
+            !slot.deletedAt &&
+            point.x >= slot.x &&
+            point.x <= slot.x + slot.width &&
+            point.y >= slot.y &&
+            point.y <= slot.y + slot.height,
+        );
+        // Overlapping slots are ambiguous; keep the ordinary move in that case.
+        if (targets.length === 1) {
+          const target = targets[0]!;
+          const expectedRevision = intent.slotRevisions.get(target.id);
+          restorePosition();
+          if (expectedRevision === undefined) setError(t('conflict'));
+          else {
+            setError('');
+            void onAssign(target, intent.pin, expectedRevision).catch(() =>
+              setError(t('saveError')),
+            );
+          }
+          // Copy the pin only: saving the dragged layout would move the source
+          // and race the assignment's board revision.
+          return;
+        }
+      }
+    }
+    if (!busy)
+      void onSave(
+        layout(
+          flow.getNodes().map((entry) => (entry.id === node.id ? node : entry)),
+        ),
+      );
+  };
   return (
     <div className="board-canvas-workspace">
       <div className="board-toolbar">
@@ -449,16 +567,8 @@ function CanvasContent({
             onEdgesChange={(changes) =>
               setEdges((previous) => applyEdgeChanges(changes, previous))
             }
-            onNodeDragStop={(_event, node) => {
-              if (!busy)
-                void onSave(
-                  layout(
-                    flow
-                      .getNodes()
-                      .map((entry) => (entry.id === node.id ? node : entry)),
-                  ),
-                );
-            }}
+            onNodeDragStart={startDrag}
+            onNodeDragStop={stopDrag}
             onConnect={connect}
             onNodeDoubleClick={(_event, node) => {
               if (node.data.item) setEditing(node.data.item);

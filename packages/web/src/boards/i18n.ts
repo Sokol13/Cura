@@ -117,7 +117,7 @@ const en = {
   connect: 'Connect assets',
   connectHint: 'Drag between the round handles to connect items.',
   canvasHint:
-    'Drag assets onto the canvas. Scroll to zoom; drag the background to pan.',
+    'Drag canvas or tray assets into slots to finalize the shown version. Scroll to zoom; drag the background to pan.',
   selectHint: 'Select an item to edit it, or shift-click to group several.',
   fit: 'Fit board',
   zoomIn: 'Zoom in',
@@ -295,7 +295,8 @@ const zh: Record<keyof typeof en, string> = {
   deleteSelection: '删除选择项',
   connect: '连接资产',
   connectHint: '拖动圆形连接点，在资产之间建立连线。',
-  canvasHint: '拖入资产到画布；滚轮缩放，拖动画布背景平移。',
+  canvasHint:
+    '从画布或素材栏将资产拖入槽位，即可将展示的版本定稿；滚轮缩放，拖动画布背景平移。',
   selectHint: '选择项目进行编辑，按住 Shift 多选后可建立分组。',
   fit: '适应看板',
   zoomIn: '放大',

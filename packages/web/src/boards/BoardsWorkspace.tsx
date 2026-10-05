@@ -129,18 +129,27 @@ export function BoardsWorkspace({
     setSelectedSlotId(slot.id);
     setNotice('');
   };
-  const assignSlot = async (slot: BoardSlot, pin: BoardPin | null) => {
-    if (
-      await mutate(`/api/slots/${slot.id}/assignment`, 'PUT', (current) => ({
+  const assignSlot = async (
+    slot: BoardSlot,
+    pin: BoardPin | null,
+    expectedRevision?: number,
+  ) => {
+    const assigned = await mutate(
+      `/api/slots/${slot.id}/assignment`,
+      'PUT',
+      (current) => ({
         expectedRevision:
+          expectedRevision ??
           current.slots.find((entry) => entry.id === slot.id)?.revision ??
           slot.revision,
         pin,
-      }))
-    ) {
+      }),
+    );
+    if (assigned) {
       setSelectedSlotId(null);
       setNotice('');
     }
+    return assigned;
   };
   const pickPin = (pin: BoardPin) => {
     if (selectedSlot) void assignSlot(selectedSlot, pin);
@@ -296,7 +305,7 @@ export function BoardsWorkspace({
                     busy={busy}
                     selectedSlot={selectedSlotId}
                     onChoose={chooseSlot}
-                    onAssign={(slot, pin) => void assignSlot(slot, pin)}
+                    onAssign={assignSlot}
                     onHistory={setHistory}
                     onSave={saveLayout}
                     onAddPin={addAsset}
