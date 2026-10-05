@@ -22,6 +22,7 @@ import { CatalogStore } from '../src/catalog-store.js';
 import { MediaService } from '../src/media/service.js';
 import { FcpxmlService } from '../src/fcpxml/service.js';
 import { readFcpxmlExport } from '../src/fcpxml/snapshot.js';
+import { hasFcpxmlDtd } from './fcpxml-dtd.js';
 const run = promisify(execFile),
   cleanup: Array<() => void | Promise<unknown>> = [];
 afterEach(async () => {
@@ -54,7 +55,8 @@ const still = async (color: string, jpeg = false) => {
   });
   return jpeg ? image.jpeg().toBuffer() : image.png().toBuffer();
 };
-test('exports orientation-swapped JPEGs with displayed dimensions and unchanged retained bytes', async () => {
+test('exports orientation-swapped JPEGs with displayed dimensions and unchanged retained bytes', async (context) => {
+  if (!hasFcpxmlDtd) context.skip();
   const f = await fixture(),
     clips: CreateFcpxml['clips'] = [],
     originals = new Map<string, Buffer>();
@@ -102,7 +104,8 @@ test('exports orientation-swapped JPEGs with displayed dimensions and unchanged 
   );
   await run('python3', [validator, xmlFile, '--package', directory]);
 }, 30000);
-test('worker package retains replaced/trash bytes, historical extensions, exact source timing; moved package relinks independently', async () => {
+test('worker package retains replaced/trash bytes, historical extensions, exact source timing; moved package relinks independently', async (context) => {
+  if (!hasFcpxmlDtd) context.skip();
   const f = await fixture();
   const oldBytes = await still('red', true),
     asset = await f.media.upload(f.library.id, '历史.jpg', oldBytes);

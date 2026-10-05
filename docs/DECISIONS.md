@@ -309,3 +309,11 @@ Keep SVG preview URLs revision-scoped so rebuilt browser previews invalidate cor
 **Evidence and reason:** CI 37210499373 passed the complete frozen source. The documentation-only request CI 37210844246 then measured a 267.24 ms timer gap against the 250 ms bound while server and web Vitest workloads ran concurrently; preview and queue responses still met 200 ms. The same unchanged suite passes alone. A process-wide wall-clock heartbeat measures OS scheduling contention as well as archive blocking, so acceptance must isolate unrelated test workloads, matching the existing browser performance protocol. Production archive batches remain bounded at 20 assets.
 
 **Alternatives rejected:** Raising the 250 ms limit, skipping the performance check, adding retries until green, or changing production code without evidence of an application regression.
+
+## Optional DTD cache in local unit runs
+
+**Decision:** On the user's smoke-test feedback, skip only the three server tests that invoke Apple's FCPXML DTD validator when `.tmp/fcpxml/FCPXMLv1_7.dtd` is absent. Resolve availability relative to the test module rather than the process working directory. Emit one preparation hint from the XML suite in a normal `pnpm test` run.
+
+**Reason:** A clean clone does not contain the ignored, separately downloaded DTD. Ordinary local unit tests should work before developers install the optional Python verification tooling. Existing CI preparation keeps all three independent checks enabled.
+
+**Alternatives rejected:** Downloading files during unit tests, skipping all FCPXML tests, or catching validator errors and treating a malformed cached DTD as a skip. Application code, validator behavior, package versions and release tags are unchanged.

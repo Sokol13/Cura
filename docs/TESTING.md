@@ -88,7 +88,7 @@ Playwright documents that bundled Chromium does not include every codec from Goo
 
 ## P2 independent FCPXML verifier
 
-Developer and CI verification additionally uses Python 3.12 with `lxml==6.1.1` (BSD-3-Clause). Run `python3 -m pip install lxml==6.1.1` in an appropriate Python environment, then `python3 scripts/validate-fcpxml.py --prepare` before the test suite. This fetches Apple's official FCPXML 1.7 DTD, verifies its pinned SHA-256 and stores it only in ignored `.tmp/fcpxml/`. The ordinary Cura application, generated exports and `pnpm start` require neither Python nor this download. Test validation checks Apple's grammar independently of Cura's renderer.
+Independent FCPXML grammar verification uses Python 3.12 with `lxml==6.1.1` (BSD-3-Clause). A clean clone can run `pnpm test` without preparing the DTD: its three DTD-dependent server tests are reported as skipped and the XML suite prints one preparation hint. All other tests retain their normal behavior. To enable these three checks, run `python3 -m pip install lxml==6.1.1` in an appropriate Python environment, then `python3 scripts/validate-fcpxml.py --prepare` from the repository root before the suite. CI still prepares the DTD explicitly and runs all three checks; a present but invalid DTD or a validator error still fails. This fetches Apple's official FCPXML 1.7 DTD, verifies its pinned SHA-256 and stores it only in ignored `.tmp/fcpxml/`. The ordinary Cura application, generated exports and `pnpm start` require neither Python nor this download. Test validation checks Apple's grammar independently of Cura's renderer.
 
 ## P2 automation, graph transfer and timeline gates
 

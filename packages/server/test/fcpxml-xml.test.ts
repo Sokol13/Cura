@@ -3,6 +3,14 @@ import { expect, test } from 'vitest';
 import { frameSeconds, toFcpxmlTime, add } from '../src/fcpxml/rational.js';
 import { renderFcpxml } from '../src/fcpxml/xml.js';
 import { FcpxmlManifestSchema } from '../../shared/src/fcpxml.js';
+import { hasFcpxmlDtd } from './fcpxml-dtd.js';
+
+if (!hasFcpxmlDtd) {
+  console.warn(
+    'Skipping FCPXML DTD-dependent tests: .tmp/fcpxml/FCPXMLv1_7.dtd is missing. To enable them, install Python with lxml==6.1.1 and run python3 scripts/validate-fcpxml.py --prepare from the repository root.',
+  );
+}
+
 test('rational time remains exact at broadcast and integer rates without float accumulation', () => {
   expect(toFcpxmlTime(frameSeconds(24000, '24000/1001'))).toBe('1001s');
   expect(
@@ -62,7 +70,8 @@ test('1.7 XML uses ordered exact pins, stable asset IDs and escaped names with l
   expect(xml).not.toContain('media-rep');
 });
 
-test('official Apple DTD independently validates all timebases and rejects broken resource IDs', async () => {
+test('official Apple DTD independently validates all timebases and rejects broken resource IDs', async (context) => {
+  if (!hasFcpxmlDtd) context.skip();
   const { mkdtemp, writeFile, rm } = await import('node:fs/promises');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');

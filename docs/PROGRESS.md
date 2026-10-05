@@ -4,6 +4,12 @@
 
 All three requested milestones are published. AGENTS.md section 1(a), **all three milestones achieved**, is satisfied. The user authorized uninterrupted implementation, main publication and milestone tags without questions; decisions and resolved findings remain in DECISIONS.md and the reports. Incoming macOS/Windows smoke-test bugs take priority over any future feature work.
 
+## Post-release smoke feedback
+
+- The user has begun physical macOS/Windows smoke testing; no pass/fail outcome is claimed yet.
+- Reproduced three clean-clone server failures caused only by the missing ignored FCPXML DTD cache. The fix skips exactly those cases with one preparation hint; ordinary FCPXML tests remain active and a present invalid DTD still fails validation.
+- Verified missing-cache `pnpm test`: 431 unit/tool tests passed, exactly three additional DTD-dependent skips alongside the existing 17 unconfigured-cloud skips, and one preparation hint. With the pinned DTD prepared, all 11 FCPXML tests passed; an existing corrupt DTD still failed validation. Lint, typecheck and all 27 real-server browser scenarios passed. Independent review found no material issue. This follow-up is delivered to main without a new tag; the normal main CI retains explicit DTD preparation and complete cloud acceptance.
+
 ## Completed milestones
 
 | Milestone                                                     | Published tag target | Verified result                                                                                                                                                                                                                            |
@@ -20,7 +26,7 @@ Each release was reported in chat; work continued immediately after v0.1 and v0.
 - Optional server-owned Supabase sessions, immutable verified bytes, complete portable P0/P1/completed-automation graph transfer, incremental durable retries, local-wins conflict snapshots and owner/editor/viewer team libraries. Real Auth/RLS/Storage, corruption/recovery, security advisors and two-device browser acceptance passed locally and in mandatory CI with no skipped cloud cases.
 - FCPXML 1.7 exact historical timelines, rational timing, video inspection, board import, retained-media ZIPs and relocation/relink; independent official Apple DTD and hash/timing validation passed.
 - Final 1,000-image ingestion took 11.74 seconds; all thumbnails decoded. Seventy queries peaked at 53.1 ms; browser search was 100.9–115.4 ms; watched assets appeared in 875 ms. Grid frame p95 was 16.8 ms. Separate 10,000-record UI virtualization passed; it is not a 10,000-image ingestion claim.
-- Independent clean clone of frozen runtime source `41e45b1`: install 2.4 seconds; normal automatic-browser startup 24.4 seconds; Chinese library creation, reload and closed-database persistence passed. Exact production package trees remain identical to the published tag. Real v0.2 upgrade passed 17 checks across all 36 legacy tables, retained hashes and two idempotent reopens.
+- Independent clean clone of frozen runtime source `41e45b1`: install 2.4 seconds; normal automatic-browser startup 24.4 seconds; Chinese library creation, reload and closed-database persistence passed. At release, exact production package trees matched the published tag; this follow-up changes only tests and documentation. Real v0.2 upgrade passed 17 checks across all 36 legacy tables, retained hashes and two idempotent reopens.
 - Browser artifact audit: 196 files, 4,351,021 bytes and 159 permitted runtime dependency groups. Pinned PDF worker/CMaps/notices match; optional canvas is absent. Detailed evidence is retained separately for each version.
 - Independent reviews found and fixed archive batching, full tag labels, EXIF orientation, stale timeline selection, sync cycles/closure/replay ordering and cloud restoration blocking local startup. No known reproducible implementation defect remains open.
 - CI 37210844246 correctly blocked the first final request on a 267.24 ms archive heartbeat under concurrent unit workloads. The root test command now runs the same three cases after other unit workers finish with all original thresholds. Corrected local tests and release CI 37211290714 passed. Production package trees, lockfile and startup behavior were unchanged.
@@ -39,4 +45,4 @@ Physical macOS/Windows, hosted Supabase configuration and Final Cut Pro applicat
 
 ## Next / resume
 
-No planned implementation task remains. Stop under section 1(a) after verifying final-main CI. For a new user-reported failure, read AGENTS.md, this file and the relevant report; run the documented environment setup, inspect current main/status, reproduce the first failure and prioritize its fix. Do not recreate already completed milestones. Evidence lives under docs/evidence/v0.1.0/, v0.2.0/ and v0.3.0/.
+No planned feature task remains. The DTD-cache smoke-feedback fix is complete locally; verify its main CI before reporting completion. For a new user-reported failure, read AGENTS.md, this file and the relevant report; run the documented environment setup, inspect current main/status, reproduce the first failure and prioritize its fix. Do not recreate already completed milestones. Evidence lives under docs/evidence/v0.1.0/, v0.2.0/ and v0.3.0/.
