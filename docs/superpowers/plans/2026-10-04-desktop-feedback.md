@@ -129,7 +129,7 @@
 
 - [x] Write and observe a failing regression covering empty create-library flow, clear original-files explanation, both keyboard-accessible actions and actual folder registration.
 - [x] Implement the bounded change and run focused Vitest/Playwright checks; expected result: every stated behavior passes.
-- [ ] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
+- [x] Run the complete required checks, record measured evidence/limits in PROGRESS.md, commit and push main; verify its CI before considering this item delivered.
 
 ### Task 11: Readable Inbox and migration
 
