@@ -90,13 +90,13 @@ test('offline process timeline, final-output statistics and usable mock jobs sur
     ).toBeVisible();
     await expect(
       page.getByText(
-        'Cura fixture 0, geometric landscape, studio color study',
+        'Cura fixture 0, geometric landscape, studio color study, 中文场景与柔和光线',
         { exact: true },
       ),
     ).toBeVisible();
     await expect(
       page.getByText(
-        'Cura fixture 1, geometric landscape, studio color study',
+        'Cura fixture 1, geometric landscape, studio color study, 中文场景与柔和光线',
         { exact: true },
       ),
     ).toBeVisible();
