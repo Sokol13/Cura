@@ -5,6 +5,13 @@ import { savePreview } from './preview-upload.js';
 import { processFile } from './image.js';
 import { resolveContained } from './path-utils.js';
 import { discoverFiles } from './scan.js';
+import {
+  inspectInboxFile,
+  chooseInboxMigrationPath,
+  publishInboxMigration,
+  cleanupInboxMigration,
+} from './inbox-files.js';
+import type { InboxMigration } from './inbox-migration-store.js';
 
 interface Job {
   id: number;
@@ -20,6 +27,12 @@ interface Job {
   relativePath: string;
   sourceName?: string;
   knownRelativePaths?: readonly string[];
+  excludedRelativePaths?: readonly string[];
+  inboxOperation?: 'inspect' | 'choose' | 'publish' | 'cleanup';
+  migration?: InboxMigration;
+  name?: string;
+  date?: string;
+  reservedRelativePaths?: string[];
   dataDir: string;
   cacheDir: string;
 }
@@ -48,6 +61,19 @@ async function registeredRoot(root: string) {
   return canonical;
 }
 async function process(job: Job) {
+  if (job.inboxOperation === 'inspect')
+    return inspectInboxFile(job.root, job.relativePath);
+  if (job.inboxOperation === 'choose')
+    return chooseInboxMigrationPath(
+      job.root,
+      job.name!,
+      new Date(job.date!),
+      job.reservedRelativePaths,
+    );
+  if (job.inboxOperation === 'publish')
+    return publishInboxMigration(job.root, job.migration!, () => stopping);
+  if (job.inboxOperation === 'cleanup')
+    return cleanupInboxMigration(job.root, job.migration!, () => stopping);
   const root = await registeredRoot(job.root);
   const filePath = await resolveContained(root, job.relativePath);
   const before = await lstat(filePath, { bigint: true });
@@ -164,6 +190,7 @@ port.on('message', (job: Job) => {
                   job.root,
                   job.knownRelativePaths ?? [],
                   () => stopping,
+                  job.excludedRelativePaths,
                 )
               : job.kind === 'cache-info' || job.kind === 'cache-clear'
                 ? await cache(job.cacheDir, job.kind === 'cache-clear')

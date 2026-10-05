@@ -120,6 +120,7 @@ export async function discoverFiles(
   root: string,
   knownRelativePaths: readonly string[],
   shouldStop: () => boolean = () => false,
+  excludedRelativePaths: readonly string[] = [],
 ): Promise<ScanDiscovery> {
   const canonicalRoot = await validateRoot(root);
   const summary: ScanDiscovery['summary'] = {
@@ -143,6 +144,7 @@ export async function discoverFiles(
     interrupted: false,
     summary,
   };
+  const excluded = new Set(excludedRelativePaths.map(normalizeRelativePath));
   const known = new Set<string>();
   for (const relative of knownRelativePaths) {
     try {
@@ -224,6 +226,7 @@ export async function discoverFiles(
           continue;
         }
         const relative = relativeName(canonicalRoot, file);
+        if (excluded.has(relative)) continue;
         result.presentRelativePaths.push(relative);
         summary.filesFound++;
         const extensionName = path

@@ -7,15 +7,7 @@ import {
   writeFile,
   unlink,
 } from 'node:fs/promises';
-import {
-  basename,
-  dirname,
-  extname,
-  isAbsolute,
-  join,
-  relative,
-  sep,
-} from 'node:path';
+import { basename, extname, isAbsolute, join, relative, sep } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -42,12 +34,16 @@ import {
 import { normalizeRelativePath } from './path-utils.js';
 import { shouldAutoImport, type ScanDiscovery } from './scan.js';
 import { addScanFailure } from './scan-summary.js';
+import { InboxPreparation } from './inbox.js';
+import { createInboxUpload, ensureInboxRoot } from './inbox-files.js';
 
 export function fileOperationMessage(error: unknown): string {
   const code = (error as NodeJS.ErrnoException | undefined)?.code;
   if (code === 'EPERM' || code === 'EACCES') {
     return 'Permission denied. On macOS, grant your terminal or Node access in System Settings → Privacy & Security → Full Disk Access. On Windows, close applications using the file and check folder permissions.';
   }
+  if (code === 'ENOSPC')
+    return 'Not enough disk space. Free space in the data directory and retry.';
   if (code === 'EBUSY')
     return 'The file is in use. Close the application using it and retry.';
   return error &&
@@ -104,6 +100,8 @@ function overlaps(a: string, b: string): boolean {
 }
 export class MediaService {
   private readonly worker: Worker;
+  private readonly inbox: InboxPreparation;
+  private readonly inboxUploads = new Map<string, Promise<Asset>>();
   private readonly workerExit: Promise<void>;
   private sequence = 0;
   private closed = false;
@@ -131,6 +129,34 @@ export class MediaService {
     private readonly paths: UserPaths,
     private readonly onDiagnostic?: (event: MediaDiagnostic) => void,
   ) {
+    this.inbox = new InboxPreparation(
+      store,
+      paths,
+      (payload) => this.job(payload),
+      (id) => !this.closed && !this.removingRoots.has(id),
+      (root, error) => {
+        const code = (error as NodeJS.ErrnoException | undefined)?.code;
+        const guidance = ['EPERM', 'EACCES', 'EBUSY', 'ENOSPC'].includes(
+          code ?? '',
+        )
+          ? ` ${fileOperationMessage(error)}`
+          : '';
+        this.diagnostic({
+          level: 'warn',
+          operation: 'media',
+          code: 'INBOX_MIGRATION_FAILED',
+          libraryId: root.libraryId,
+          rootId: root.id,
+        });
+        this.emit({
+          type: 'error',
+          libraryId: root.libraryId,
+          rootId: root.id,
+          code: 'INBOX_MIGRATION_FAILED',
+          message: `An Inbox file could not be reorganized. Its original file and history are retained; restart Cura to retry.${guidance}`,
+        });
+      },
+    );
     for (const summary of this.store.scanStore.interruptRunning())
       this.diagnostic({
         level: 'warn',
@@ -285,7 +311,17 @@ export class MediaService {
       break;
     }
   }
+  private ignoredInboxFile(root: LibraryRoot, file: string): boolean {
+    if (root.kind !== 'inbox') return false;
+    try {
+      const identity = normalizeRelativePath(relative(root.path, file));
+      return this.inbox.ignored(root.id).includes(identity);
+    } catch {
+      return false;
+    } // Existing import validation reports unsafe names.
+  }
   private enqueue(root: LibraryRoot, file: string) {
+    if (this.ignoredInboxFile(root, file)) return;
     if (
       this.closed ||
       this.removingRoots.has(root.id) ||
@@ -320,6 +356,7 @@ export class MediaService {
       .finally(() => this.reconcile());
   }
   private sourceMissing(root: LibraryRoot, file: string) {
+    if (this.ignoredInboxFile(root, file)) return;
     if (this.closed || !this.watchers.has(root.id)) return;
     this.rootChanged(root);
     const pending = this.pending.get(`${root.id}:${file}`);
@@ -442,6 +479,22 @@ export class MediaService {
   async resume(): Promise<void> {
     for (const library of this.store.listLibraries())
       for (const root of this.store.listRoots(library.id)) {
+        if (root.kind === 'inbox') {
+          // Old uploads may require hashing/copying. Keep local HTTP startup available.
+          void this.track(async () => {
+            try {
+              await this.watch(root);
+              void this.scan(root);
+            } catch (error) {
+              if (!this.closed) {
+                this.recordScanStartFailure(root, error);
+                await this.markRootUnavailable(root, error);
+                this.reportError(root, error);
+              }
+            }
+          }).catch(() => undefined);
+          continue;
+        }
         try {
           await this.watch(root);
           void this.scan(root);
@@ -546,7 +599,9 @@ export class MediaService {
           new Error('Registered directory is no longer a directory.'),
           { code: 'ENOTDIR' },
         );
+      await this.inbox.prepare(root);
       if (this.closed) throw stopped();
+      if (this.removingRoots.has(root.id)) throw rootRemoving();
       const watcher = chokidar.watch(root.path, {
         ignoreInitial: true,
         followSymlinks: false,
@@ -681,6 +736,7 @@ export class MediaService {
           kind: 'scan',
           root: root.path,
           knownRelativePaths: this.store.listSourcePaths(root.id),
+          excludedRelativePaths: this.inbox.ignored(root.id),
         });
         Object.assign(summary, discovery.summary, { phase: 'processing' });
         for (const failure of summary.errors)
@@ -883,24 +939,37 @@ export class MediaService {
     return state.promise;
   }
   upload(libraryId: string, name: string, bytes: Buffer): Promise<Asset> {
-    return this.track(async () => {
-      UploadQuerySchema.parse({ name });
+    const previous = this.inboxUploads.get(libraryId);
+    const running = this.track(async () => {
+      await previous?.catch(() => undefined);
+      if (this.closed) throw stopped();
+      const parsed = UploadQuerySchema.parse({ name });
       this.store.getLibrary(libraryId);
-      const inbox = join(this.paths.data, 'libraries', libraryId, 'Inbox');
-      await mkdir(inbox, { recursive: true });
-      const root = this.store.addRoot(
-        libraryId,
-        await realpath(inbox),
-        'inbox',
-      );
+      const inbox = await ensureInboxRoot(this.paths.data, libraryId);
+      const root = this.store.addRoot(libraryId, inbox, 'inbox');
       await this.watch(root);
-      const file = join(root.path, randomUUID(), name);
-      await mkdir(dirname(file), { recursive: true });
-      await writeFile(file, bytes, { flag: 'wx' });
-      const asset = await this.ingest(root, file);
+      if (this.closed) throw stopped();
+      if (this.removingRoots.has(root.id)) throw rootRemoving();
+      const file = await createInboxUpload(
+        root.path,
+        parsed.name,
+        bytes,
+        new Date(),
+        () => this.closed,
+        this.inbox.reserved(root.id),
+      );
+      const asset = await this.ingest(root, file.absolutePath);
       if (!asset) throw new Error('Import was interrupted.');
       return asset;
     });
+    this.inboxUploads.set(libraryId, running);
+    void running
+      .finally(() => {
+        if (this.inboxUploads.get(libraryId) === running)
+          this.inboxUploads.delete(libraryId);
+      })
+      .catch(() => undefined);
+    return running;
   }
   replace(assetId: string, name: string, bytes: Buffer): Promise<Asset> {
     return this.track(async () => {
@@ -941,8 +1010,10 @@ export class MediaService {
     mode: RootRemovalMode = 'trash',
   ): Promise<RemoveRootResult> {
     if (this.removingRoots.has(id)) throw rootRemoving();
-    this.store.getRoot(id);
+    const root = this.store.getRoot(id);
     const running = this.track(async () => {
+      if (root.kind === 'inbox')
+        await this.inboxUploads.get(root.libraryId)?.catch(() => undefined);
       await this.watching.get(id)?.catch(() => undefined);
       const watcher = this.watchers.get(id);
       this.watchers.delete(id);

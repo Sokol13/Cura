@@ -1,4 +1,13 @@
 import { EventEmitter } from 'node:events';
+import { randomUUID } from 'node:crypto';
+import {
+  ensureInboxRoot,
+  inspectInboxFile,
+  chooseInboxMigrationPath,
+  publishInboxMigration,
+  cleanupInboxMigration,
+} from '../src/media/inbox-files.js';
+import type { InboxMigration } from '../src/media/inbox-migration-store.js';
 import {
   mkdtemp,
   mkdir,
@@ -32,6 +41,12 @@ interface Payload {
   dataDir?: string;
   cacheDir?: string;
   knownRelativePaths?: string[];
+  excludedRelativePaths?: string[];
+  inboxOperation?: 'inspect' | 'choose' | 'publish' | 'cleanup';
+  migration?: InboxMigration;
+  name?: string;
+  date?: string;
+  reservedRelativePaths?: string[];
 }
 const transport = vi.hoisted(() => ({
   dispatch: undefined as ((job: Payload) => Promise<unknown>) | undefined,
@@ -110,7 +125,25 @@ function deferred() {
 
 async function dispatch(job: Payload) {
   if (job.kind === 'scan')
-    return discoverFiles(job.root!, job.knownRelativePaths ?? []);
+    return discoverFiles(
+      job.root!,
+      job.knownRelativePaths ?? [],
+      undefined,
+      job.excludedRelativePaths,
+    );
+  if (job.inboxOperation === 'inspect')
+    return inspectInboxFile(job.root!, job.relativePath!);
+  if (job.inboxOperation === 'choose')
+    return chooseInboxMigrationPath(
+      job.root!,
+      job.name!,
+      new Date(job.date!),
+      job.reservedRelativePaths,
+    );
+  if (job.inboxOperation === 'publish')
+    return publishInboxMigration(job.root!, job.migration!);
+  if (job.inboxOperation === 'cleanup')
+    return cleanupInboxMigration(job.root!, job.migration!);
   return processFile({
     filePath: job.relativePath
       ? await resolveContained(job.root!, job.relativePath)
@@ -938,4 +971,252 @@ it('marks old directory sources offline when its path has been replaced by a reg
   await restarted.resume();
   expect(store.getAsset(asset.id).missing).toBe(true);
   expect(store.getAsset(asset.id).deletedAt).toBeNull();
+});
+
+async function legacyInbox() {
+  const context = await setup();
+  const rootPath = await ensureInboxRoot(
+    context.paths.data,
+    context.library.id,
+  );
+  const root = context.store.addRoot(context.library.id, rootPath, 'inbox');
+  const relativePath = `${randomUUID()}/原稿.png`;
+  const file = join(rootPath, relativePath);
+  await mkdir(join(rootPath, relativePath.split('/')[0]!), { recursive: true });
+  await writeFile(file, 'original retained V1');
+  const processed = await processFile({
+    filePath: file,
+    dataDir: context.paths.data,
+    cacheDir: context.paths.cache,
+  });
+  const asset = context.store.ingest({
+    libraryId: context.library.id,
+    rootId: root.id,
+    relativePath,
+    actualRelativePath: relativePath,
+    processed,
+  }).asset;
+  return { ...context, root, relativePath, file, asset };
+}
+
+it('keeps local startup responsive and drains a held Inbox migration before shutdown', async () => {
+  const { media, store, root, asset, file } = await legacyInbox();
+  const entered = deferred(),
+    release = deferred();
+  cleanup.push(async () => release.resolve());
+  transport.dispatch = async (job) => {
+    if (job.inboxOperation === 'inspect') {
+      entered.resolve();
+      await release.promise;
+    }
+    return dispatch(job);
+  };
+  await media.resume();
+  await entered.promise;
+  expect(watchers).toHaveLength(0);
+  let stopped = false;
+  const closing = media.close().then(() => {
+    stopped = true;
+  });
+  await Promise.resolve();
+  expect(stopped).toBe(false);
+  release.resolve();
+  await closing;
+  expect(watchers).toHaveLength(0);
+  expect(store.getAsset(asset.id).relativePath).toMatch(/^[a-f\d-]{36}\//);
+  expect(await readFile(file, 'utf8')).toBe('original retained V1');
+  expect(store.inboxMigrations.pending(root.id)).toEqual([]);
+});
+
+it('serializes upload, rescan and removal behind Inbox migration readiness', async () => {
+  const { media, library, store, root, file } = await legacyInbox();
+  const entered = deferred(),
+    release = deferred();
+  cleanup.push(async () => release.resolve());
+  transport.dispatch = async (job) => {
+    if (job.inboxOperation === 'inspect') {
+      entered.resolve();
+      await release.promise;
+    }
+    return dispatch(job);
+  };
+  await media.resume();
+  await entered.promise;
+  const upload = media.upload(library.id, 'new.png', Buffer.from('new bytes'));
+  const uploadResult = expect(upload).rejects.toMatchObject({
+    code: 'ROOT_REMOVING',
+  });
+  const rescan = media.rescan(library.id);
+  const rescanResult = expect(rescan).rejects.toMatchObject({
+    code: 'ROOT_REMOVING',
+  });
+  const removed = media.unregisterRoot(root.id, 'offline');
+  expect(watchers).toHaveLength(0);
+  release.resolve();
+  await Promise.all([uploadResult, rescanResult, removed]);
+  expect(store.listRoots(library.id)).toEqual([]);
+  expect(await readFile(file, 'utf8')).toBe('original retained V1');
+  expect(watchers).toHaveLength(0);
+});
+
+it('excludes locked old Inbox aliases until cleanup resumes without manual-version churn', async () => {
+  const { media, paths, library, store, root, asset, file, db } =
+    await legacyInbox();
+  const replacement = join(paths.data, 'manual-v2.bin');
+  await writeFile(replacement, 'manual V2 different bytes');
+  store.replaceAsset(
+    asset.id,
+    await processFile({
+      filePath: replacement,
+      dataDir: paths.data,
+      cacheDir: paths.cache,
+    }),
+    'authored V2.bin',
+  );
+  const versions = db.sqlite
+    .prepare('SELECT * FROM asset_versions ORDER BY id')
+    .all();
+  const current = store.getAsset(asset.id);
+  const errors: CatalogEvent[] = [];
+  media.subscribe((event) => errors.push(event));
+  transport.dispatch = async (job) => {
+    if (job.inboxOperation === 'cleanup')
+      throw Object.assign(new Error('Locked'), { code: 'EPERM' });
+    return dispatch(job);
+  };
+  await media.resume();
+  await expect
+    .poll(() => store.scanStore.get(root.id)?.status)
+    .toBe('completed');
+  expect(store.inboxMigrations.pending(root.id)[0]?.state).toBe('relocated');
+  expect(
+    errors.find((event) => event.code === 'INBOX_MIGRATION_FAILED')?.message,
+  ).toContain('Full Disk Access');
+  expect(
+    errors.find((event) => event.code === 'INBOX_MIGRATION_FAILED')?.message,
+  ).not.toContain(root.path);
+  expect(await readFile(file, 'utf8')).toBe('original retained V1');
+  await media.rescan(library.id);
+  await expect
+    .poll(() => transport.instances.every((worker) => !worker.active))
+    .toBe(true);
+  expect(store.listAssets(library.id).items).toHaveLength(1);
+  expect(store.getAsset(asset.id)).toEqual({
+    ...current,
+    relativePath: store.getAsset(asset.id).relativePath,
+  });
+  expect(
+    db.sqlite.prepare('SELECT * FROM asset_versions ORDER BY id').all(),
+  ).toEqual(versions);
+  await media.close();
+  transport.dispatch = dispatch;
+  const next = new MediaService(store, paths);
+  cleanup.push(() => next.close());
+  await next.resume();
+  await expect.poll(() => store.inboxMigrations.pending(root.id)).toEqual([]);
+  await expect(readFile(file)).rejects.toMatchObject({ code: 'ENOENT' });
+  await expect
+    .poll(() => store.scanStore.get(root.id)?.status)
+    .toBe('completed');
+  expect(store.listAssets(library.id).items).toHaveLength(1);
+  expect(store.getAsset(asset.id).currentVersionId).toBe(
+    current.currentVersionId,
+  );
+  expect(
+    db.sqlite.prepare('SELECT * FROM asset_versions ORDER BY id').all(),
+  ).toEqual(versions);
+});
+
+it('does not throw out of watcher callbacks for invalid reference filenames', async () => {
+  const { media, library, originals } = await setup();
+  await media.registerRoot(library.id, originals);
+  expect(() =>
+    watchers[0]!.emit('add', join(originals, 'colon:name.png')),
+  ).not.toThrow();
+  expect(() =>
+    watchers[0]!.emit('unlink', join(originals, 'colon:name.png')),
+  ).not.toThrow();
+});
+
+it('gives safe disk-full guidance without exposing an OS error path', () => {
+  expect(
+    fileOperationMessage(
+      Object.assign(new Error('ENOSPC /private/path'), { code: 'ENOSPC' }),
+    ),
+  ).toBe('Not enough disk space. Free space in the data directory and retry.');
+});
+
+it('keeps unresolved migration targets reserved for later migrations and uploads', async () => {
+  const { media, store, root, asset, file, paths, library } =
+    await legacyInbox();
+  const secondRelative = `${randomUUID()}/原稿.png`;
+  const secondFile = join(root.path, secondRelative);
+  await mkdir(join(root.path, secondRelative.split('/')[0]!));
+  await writeFile(secondFile, 'different second legacy bytes');
+  const second = store.ingest({
+    libraryId: library.id,
+    rootId: root.id,
+    relativePath: secondRelative,
+    actualRelativePath: secondRelative,
+    processed: await processFile({
+      filePath: secondFile,
+      dataDir: paths.data,
+      cacheDir: paths.cache,
+    }),
+  }).asset;
+  transport.dispatch = async (job) => {
+    if (job.inboxOperation === 'publish' && job.migration?.assetId === asset.id)
+      throw Object.assign(new Error('Locked'), { code: 'EBUSY' });
+    return dispatch(job);
+  };
+  await media.resume();
+  await expect
+    .poll(() => store.scanStore.get(root.id)?.status)
+    .toBe('completed');
+  const reserved = store.inboxMigrations.pending(root.id)[0]!.newRelativePath;
+  expect(store.getAsset(second.id).relativePath).not.toBe(reserved);
+  expect(store.getAsset(second.id).missing).toBe(false);
+  const uploaded = await media.upload(
+    library.id,
+    '原稿.png',
+    Buffer.from('third new upload'),
+  );
+  expect(uploaded.relativePath).not.toBe(reserved);
+  expect(uploaded.id).not.toBe(asset.id);
+  await media.rescan(library.id);
+  await expect
+    .poll(() => store.scanStore.get(root.id)?.status)
+    .toBe('completed');
+  expect(
+    store.listAssets(library.id).items.every((item) => !item.missing),
+  ).toBe(true);
+  expect(await readFile(file, 'utf8')).toBe('original retained V1');
+});
+
+it('allocates a new upload source without reusing a missing dated alias', async () => {
+  const { media, store, paths, library } = await setup();
+  const first = await media.upload(
+    library.id,
+    'design.png',
+    Buffer.from('first original'),
+  );
+  const root = store.listRoots(library.id)[0]!;
+  await unlink(join(root.path, first.relativePath));
+  store.markSourceMissing(root.id, first.relativePath);
+  const before = store.listVersions(first.id);
+  const second = await media.upload(
+    library.id,
+    'design.png',
+    Buffer.from('second different upload'),
+  );
+  expect(second.id).not.toBe(first.id);
+  expect(second.relativePath).not.toBe(first.relativePath);
+  expect(store.listVersions(first.id)).toEqual(before);
+  expect(store.getAsset(first.id).missing).toBe(true);
+  expect(
+    await readFile(
+      join(paths.data, 'libraries', library.id, 'Inbox', second.relativePath),
+      'utf8',
+    ),
+  ).toBe('second different upload');
 });

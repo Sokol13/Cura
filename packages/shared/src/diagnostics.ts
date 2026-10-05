@@ -149,6 +149,7 @@ export const DiagnosticTableSchema = z.enum([
   'library_roots',
   'recorded_generations',
   'root_scan_summaries',
+  'inbox_migrations',
   'script_breakdowns',
   'setting_documents',
   'settings',

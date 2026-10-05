@@ -59,7 +59,8 @@ export interface MediaDiagnostic {
     | 'SCAN_FAILED'
     | 'SCAN_INTERRUPTED'
     | 'SCAN_RECOVERED_INTERRUPTED'
-    | 'PSD_PREVIEW_RECOVERY';
+    | 'PSD_PREVIEW_RECOVERY'
+    | 'INBOX_MIGRATION_FAILED';
   libraryId?: string;
   rootId?: string;
   assetId?: string;

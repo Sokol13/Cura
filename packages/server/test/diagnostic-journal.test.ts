@@ -148,3 +148,17 @@ it('preserves warnings in memory and reports persistence errors without rejectin
   expect(snapshot.entries[0]).toMatchObject({ code: 'EACCES', level: 50 });
   await expect(journal.close()).resolves.toBeUndefined();
 });
+
+it('retains the Inbox migration category without private filesystem details', async () => {
+  const { journal } = await fixture();
+  journal.record({
+    level: 40,
+    operation: 'media',
+    code: 'INBOX_MIGRATION_FAILED',
+    msg: '/private/Inbox/original.png',
+    err: new Error('private error'),
+  });
+  const snapshot = await journal.snapshot();
+  expect(snapshot.entries[0]?.code).toBe('INBOX_MIGRATION_FAILED');
+  expect(JSON.stringify(snapshot)).not.toMatch(/private|original/);
+});
