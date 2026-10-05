@@ -18,6 +18,7 @@ interface Job {
   bytes: Uint8Array;
   root: string;
   relativePath: string;
+  sourceName?: string;
   knownRelativePaths?: readonly string[];
   dataDir: string;
   cacheDir: string;
@@ -56,6 +57,7 @@ async function process(job: Job) {
     filePath,
     dataDir: job.dataDir,
     cacheDir: job.cacheDir,
+    ...(job.sourceName ? { sourceName: job.sourceName } : {}),
   });
   // Revalidate after copying as well: the watched path may change while decoding.
   await registeredRoot(job.root);

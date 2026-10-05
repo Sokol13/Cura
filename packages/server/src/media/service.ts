@@ -30,10 +30,15 @@ import {
   type RootRemovalMode,
   type RemoveRootResult,
   type ScanSummary,
+  type MediaQueueDiagnostics,
 } from '@cura/shared';
 import type { CatalogStore, VersionFile } from '../catalog-store.js';
 import type { UserPaths } from '../paths.js';
-import type { ProcessedFile } from './types.js';
+import {
+  MEDIA_FAILURE_CODES,
+  type MediaDiagnostic,
+  type ProcessedFile,
+} from './types.js';
 import { normalizeRelativePath } from './path-utils.js';
 import { shouldAutoImport, type ScanDiscovery } from './scan.js';
 import { addScanFailure } from './scan-summary.js';
@@ -124,8 +129,17 @@ export class MediaService {
   constructor(
     private readonly store: CatalogStore,
     private readonly paths: UserPaths,
+    private readonly onDiagnostic?: (event: MediaDiagnostic) => void,
   ) {
-    this.store.scanStore.interruptRunning();
+    for (const summary of this.store.scanStore.interruptRunning())
+      this.diagnostic({
+        level: 'warn',
+        operation: 'scan',
+        code: 'SCAN_RECOVERED_INTERRUPTED',
+        libraryId: summary.libraryId,
+        rootId: summary.rootId,
+        count: summary.processed,
+      });
     const compiled = new URL('./worker.js', import.meta.url);
     // Production uses compiled JS; tsx development uses an explicit bootstrap.
     this.worker = existsSync(fileURLToPath(compiled))
@@ -160,7 +174,59 @@ export class MediaService {
     });
   }
 
+  private diagnostic(event: MediaDiagnostic): void {
+    try {
+      this.onDiagnostic?.(event);
+    } catch {
+      /* Diagnostics must never interrupt media work. */
+    }
+  }
+  private processedDiagnostics(
+    processed: ProcessedFile,
+    context: Pick<
+      MediaDiagnostic,
+      'libraryId' | 'rootId' | 'assetId' | 'versionId'
+    >,
+  ): void {
+    for (const event of processed.diagnostics ?? [])
+      this.diagnostic({ ...event, ...context, level: 'warn' });
+  }
+  getDiagnostics(): MediaQueueDiagnostics {
+    const queuedByKind: MediaQueueDiagnostics['queuedByKind'] = {
+      scan: 0,
+      process: 0,
+      preview: 0,
+      'cache-info': 0,
+      'cache-clear': 0,
+    };
+    for (const job of this.queuedJobs)
+      queuedByKind[job.payload.kind as keyof typeof queuedByKind]++;
+    return {
+      activeJobKind: this.activeJob
+        ? (this.activeJob.payload
+            .kind as MediaQueueDiagnostics['activeJobKind'])
+        : null,
+      queuedJobs: this.queuedJobs.length,
+      queuedByKind,
+      capacity: MAX_QUEUED_JOBS,
+      pendingFiles: this.pending.size,
+      activeScans: this.scans.size,
+      nativeReservedVersions: this.nativePreviews.size,
+      closed: this.closed,
+      workerFailed: this.workerFailure !== null,
+      acceptingWork:
+        !this.closed &&
+        !this.workerFailure &&
+        this.queuedJobs.length < MAX_QUEUED_JOBS,
+    };
+  }
   private failPending(error: Error) {
+    if (!this.workerFailure)
+      this.diagnostic({
+        level: 'error',
+        operation: 'media',
+        code: 'MEDIA_WORKER_FAILED',
+      });
     this.workerFailure = error;
     this.activeJob?.reject(error);
     this.activeJob = undefined;
@@ -283,6 +349,15 @@ export class MediaService {
   }
   private reportError(root: LibraryRoot, error: unknown) {
     const code = (error as NodeJS.ErrnoException | undefined)?.code;
+    this.diagnostic({
+      level: 'warn',
+      operation: 'media',
+      code:
+        MEDIA_FAILURE_CODES.find((candidate) => candidate === code) ??
+        'MEDIA_OPERATION_FAILED',
+      libraryId: root.libraryId,
+      rootId: root.id,
+    });
     this.emit({
       type: 'error',
       libraryId: root.libraryId,
@@ -391,7 +466,15 @@ export class MediaService {
           try {
             await this.rebuildPreviews([version]);
           } catch (error) {
-            if (!this.closed)
+            if (!this.closed) {
+              this.diagnostic({
+                level: 'warn',
+                operation: 'thumbnail',
+                code: 'PSD_PREVIEW_RECOVERY',
+                libraryId: version.libraryId,
+                assetId: version.assetId,
+                versionId: version.id,
+              });
               this.emit({
                 type: 'error',
                 libraryId: version.libraryId,
@@ -399,6 +482,7 @@ export class MediaService {
                 code: 'PSD_PREVIEW_RECOVERY',
                 message: fileOperationMessage(error),
               });
+            }
           }
         }
       }),
@@ -543,6 +627,20 @@ export class MediaService {
       Math.max(Date.now(), Date.parse(summary.updatedAt)),
     ).toISOString();
     this.publishScan(summary);
+    if (status !== 'completed')
+      this.diagnostic({
+        level: 'warn',
+        operation: 'scan',
+        code:
+          status === 'partial'
+            ? 'SCAN_PARTIAL'
+            : status === 'failed'
+              ? 'SCAN_FAILED'
+              : 'SCAN_INTERRUPTED',
+        libraryId: summary.libraryId,
+        rootId: summary.rootId,
+        count: summary.readErrors,
+      });
   }
   private recordScanStartFailure(root: LibraryRoot, error: unknown): void {
     if (
@@ -743,6 +841,20 @@ export class MediaService {
             processed,
           });
           asset = result.asset;
+          if (processed.diagnostics?.length) {
+            const versionId =
+              asset.hash === processed.hash
+                ? asset.currentVersionId
+                : this.store
+                    .listVersions(asset.id)
+                    .find((version) => version.hash === processed.hash)?.id;
+            this.processedDiagnostics(processed, {
+              libraryId: root.libraryId,
+              rootId: root.id,
+              assetId: asset.id,
+              ...(versionId ? { versionId } : {}),
+            });
+          }
           if (result.changed) {
             this.emit({
               type: 'asset',
@@ -812,6 +924,11 @@ export class MediaService {
           processed,
           basename(name),
         );
+        this.processedDiagnostics(processed, {
+          libraryId: asset.libraryId,
+          assetId,
+          versionId: updated.currentVersionId,
+        });
         this.emit({ type: 'asset', libraryId: asset.libraryId, assetId });
         return updated;
       } finally {
@@ -890,6 +1007,14 @@ export class MediaService {
       error: failure.error,
     });
     const file = this.store.getVersionFile(versionId);
+    this.diagnostic({
+      level: 'warn',
+      operation: 'thumbnail',
+      code: failure.error,
+      libraryId: file.libraryId,
+      assetId: version.assetId,
+      versionId,
+    });
     this.emit({
       type: 'thumbnail',
       libraryId: file.libraryId,
@@ -987,11 +1112,17 @@ export class MediaService {
             kind: 'process',
             root,
             relativePath: relative(this.paths.data, version.snapshotPath),
+            sourceName: version.name,
             dataDir: this.paths.data,
             cacheDir: this.paths.cache,
           });
           if (this.closed) throw stopped();
           this.store.updateVersionPreview(version.id, processed.thumbnailPath);
+          this.processedDiagnostics(processed, {
+            libraryId: version.libraryId,
+            assetId: version.assetId,
+            versionId: version.id,
+          });
           this.emit({
             type: 'thumbnail',
             libraryId: version.libraryId,

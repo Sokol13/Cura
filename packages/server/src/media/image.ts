@@ -18,7 +18,7 @@ import sharp from 'sharp';
 
 import { parsePngMetadata } from './metadata.js';
 import { readPsdPreview } from './psd.js';
-import type { ProcessedFile } from './types.js';
+import type { ProcessedDiagnostic, ProcessedFile } from './types.js';
 
 const PNG_SIGNATURE = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 const MAX_TEXT_CHUNK = 1024 * 1024;
@@ -209,6 +209,7 @@ export async function processFile(input: {
   filePath: string;
   dataDir: string;
   cacheDir: string;
+  sourceName?: string;
 }): Promise<ProcessedFile> {
   const stored = await snapshot(input.filePath, input.dataDir);
   const text = await pngTextBytes(stored.snapshotPath, stored.size);
@@ -231,6 +232,27 @@ export async function processFile(input: {
     generation,
     thumbnailPath: null,
   };
+  const diagnostic = (value: ProcessedDiagnostic) =>
+    (result.diagnostics ??= []).push(value);
+  const warnings = generation.params.warnings;
+  if (Array.isArray(warnings) && warnings.length)
+    diagnostic({
+      operation: 'metadata',
+      code: 'METADATA_PARSE_WARNINGS',
+      count: warnings.length,
+    });
+  let nativePreviewExpected = new Set([
+    '.png',
+    '.jpg',
+    '.jpeg',
+    '.jpe',
+    '.jfif',
+    '.webp',
+    '.gif',
+    '.svg',
+    '.avif',
+    '.psd',
+  ]).has(path.extname(input.sourceName ?? input.filePath).toLowerCase());
   const previews = path.resolve(input.cacheDir, 'thumbnails');
   const temporary = path.join(previews, `${randomUUID()}.tmp`);
   let psdPixels: Buffer | undefined;
@@ -274,7 +296,13 @@ export async function processFile(input: {
         }
         if (richType !== 'image/vnd.adobe.photoshop') return result;
         const preview = await readPsdPreview(stored.snapshotPath);
-        if (!preview) return result;
+        if (!preview) {
+          diagnostic({
+            operation: 'thumbnail',
+            code: 'PSD_NATIVE_PREVIEW_UNAVAILABLE',
+          });
+          return result;
+        }
         psdPixels = preview.png;
         result.width = preview.width;
         result.height = preview.height;
@@ -290,8 +318,13 @@ export async function processFile(input: {
     } finally {
       await prefix.close();
     }
+    nativePreviewExpected ||= raster || !!psdPixels;
     // Buffer input has no base URL from which SVG can load adjacent source files.
-    if (!psdPixels && !raster && stored.size > 8 * 1024 * 1024) return result;
+    if (!psdPixels && !raster && stored.size > 8 * 1024 * 1024) {
+      if (nativePreviewExpected)
+        diagnostic({ operation: 'thumbnail', code: 'THUMBNAIL_SIZE_LIMIT' });
+      return result;
+    }
     const decoder = sharp(
       psdPixels ??
         (raster ? stored.snapshotPath : await readFile(stored.snapshotPath)),
@@ -303,6 +336,7 @@ export async function processFile(input: {
     );
     const metadata = await decoder.metadata();
     if (!metadata.format || !MIME_TYPES[metadata.format]) return result;
+    nativePreviewExpected = true;
     if (!psdPixels) result.type = MIME_TYPES[metadata.format]!;
     if (metadata.exif && metadata.exif.length <= MAX_TEXT_CHUNK) {
       try {
@@ -317,12 +351,17 @@ export async function processFile(input: {
           xmp: false,
           icc: false,
         });
-        if (exif && typeof exif === 'object' && !Array.isArray(exif))
+        if (exif && typeof exif === 'object' && !Array.isArray(exif)) {
           result.exif = exif as Record<string, unknown>;
+          if (Array.isArray(result.exif.errors) && result.exif.errors.length)
+            diagnostic({ operation: 'metadata', code: 'EXIF_PARSE_FAILED' });
+        } else diagnostic({ operation: 'metadata', code: 'EXIF_PARSE_FAILED' });
       } catch {
-        /* Damaged EXIF must not prevent importing valid pixels. */
+        diagnostic({ operation: 'metadata', code: 'EXIF_PARSE_FAILED' });
       }
     }
+    if (metadata.exif && metadata.exif.length > MAX_TEXT_CHUNK)
+      diagnostic({ operation: 'metadata', code: 'EXIF_SIZE_LIMIT' });
     const rotated = decoder.rotate();
     const [rgb, gray, thumbnail] = await Promise.all([
       rotated
@@ -365,6 +404,8 @@ export async function processFile(input: {
     await rename(temporary, thumbnailPath);
     result.thumbnailPath = thumbnailPath;
   } catch {
+    if (nativePreviewExpected)
+      diagnostic({ operation: 'thumbnail', code: 'NATIVE_THUMBNAIL_FAILED' });
     // Unsupported, oversized and damaged image files retain their original bytes.
     if (result.type !== 'image/vnd.adobe.photoshop') {
       result.width = null;
